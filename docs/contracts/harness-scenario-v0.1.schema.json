@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PEF Harness Scenario v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "scenario_id",
+    "gate_ids",
+    "profile",
+    "driver",
+    "preconditions",
+    "stimulus",
+    "oracle",
+    "evidence_fields",
+    "execution_status"
+  ],
+  "properties": {
+    "scenario_id": {
+      "type": "string",
+      "pattern": "^SC-[A-Z0-9-]+$"
+    },
+    "gate_ids": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 4
+      },
+      "uniqueItems": true
+    },
+    "profile": {
+      "enum": [
+        "Core-only",
+        "Property Base",
+        "Property Pro",
+        "Host H50",
+        "Host H100",
+        "Host H150",
+        "Host H250-stress"
+      ]
+    },
+    "driver": {
+      "enum": [
+        "wan_link",
+        "wan_blackhole",
+        "cloud_partition",
+        "power_relay",
+        "config_ota",
+        "disk_pressure",
+        "workload_control",
+        "clock_trust",
+        "wall_power_meter",
+        "temperature_sensor",
+        "traffic_gen"
+      ]
+    },
+    "preconditions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 3
+      }
+    },
+    "stimulus": {
+      "type": "string",
+      "minLength": 10
+    },
+    "oracle": {
+      "type": "string",
+      "minLength": 10
+    },
+    "evidence_fields": {
+      "type": "array",
+      "minItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "execution_status": {
+      "enum": [
+        "NOT_RUN",
+        "BLOCKED",
+        "ERROR",
+        "FAIL",
+        "PASS"
+      ]
+    }
+  }
+}

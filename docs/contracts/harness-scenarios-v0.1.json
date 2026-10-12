@@ -1,0 +1,931 @@
+{
+  "schema_version": 1,
+  "notes": "SPECIFIED-only initial catalog. All entries NOT_RUN, no evidence recorded.",
+  "scenarios": [
+    {
+      "scenario_id": "SC-G-CON-01",
+      "gate_ids": [
+        "G-CON-01"
+      ],
+      "profile": "Property Base",
+      "driver": "wan_link",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "primary carrier lost, secondary provisioned",
+      "oracle": "alternate selected without cloud; local LAN remains",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-CON-02",
+      "gate_ids": [
+        "G-CON-02"
+      ],
+      "profile": "Property Base",
+      "driver": "wan_blackhole",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "primary upstream blackhole with carrier up",
+      "oracle": "active probes flag degradation and alternate selected",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-CON-03",
+      "gate_ids": [
+        "G-CON-03"
+      ],
+      "profile": "Core-only",
+      "driver": "wan_link",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "all WAN unavailable",
+      "oracle": "LAN, Core status and committed state remain local",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-CON-04",
+      "gate_ids": [
+        "G-CON-04"
+      ],
+      "profile": "Property Base",
+      "driver": "wan_link",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "flapping primary WAN with recoveries",
+      "oracle": "bounded transitions; no endless oscillation",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-CLOUD-01",
+      "gate_ids": [
+        "G-CLOUD-01"
+      ],
+      "profile": "Core-only",
+      "driver": "cloud_partition",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "cloud unavailable and WAN healthy",
+      "oracle": "local API and core continue without cloud",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-CLOUD-02",
+      "gate_ids": [
+        "G-CLOUD-02"
+      ],
+      "profile": "Host H150",
+      "driver": "cloud_partition",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "cloud restores after offline journal writes",
+      "oracle": "rejoin, idempotent replay and durable cursors",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-CLOUD-03",
+      "gate_ids": [
+        "G-CLOUD-03"
+      ],
+      "profile": "Host H50",
+      "driver": "cloud_partition",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "new desired revision during partition",
+      "oracle": "no blind overwrite or loss of valid config",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-PER-01",
+      "gate_ids": [
+        "G-PER-01"
+      ],
+      "profile": "Property Base",
+      "driver": "power_relay",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "cut physically after durable journal ACK",
+      "oracle": "committed record hash survives reboot",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-PER-02",
+      "gate_ids": [
+        "G-PER-02"
+      ],
+      "profile": "Property Base",
+      "driver": "config_ota",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "cut during config activation",
+      "oracle": "known-good local boot/network recovered",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-PER-03",
+      "gate_ids": [
+        "G-PER-03"
+      ],
+      "profile": "Host H150",
+      "driver": "disk_pressure",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "fill P2 workload volume",
+      "oracle": "P0/P1 reservations remain protected",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-PER-04",
+      "gate_ids": [
+        "G-PER-04"
+      ],
+      "profile": "Property Pro",
+      "driver": "disk_pressure",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "corrupt workload P2 data",
+      "oracle": "Core survives and P2 isolated",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-SW-01",
+      "gate_ids": [
+        "G-SW-01"
+      ],
+      "profile": "Core-only",
+      "driver": "workload_control",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "kill optional workload",
+      "oracle": "Core and local API unaffected",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-SW-02",
+      "gate_ids": [
+        "G-SW-02"
+      ],
+      "profile": "Property Base",
+      "driver": "workload_control",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "crash loop optional workload",
+      "oracle": "retries bounded and isolation",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-OTA-01",
+      "gate_ids": [
+        "G-OTA-01"
+      ],
+      "profile": "Core-only",
+      "driver": "config_ota",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "power interrupt candidate software stage",
+      "oracle": "last-known-good boot path remains",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-OTA-02",
+      "gate_ids": [
+        "G-OTA-02"
+      ],
+      "profile": "Core-only",
+      "driver": "config_ota",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "candidate software fails health",
+      "oracle": "rollback automatic and healthy",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-OTA-03",
+      "gate_ids": [
+        "G-OTA-03"
+      ],
+      "profile": "Core-only",
+      "driver": "config_ota",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "invalid artifact signature",
+      "oracle": "reject image, never activate",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-SEC-01",
+      "gate_ids": [
+        "G-SEC-01"
+      ],
+      "profile": "Property Base",
+      "driver": "clock_trust",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "remote mTLS/cloud auth invalid",
+      "oracle": "remote isolated; local survives",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-SEC-02",
+      "gate_ids": [
+        "G-SEC-02"
+      ],
+      "profile": "Property Base",
+      "driver": "clock_trust",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "overlay tunnel down",
+      "oracle": "local services unaffected; no insecure fallback",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-SEC-03",
+      "gate_ids": [
+        "G-SEC-03"
+      ],
+      "profile": "Core-only",
+      "driver": "clock_trust",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "time sync absent and clock untrusted",
+      "oracle": "core local continues, sensitive remote blocked",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-SEC-04",
+      "gate_ids": [
+        "G-SEC-04"
+      ],
+      "profile": "Core-only",
+      "driver": "clock_trust",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "identity inaccessible",
+      "oracle": "no new device identity; controlled recovery",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-REC-01",
+      "gate_ids": [
+        "G-REC-01"
+      ],
+      "profile": "Property Base",
+      "driver": "workload_control",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "recoverable local process failure",
+      "oracle": "health returns stable with evidence",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-REC-02",
+      "gate_ids": [
+        "G-REC-02"
+      ],
+      "profile": "Core-only",
+      "driver": "workload_control",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "persistent unrecoverable crash loop",
+      "oracle": "bounded escalation to SAFE_MODE",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-OBS-01",
+      "gate_ids": [
+        "G-OBS-01"
+      ],
+      "profile": "Property Base",
+      "driver": "cloud_partition",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "failure while cloud absent",
+      "oracle": "durable correlation lineage locally retained",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-OBS-02",
+      "gate_ids": [
+        "G-OBS-02"
+      ],
+      "profile": "Property Base",
+      "driver": "cloud_partition",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "cloud returns after recovery",
+      "oracle": "correlated event history synchronized",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-OBS-03",
+      "gate_ids": [
+        "G-OBS-03"
+      ],
+      "profile": "Host H150",
+      "driver": "disk_pressure",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "storage pressure during incident",
+      "oracle": "critical O0/O1 preserved within reserve",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-PEF-CORE-01",
+      "gate_ids": [
+        "G-PEF-CORE-01"
+      ],
+      "profile": "Core-only",
+      "driver": "wan_link",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "WAN, cloud or vertical fail independently",
+      "oracle": "Core identity,state,durable events,local recovery",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-WRK-01",
+      "gate_ids": [
+        "G-WRK-01"
+      ],
+      "profile": "Host H50",
+      "driver": "workload_control",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "unauthorized privileged network intent",
+      "oracle": "policy denied without host mutation",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-WRK-02",
+      "gate_ids": [
+        "G-WRK-02"
+      ],
+      "profile": "Host H150",
+      "driver": "workload_control",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "over-budget workload admission",
+      "oracle": "rejected or isolated before Core starvation",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-D-SYN-01",
+      "gate_ids": [
+        "D-SYN-01"
+      ],
+      "profile": "Host H150",
+      "driver": "cloud_partition",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "remote ACK received but local cursor not committed",
+      "oracle": "replay dedup and no committed loss",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-D-PER-06",
+      "gate_ids": [
+        "D-PER-06"
+      ],
+      "profile": "Property Base",
+      "driver": "disk_pressure",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "P1 read-only or corrupt",
+      "oracle": "explicit degraded status, no false ACK",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-E-04",
+      "gate_ids": [
+        "E-04"
+      ],
+      "profile": "Property Pro",
+      "driver": "workload_control",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "CPU/memory hog and crash loop",
+      "oracle": "workload isolated, Core locally observable",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-F-PWR-01",
+      "gate_ids": [
+        "F-PWR-01"
+      ],
+      "profile": "Property Base",
+      "driver": "wall_power_meter",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "normal steady and routing loads",
+      "oracle": "wall W measured with boundary documented",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-F-THM-01",
+      "gate_ids": [
+        "F-THM-01"
+      ],
+      "profile": "Host H150",
+      "driver": "temperature_sensor",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "sustained combined traffic/journal load",
+      "oracle": "thermal response and throttling measured",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-F-UPS-01",
+      "gate_ids": [
+        "F-UPS-01"
+      ],
+      "profile": "Property Base",
+      "driver": "power_relay",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "UPS brownout then abrupt cut",
+      "oracle": "power and durable commit semantics documented",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-C-CPU-01",
+      "gate_ids": [
+        "C-CPU-01"
+      ],
+      "profile": "Property Base",
+      "driver": "traffic_gen",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "64/512/1500B NAT/firewall packets",
+      "oracle": "throughput CPU and drops per mix observed",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-C-MEM-02",
+      "gate_ids": [
+        "C-MEM-02"
+      ],
+      "profile": "Property Base",
+      "driver": "workload_control",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "low RAM with hostile workload",
+      "oracle": "no Core OOM or P0/P1 loss",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "scenario_id": "SC-G-FAILOVER-01",
+      "gate_ids": [
+        "G-FAILOVER-01"
+      ],
+      "profile": "Host H150",
+      "driver": "wan_link",
+      "preconditions": [
+        "isolated test lab",
+        "PEF fixture deployed",
+        "driver supported and restore plan known"
+      ],
+      "stimulus": "100 repetitions primary link-down",
+      "oracle": "p95 time based on t0 to useful flow, sample count reported",
+      "evidence_fields": [
+        "correlation_id",
+        "t0_mono_ns",
+        "t1_mono_ns",
+        "observed_state",
+        "raw_metrics_uri",
+        "artifact_sha256",
+        "cleanup_status"
+      ],
+      "execution_status": "NOT_RUN"
+    }
+  ]
+}

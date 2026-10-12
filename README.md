@@ -17,7 +17,7 @@ PEF es una plataforma *local-first* para sitios pequeños: usa conectividad exis
 2. Leer [`docs/01-product-foundation.md`](docs/01-product-foundation.md) para el **porqué** y restricciones comerciales.
 3. Leer [`docs/02-core-requirements.md`](docs/02-core-requirements.md) para el **qué** (`REQ-*`).
 4. Leer sólo el documento necesario para la tarea: arquitectura [`03`](docs/03-logical-architecture.md), fallos [`04`](docs/04-failure-offline-contract.md), overlays [`05`](docs/05-overlays-workload-contract.md), recursos [`06`](docs/06-resource-envelope.md).
-5. Consultar [`docs/07-roadmap-decisions.md`](docs/07-roadmap-decisions.md) para estado real y decisiones; [subtasks W1.5](docs/tasks/w1.5-resource-execution.md), [Resource Gate](docs/08-resource-gate.md) y [W1.6 Runtime Contract](docs/09-runtime-contract.md), con su [plan de tasks](docs/tasks/w1.6-runtime-execution.md).
+5. Consultar [`docs/07-roadmap-decisions.md`](docs/07-roadmap-decisions.md) para estado real; [subtasks W1.5](docs/tasks/w1.5-resource-execution.md), [Resource Gate](docs/08-resource-gate.md), [W1.6 Runtime](docs/09-runtime-contract.md) y [W1.7 Harness Spec](docs/10-benchmark-harness.md) con [subtasks](docs/tasks/w1.7-harness-execution.md).
 6. El informe conservado íntegro en [`source/deep-research-report-original.md`](source/deep-research-report-original.md) es **fuente de antecedentes**, no sustituto de requisitos ni validación independiente de cifras de mercado.
 
 ## Arquitectura reducida (baseline de W1.3)
@@ -65,8 +65,8 @@ flowchart TB
 | W1.5.G Recovery Targets | DOCUMENTED; timing model | PENDING |
 | W1.5.H–J Consolidation & Gate | DOCUMENTED; **design GO conditional** | PENDING |
 | W1.6 Software Runtime Contract | DOCUMENTED; architecture contracts only | PENDING |
-| **W1.7 Benchmark & Failure Harness** | **NEXT** | PENDING |
-| W1.8 | PLANNED | PENDING |
+| W1.7 Benchmark & Failure Harness | SPECIFIED; scenarios/evidence schemas | **NO RUNS** |
+| **W1.8 Architecture Shootout** | **NEXT (planning)** | PENDING |
 
 > **Integridad del import:** `SHA256SUMS` conserva los checksums de la **primera importación Foundation**; no es un manifiesto vivo del HEAD después de los commits documentales. Usar `git`/GitHub para verificar la versión vigente.
 
@@ -80,4 +80,4 @@ flowchart TB
 
 ## Entrega y próxima transición
 
-**Repositorio de trabajo:** [`krukmat/logistica`](https://github.com/krukmat/logistica), rama principal `main`. Esta baseline documenta trabajo de diseño; los commits de integración no constituyen validación empírica. Para avanzar: **W1.7 Benchmark Harness Specification**, basándose en [Runtime Contract](docs/09-runtime-contract.md) y [Resource Gate](docs/08-resource-gate.md). W1.5–W1.6 están documentadas como diseño, sin pruebas ejecutadas; compra/producción sigue NO-GO.
+**Repositorio de trabajo:** [`krukmat/logistica`](https://github.com/krukmat/logistica), rama principal `main`. Esta baseline documenta trabajo de diseño; los commits de integración no constituyen validación empírica. Para avanzar: **W1.8 Architecture Shootout planning** con [Runtime](docs/09-runtime-contract.md) y [Harness Specification](docs/10-benchmark-harness.md) / [scenario catalog](docs/contracts/harness-scenarios-v0.1.json). W1.7 tiene especificación, **no un runner ni pruebas ejecutadas**. Compra/producción sigue NO-GO.

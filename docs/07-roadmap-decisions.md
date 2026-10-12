@@ -1,6 +1,6 @@
 # 07 — Wave 1 Plan, ADR register y riesgos
 
-**Última actualización:** 2026-10-12. **Entrega:** baseline arquitectónica W1.1–W1.6 documentada para `krukmat/logistica` (`main`); **sin código de producto PEF ni tests de producto**.
+**Última actualización:** 2026-10-12. **Entrega:** baseline arquitectónica W1.1–W1.7 (design/spec only) documentada para `krukmat/logistica` (`main`); **sin código de producto PEF ni tests de producto**.
 
 ## A. Definición de completitud
 
@@ -28,8 +28,8 @@
 | W1.5.I | Hardware-agnostic Constraints | **DOCUMENTED / PROVISIONAL** | minimum/recommended specs sin modelos |
 | W1.5.J | Resource Gate | **DOCUMENTED / PROVISIONAL** | GO/revisit y riesgos |
 | W1.6 | Software Runtime Contract | **DOCUMENTED / DESIGN ONLY** | [`09`](09-runtime-contract.md): bootstrap, IPC/state, journal, sync, trust, workload; tests pending |
-| **W1.7** | Benchmark & Failure Harness Specification | **NEXT** | fixtures, reproducible failure tests, measurements + evidence schema |
-| W1.8 | Architecture Shootout | PLANNED | comparativa ARM router vs ARM edge vs x86 vs split bajo el mismo harness |
+| W1.7 | Benchmark & Failure Harness Specification | **DOCUMENTED / SPECIFIED** | [`10`](10-benchmark-harness.md) + scenario/evidence schemas; drivers/benchmarks pending |
+| **W1.8** | Architecture Shootout | **NEXT — DESIGN ONLY** | comparativa ARM router vs ARM edge vs x86 vs split bajo el mismo harness |
 
 ## C. Execution contract / granular W1.5 subtasks
 
@@ -83,6 +83,8 @@ The working decomposition is [**W1.5 execution breakdown**](tasks/w1.5-resource-
 | RISK-18 | Un único hardware fixture Base/Pro simula software, no garantiza BOM ni energía de Base | W1.8 dispositivos físicos y coste total, no marketing claims |
 | RISK-19 | Deadlock bootstrap entre P0/identity y Journal, o fallback sin red local | W1.6.B model + W1.7 G-OTA/G-SEC/power-fault |
 | RISK-20 | Cloud ACK ambiguo y réplica sin dedup producen doble acción o pérdida de cursor | W1.6.E + W1.7 D-SYN-01, G-CLOUD-02 |
+| RISK-21 | Registry de escenarios o JSON Schema interpretado como evidencia ejecutada | W1.7 no PASS sin trace raw+hash; W1.8 gate bloqueado sin DUT |
+| RISK-22 | Fault injection peligroso fuera de laboratorio aislado o cleanup incompleto | W1.7 preflight lab ID, dry-run, capability check y restore audit |
 
 ## F. Experimentos y estrategia de evidencia futura
 
@@ -93,4 +95,4 @@ The working decomposition is [**W1.5 execution breakdown**](tasks/w1.5-resource-
 
 ## G. Próxima acción en repositorio
 
-Repositorio de trabajo: `krukmat/logistica`, rama `main`. **W1.5.A–J and W1.6.A–I DOCUMENTED (DESIGN ONLY), benchmark evidence NONE.** [Runtime Contract](09-runtime-contract.md) permite avanzar a **W1.7 Benchmark Harness Specification**. Implementación y hardware purchase/production/SKU freeze siguen NO-GO. W1.8 comparará candidatos con mediciones.
+Repositorio de trabajo: `krukmat/logistica`, rama `main`. **W1.5.A–J, W1.6.A–I, W1.7.A–I DOCUMENTED/SPECIFIED (DESIGN ONLY), benchmark evidence NONE.** [Runtime](09-runtime-contract.md) y [Harness Specification](10-benchmark-harness.md) permiten diseñar **W1.8 Architecture Shootout**. **No** existen drivers, DUT ni resultados medidos; hardware purchase/production/SKU freeze siguen NO-GO.
