@@ -4,7 +4,7 @@
 
 ## Emulator software-first (W1.9)
 
-`npm test` ejecuta la suite Node built-in, `npm run emulate` los escenarios deterministas y `npm run lab:loopback` prueba HTTP/TCP en localhost (sin tocar interfaces del host). Ver [Emulator](docs/12-emulator.md) y [Tasks W1.9](docs/tasks/w1.9-emulator-execution.md). `SIM_PASS` **no certifica hardware** ni la durabilidad física.
+`npm test` ejecuta la suite Node built-in, `npm run emulate` los escenarios deterministas y `npm run lab:loopback` prueba HTTP/TCP en localhost (sin tocar interfaces del host). Para forwarding IP real en un **runner GitHub-hosted efímero**, `W1.9.G` ejecuta `scripts/lab/netns-smoke.sh` mediante GitHub Actions con preflight y cleanup; **no ejecutarlo con root en equipos locales**. Ver [Emulator](docs/12-emulator.md) y [Tasks W1.9](docs/tasks/w1.9-emulator-execution.md). `SIM_PASS` **no certifica hardware** ni la durabilidad física.
 
 ## Propósito
 

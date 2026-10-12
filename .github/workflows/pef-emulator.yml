@@ -8,6 +8,7 @@ on:
       - 'test/**'
       - 'scenarios/**'
       - 'package.json'
+      - 'scripts/lab/**'
       - '.github/workflows/pef-emulator.yml'
   workflow_dispatch:
 permissions:
@@ -29,3 +30,31 @@ jobs:
         run: npm run emulate
       - name: Loopback connectivity lab
         run: npm run lab:loopback
+
+  netns-lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Preflight networking tools
+        run: |
+          if ! command -v ip >/dev/null || ! command -v ping >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y iproute2 iputils-ping
+          fi
+      - name: Isolated Linux namespace network routing
+        env:
+          PEF_NETNS_ACK: GITHUB_HOSTED_EPHEMERAL_ONLY
+        run: |
+          sudo -n env CI="$CI" GITHUB_ACTIONS="$GITHUB_ACTIONS" RUNNER_ENVIRONMENT="$RUNNER_ENVIRONMENT" \
+            PEF_NETNS_ACK="$PEF_NETNS_ACK" PEF_NETNS_REPO_ROOT="$GITHUB_WORKSPACE" \
+            PEF_NETNS_EVIDENCE="$RUNNER_TEMP/pef-netns-evidence.json" \
+            bash scripts/lab/netns-smoke.sh
+      - name: Upload lab evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pef-netns-evidence
+          path: ${{ runner.temp }}/pef-netns-evidence.json
+          if-no-files-found: warn

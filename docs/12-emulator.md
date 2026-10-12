@@ -87,3 +87,11 @@ Ya existe el **punto de extensión `openBackend(kind, config)`** que sólo imple
 **Fuente:** `src/emulator/lab/loopback.js`; tests `test/loopback-lab.test.js`. [CI de loopback](https://github.com/krukmat/logistica/actions/runs/38253176876): 12/12 tests, 7/7 escenarios SIM_PASS y loopback LAB_PASS. [Audit](audit/w1.9-loopback-smoke-2026-10-12.md). Estado `LAB_PASS/LAB_FAIL`, deliberadamente distinto de `SIM_PASS` y del `PASS` físico de W1.7. El laboratorio confirma que hay tráfico real hacia *servidores loopback*, pero el failover de las rutas y la WAN seleccionada **continúan siendo decisiones del modelo PEF**. No medir p95 WAN, DHCP, NAT, offload ni storage endurance con estos resultados.
 
 **Siguiente:** comparador de resultados del modelo versus loopback, y después `linux-lab` aislado (VM/container/namespaces) para pruebas de forwarding real, con preflight y rollback de red virtual.
+
+## W1.9.G — Linux namespace routed connectivity lab
+
+Ejecutar **sólo en un runner efímero de GitHub Actions**, con aprobación explícita mediante `PEF_NETNS_ACK=GITHUB_HOSTED_EPHEMERAL_ONLY`. El smoke `scripts/lab/netns-smoke.sh` comprueba plataforma Linux/root/CI, crea cuatro namespaces (`Edge`, `LAN`, `WAN-A`, `WAN-B`) y enlaces `veth` **exclusivamente dentro de estos namespaces**. Activa forwarding en Edge, enruta tráfico HTTP real LAN→Edge→WAN y comprueba las diferencias entre upstream blackhole con carrier UP y link-down. Limpia los namespaces y los dos servicios de prueba al salir. `netns-client.py` nunca consulta endpoints externos: usa la IP TEST-NET-3 `203.0.113.42` dentro del laboratorio.
+
+**Alcance estricto:** la conmutación de ruta se aplica mediante el script de laboratorio después de observar el fallo; no hay aún `Connectivity Core` del producto aplicando rutas automáticamente. `LAB_PASS` valida forwarding de un sandbox Linux, **no** failover de NIC real ni latencias p95, fiabilidad ISP o hardware.
+
+**Nunca ejecutar con permisos de root en el Mac ni en hosts de producción.** En un host sin el preflight de GitHub Actions el script termina `LAB_BLOCKED` (exit 78). La implementación física futura reutilizará estos oráculos, pero requerirá diseño de seguridad independiente.

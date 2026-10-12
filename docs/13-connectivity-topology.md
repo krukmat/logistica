@@ -144,3 +144,14 @@ flowchart LR
 5. ¿Cuántos clientes y qué throughput se certifican? Los valores Base/Pro de W1.5.B siguen propuestos y necesitan pruebas.
 
 **Regla de cambios:** si Linux/device difiere del modelo, registrar `MODEL_BUG`, `IMPLEMENTATION_BUG`, `PLATFORM_LIMIT` o `UNVERIFIED`; no modificar un requisito sin ADR y evidencia.
+
+## G. Topología del laboratorio Linux namespaces (W1.9.G)
+
+```mermaid
+flowchart LR
+  CLIENT["LAN namespace<br/>10.250.10.2"] -->|"veth lan0"| EDGE["Edge namespace<br/>10.250.10.1<br/>ip_forward=1"]
+  EDGE -->|"wa0 10.250.20.2"| WAN_A["WAN-A namespace<br/>10.250.20.1<br/>TEST-NET-3 service"]
+  EDGE -->|"wb0 10.250.30.2"| WAN_B["WAN-B namespace<br/>10.250.30.1<br/>TEST-NET-3 service"]
+```
+
+En el smoke Linux, una prueba HTTP originada dentro de LAN cruza efectivamente la namespace Edge y un enlace veth a WAN-A o WAN-B. Se provoca blackhole en WAN-A manteniendo el enlace `UP`, se cambia la ruta por defecto **sólo dentro de Edge**, se prueba failover a WAN-B y después se quita WAN-B para comprobar que LAN sigue accesible. La política de recuperación automática y métricas de tiempo permanecen **pendientes de W1.9.H/W1.7**.
