@@ -39,7 +39,7 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
     openRuntime();
     supervisor=createWorkloadSupervisor({
       manager:createWorkloadManager({cpuMillicores:500,memoryMiB:128,storageMiB:128,maxWorkloads:2}),
-      driver:createNodeProcessDriver()
+      driver:createNodeProcessDriver(),autoReconcileMs:250
     });
   }
   function openRuntime(){
