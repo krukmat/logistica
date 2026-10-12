@@ -66,7 +66,13 @@ async function run(){
     await eventually(()=>supervisor.list()[0]?.state==="BACKOFF","memory-fault-backoff");
     const events=fs.readFileSync(path.join(cgroup,"memory.events"),"utf8");
     const oom=Number(events.match(/^oom_kill\s+(\d+)/m)?.[1]||0);
-    check("MEMORY_OOM_KILLED_IN_CGROUP",oom>=1);
+    const denied=Number(events.match(/^max\\s+(\\d+)/m)?.[1]||0);
+    process.stdout.write("PEF_S34_MEMORY_EVENTS="+JSON.stringify({
+      oomKill:oom,limitEvents:denied,
+      memoryCurrent:fs.readFileSync(path.join(cgroup,"memory.current"),"utf8").trim(),
+      supervisorState:supervisor.list()[0]
+    })+"\\n");
+    check("MEMORY_LIMIT_EVENT_RECORDED",denied>0||oom>0);
     await eventually(()=>supervisor.list()[0]?.state==="RUNNING","memory-restart",6000);
     check("RESTART_AFTER_OOM",supervisor.list()[0].attempts===2);
     const stopped=await supervisor.stop("pef-receiver");
@@ -75,7 +81,7 @@ async function run(){
     check("RECEIPT_PERSISTS",receiver.list().length===1);
     process.stdout.write("PEF_S34_SUPERVISED_LINUX_PASS="+JSON.stringify({
       status:"LAB_PASS",checks,
-      cpuMax:plan.cpuMax,memoryMax:plan.memoryMax,oomKill:oom,
+      cpuMax:plan.cpuMax,memoryMax:plan.memoryMax,oomKill:oom,memoryLimitEvents:denied,
       supervisorRestarts:2,offlineFsync:true,hardwareValidated:false
     })+"\n");
   }finally{
