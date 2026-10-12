@@ -11,7 +11,8 @@ const CAPABILITIES=Object.freeze([
   "wan-probes","local-routing-model","os-file-fsync","journal-pressure",
   "journal-compaction","durable-ack-replay","identity-revision","boot-session",
   "lost-remote-ack","forged-remote-ack","loopback-tcp-http","lab-evidence",
-  "lab-identity-bootstrap","bounded-deadline","bounded-retry","lab-ack-proof","protocol-v1"
+  "lab-identity-bootstrap","bounded-deadline","bounded-retry","lab-ack-proof","protocol-v1",
+  "local-logistics-receipts","offline-workload-replay"
 ]);
 const IDENTITY=Object.freeze({siteId:"demo-site",deviceId:"demo-edge",configRevision:"cfg-demo-1"});
 function createDashboardLab({tmpParent=os.tmpdir()}={}){
@@ -61,6 +62,7 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
         proof:"EPHEMERAL_LAB_ONLY",authenticated:false,realNetwork:false},
       cloud:{...cloud.status(),available:cloudAvailable,
         connected:cloudAvailable&&status.network.selectedWan!==null},
+      receipts:edge.listReceipts(),
       pending:edge.pending(30).map(x=>({eventId:x.eventId,category:x.category,
         sha256:x.sha256,configRevision:x.payload?.configRevision,sessionId:x.payload?.sessionId})),
       history:history.slice(),lastResult,physicalValidated:false,remoteAuthenticated:false,
@@ -73,6 +75,8 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
     try{
       let result;
       switch(body.action){
+        case "receipt":
+          return emit("receipt",edge.receivePackage({receiptId:body.receiptId,packageId:body.packageId}));
         case "sample":
           if(body.seconds!==undefined&&body.seconds!==1)throw Error("INVALID_SAMPLE_INCREMENT");
           result=await edge.sample(1);
@@ -142,6 +146,6 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
     if(dir)fs.rmSync(dir,{recursive:true,force:true});
   }
   start();
-  return {command,snapshot,close};
+  return {command,snapshot,close,listReceipts:()=>edge.listReceipts()};
 }
 module.exports={createDashboardLab,CAPABILITIES};
