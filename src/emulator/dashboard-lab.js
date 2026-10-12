@@ -7,20 +7,27 @@ const {openEdgeService}=require("../runtime/edge-service.js");
 const {createLabCloudReplica}=require("./lab/cloud-replay.js");
 const {openLabBoot}=require("./lab/lab-bootstrap.js");
 const {runLoopbackSuite}=require("./lab/loopback.js");
+const {createWorkloadManager}=require("../core/workload-manager.js");
+const {createWorkloadSupervisor}=require("../core/workload-supervisor.js");
+const {createNodeProcessDriver}=require("../adapters/node-process-driver.js");
+const {demoManifest}=require("../runtime/demo-workload.js");
 const CAPABILITIES=Object.freeze([
   "wan-probes","local-routing-model","os-file-fsync","journal-pressure",
   "journal-compaction","durable-ack-replay","identity-revision","boot-session",
   "lost-remote-ack","forged-remote-ack","loopback-tcp-http","lab-evidence",
   "lab-identity-bootstrap","bounded-deadline","bounded-retry","lab-ack-proof","protocol-v1",
-  "local-logistics-receipts","offline-workload-replay"
+  "local-logistics-receipts","offline-workload-replay",
+  "workload-admission","node-worker-process","bounded-supervisor","ipc-health","offline-worker-receipts"
 ]);
 const IDENTITY=Object.freeze({siteId:"demo-site",deviceId:"demo-edge",configRevision:"cfg-demo-1"});
 function createDashboardLab({tmpParent=os.tmpdir()}={}){
   let dir=null,edge=null,cloud=null,history=[],route=null,revision=0,closed=false,busy=false;
-  let cloudAvailable=true,profile="normal",lastResult=null,wan=null,boot=null;
+  let cloudAvailable=true,profile="normal",lastResult=null,wan=null,boot=null,supervisor=null;
   function guard(){if(closed)throw Error("LAB_CLOSED");}
   function start(next="normal"){
     if(!["normal","pressure"].includes(next))throw Error("UNSUPPORTED_LAB_PROFILE");
+    if(supervisor){void supervisor.close();supervisor=null;}
+    if(supervisor){void supervisor.close();supervisor=null;}
     if(edge)edge.close();
     if(dir)fs.rmSync(dir,{recursive:true,force:true});
     dir=fs.mkdtempSync(path.join(tmpParent,"pef-visual-lab-"));
@@ -30,6 +37,10 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
     cloud=createLabCloudReplica({siteId:IDENTITY.siteId,deviceId:IDENTITY.deviceId,
       allowedRevisions:[IDENTITY.configRevision],proofKey});
     openRuntime();
+    supervisor=createWorkloadSupervisor({
+      manager:createWorkloadManager({cpuMillicores:500,memoryMiB:128,storageMiB:128,maxWorkloads:2}),
+      driver:createNodeProcessDriver()
+    });
   }
   function openRuntime(){
     boot=openLabBoot({dir,identity:IDENTITY});
@@ -68,6 +79,10 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
       cloud:{...cloud.status(),available:cloudAvailable,
         connected:cloudAvailable&&status.network.selectedWan!==null},
       receipts:edge.listReceipts(),
+      workloads:{entries:supervisor?.list()||[],budgets:supervisor?.limits()||{},
+        reserved:supervisor?.usage()||{},runtime:"NODE_PROCESS_ONLY",
+        actualLimitsEnforced:false,linuxIsolationValidated:false,
+        status:"LAB_ONLY_NOT_SANDBOXED"},
       pending:edge.pending(30).map(x=>({eventId:x.eventId,category:x.category,
         sha256:x.sha256,configRevision:x.payload?.configRevision,sessionId:x.payload?.sessionId})),
       history:history.slice(),lastResult,physicalValidated:false,remoteAuthenticated:false,
@@ -80,6 +95,23 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
     try{
       let result;
       switch(body.action){
+        case "workloadStart":
+          return emit("workload-start",await supervisor.start(demoManifest(),{
+            trusted:true,offline:edge.status().network.connectivity==="LOCAL_ONLY"
+          }));
+        case "workloadStop":
+          return emit("workload-stop",await supervisor.stop("pef-receiver"));
+        case "workloadCrash":
+          return emit("workload-crash",await supervisor.crash("pef-receiver"));
+        case "workloadReconcile":
+          return emit("workload-reconcile",await supervisor.reconcile());
+        case "workloadReceipt":{
+          const checked=await supervisor.processReceipt("pef-receiver",{
+            receiptId:body.receiptId,packageId:body.packageId});
+          if(!checked.ok)return emit("workload-receipt",{ok:false,error:checked.error});
+          return emit("workload-receipt",edge.receivePackage({
+            receiptId:body.receiptId,packageId:body.packageId}));
+        }
         case "receipt":
           return emit("receipt",edge.receivePackage({receiptId:body.receiptId,packageId:body.packageId}));
         case "sample":
