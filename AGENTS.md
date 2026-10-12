@@ -54,6 +54,17 @@ Open decision: ...
 
 Cada task tiene uno o dos niveles internos, no más: `W1.5.C → W1.5.C1 → W1.5.C1.a`. El segundo nivel es opcional y sólo existe si genera evidencia separada. No descomponer en tareas triviales de lectura/edición que dupliquen entregables. Registrar ID, dependencias, input, output, DoD, estado y test pendiente; marcar claramente DOCUMENTED frente a VALIDATED. [W1.5](docs/tasks/w1.5-resource-execution.md) es el ejemplo vivo. Trabajar secuencialmente en la task activa y publicar cambios con commit verificable.
 
+## Resumen obligatorio antes de ejecutar cada task
+
+Tras descomponer la task con la granularidad acordada, **antes de iniciar su ejecución** comunicar al responsable un resumen breve (normalmente 4–8 líneas) que incluya:
+
+1. **Task y objetivo:** ID, propósito y valor arquitectónico/funcional.
+2. **Subtasks relevantes:** sólo las 2–4 más importantes, manteniendo IDs de primer o segundo nivel según necesidad.
+3. **Entregable y DoD:** qué documento, código o evidencia se generará y cómo sabremos que terminó.
+4. **Dependencias o riesgo decisivo:** sólo si afecta al orden o al alcance.
+
+El resumen es un **preámbulo de ejecución**, no una solicitud de autorización automática ni una nueva task. No repetir todo el plan granular ni comenzar trabajos sin explicar primero qué se va a ejecutar. Si la task requiere aprobación explícita por su impacto, pedirla; en los demás casos continuar según el mandato existente. Al cerrar, informar resultado y commit, separando `DOCUMENTED` de `VALIDATED`.
+
 ## Entrega de cada task
 
 Resumen de decisión → cambios en `.md` → requisitos afectados → tests/acceptance → riesgos y preguntas abiertas → estado real. Si no hay código ni benchmark, decirlo literalmente.
