@@ -1,18 +1,22 @@
 "use strict";
 // Process supervisor with injected driver, bounded restart and monotonic retry policy.
 // No executable paths or arbitrary shell commands reach this product-domain module.
-function createWorkloadSupervisor({manager,driver,clock=()=>Date.now()}={}){
+function createWorkloadSupervisor({manager,driver,clock=()=>Date.now(),autoReconcileMs=0}={}){
   if(!manager||typeof manager.admit!=="function"||typeof manager.release!=="function"||
      !driver||typeof driver.start!=="function"||typeof clock!=="function")
     throw Error("INVALID_SUPERVISOR_PORT");
+  if(!Number.isSafeInteger(autoReconcileMs)||autoReconcileMs<0||
+    (autoReconcileMs>0&&(autoReconcileMs<100||autoReconcileMs>30000)))
+    throw Error("INVALID_SUPERVISOR_INTERVAL");
   const entries=new Map();
-  let closed=false;
+  let closed=false,reconcileBusy=false;
   function ensure(){if(closed)throw Error("SUPERVISOR_CLOSED");}
   const show=x=>({workloadId:x.manifest.workload_id,state:x.state,attempts:x.attempts,
     nextRetryAt:x.nextRetryAt,lastError:x.lastError,manifestVersion:x.manifest.manifest_version,
     isolation:x.isolation||"NONE",actualLimitsEnforced:x.actualLimitsEnforced===true});
   function onExit(x,reason){
-    if(x.stopping||closed||!entries.has(x.manifest.workload_id))return;
+    if(x.stopping||closed||!entries.has(x.manifest.workload_id)||
+       x.state==="BACKOFF"||x.state==="ISOLATED")return;
     x.handle=null;
     x.attempts++;
     x.lastError=typeof reason==="string"?reason:"PROCESS_EXITED";
@@ -48,7 +52,10 @@ function createWorkloadSupervisor({manager,driver,clock=()=>Date.now()}={}){
     return boot(x);
   }
   async function reconcile(){
-    ensure();const now=clock(),results=[];
+    ensure();if(reconcileBusy)return {ok:false,error:"RECONCILE_BUSY",status:list()};
+    reconcileBusy=true;
+    try{
+    const now=clock(),results=[];
     for(const x of entries.values()){
       if(x.state==="BACKOFF"&&x.nextRetryAt<=now)results.push(await boot(x));
       else if(x.state==="RUNNING"){
@@ -58,6 +65,7 @@ function createWorkloadSupervisor({manager,driver,clock=()=>Date.now()}={}){
       }
     }
     return {ok:true,changes:results,status:list()};
+    }finally{reconcileBusy=false;}
   }
   async function stop(id){
     ensure();const x=entries.get(id);if(!x)return {ok:false,error:"WORKLOAD_NOT_FOUND"};
@@ -80,8 +88,14 @@ function createWorkloadSupervisor({manager,driver,clock=()=>Date.now()}={}){
     return await x.handle.injectCrash();
   }
   function list(){return [...entries.values()].map(show);}
+  const interval=autoReconcileMs?setInterval(()=>{
+    if(!closed)void reconcile().catch(()=>{});
+  },autoReconcileMs):null;
+  interval?.unref?.();
   async function close(){
-    if(closed)return;const ids=[...entries.keys()];
+    if(closed)return;
+    if(interval)clearInterval(interval);
+    const ids=[...entries.keys()];
     for(const id of ids)await stop(id);
     closed=true;
   }
