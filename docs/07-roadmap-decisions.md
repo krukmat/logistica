@@ -30,7 +30,7 @@
 | W1.6 | Software Runtime Contract | **DOCUMENTED / DESIGN ONLY** | [`09`](09-runtime-contract.md): bootstrap, IPC/state, journal, sync, trust, workload; tests pending |
 | W1.7 | Benchmark & Failure Harness Specification | **DOCUMENTED / SPECIFIED** | [`10`](10-benchmark-harness.md) + scenario/evidence schemas; drivers/benchmarks pending |
 | W1.8 | Architecture Shootout | **A–D DOCUMENTED; E–G BLOCKED** | [`11`](11-architecture-shootout.md) / candidate architecture templates; no hardware result |
-| W1.9 | Virtual Edge Emulator | **IMPLEMENTED + CI PASS (sim & localhost)**; physical UNVALIDATED | [`12`](12-emulator.md), [audit](audit/w1.9-emulator-smoke-2026-10-12.md), [tasks](tasks/w1.9-emulator-execution.md); seven scenarios + Node suite |
+| W1.9 | Virtual Edge Emulator | **A–I, J1, K1–K4 IMPLEMENTED / CI PASS**; physical UNVALIDATED | [`12`](12-emulator.md), [K tasks](tasks/w1.9-k-statechart-dashboard.md), [smoke](https://github.com/krukmat/logistica/actions/runs/38263883556); 34 Node tests + 7 SIM scenarios |
 
 ## C. Execution contract / granular W1.5 subtasks
 
@@ -107,4 +107,4 @@ Repositorio de trabajo: `krukmat/logistica`, rama `main`. **W1.5.A–J, W1.6.A�
 
 [13 — Conectividad PEF](13-connectivity-topology.md) es el documento principal de topología y secuencias editables. La evolución W1.9 prioriza `loopback-lab` seguro para pruebas reales localhost, antes del driver `linux-lab` con redes virtuales y finalmente W1.8 con interfaces físicas. Los resultados de localhost **no** certifican el throughput/failover de NICs reales.
 
-**W1.9.F–I evidence:** [loopback audit](audit/w1.9-loopback-smoke-2026-10-12.md) y [H/I audit](audit/w1.9-h-i-2026-10-12.md), CI #38259618954: **22/22 Node tests PASS, namespace policy LAB_PASS CLEANUP=CLEAN**, sandbox file journal crash/reopen PASS. **W1.9.J1 IMPLEMENTED / CI PASS:** controlReserveBytes, ACK durable bajo presión; [CI #38260694016](https://github.com/krukmat/logistica/actions/runs/38260694016) confirma 24/24 Node tests. **Next W1.9.J2:** compaction y retención crítica. W1.8.E–G siguen bloqueadas para claims físicos.
+**W1.9.F–I evidence:** [loopback audit](audit/w1.9-loopback-smoke-2026-10-12.md) y [H/I audit](audit/w1.9-h-i-2026-10-12.md), CI #38259618954: **22/22 Node tests PASS, namespace policy LAB_PASS CLEANUP=CLEAN**, sandbox file journal crash/reopen PASS. **W1.9.J1 IMPLEMENTED / CI PASS:** controlReserveBytes, ACK durable bajo presión; [CI #38260694016](https://github.com/krukmat/logistica/actions/runs/38260694016) confirma 24/24 Node tests. **W1.9.K1–K4 completed:** [local visual dashboard](tasks/w1.9-k-statechart-dashboard.md), [CI #38263883556](https://github.com/krukmat/logistica/actions/runs/38263883556) 34/34 tests; siguiente W1.9.J2 safe compaction y retención crítica. W1.8.E–G siguen bloqueadas para claims físicos.

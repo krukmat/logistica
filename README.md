@@ -1,8 +1,18 @@
 # Private Edge Fabric (PEF) — Foundation v0.1
 
-> **Estado (2026-10-12): BASELINE DOCUMENTAL INICIAL.** Diseño conceptual analizado y consolidado, **sin implementación, benchmarks, validación de clientes ni selección de hardware**. No confundir tareas de diseño «cerradas en conversación» con pruebas superadas.
+> **Estado (2026-10-12): W1.9 Emulator implementado y probado en CI como simulador**, más baseline arquitectónica documental. **Sin hardware PEF certificado, benchmarks físicos ni validación de clientes.** No confundir pruebas del simulador con evidencia física del producto.
 
 ## Emulator software-first (W1.9)
+
+### Panel visual en macOS
+
+```bash
+git switch main && git pull
+npm run dashboard
+# abrir http://127.0.0.1:8787
+```
+
+El panel ofrece seis estados paralelos, controles WAN/Cloud/journal, carga de escenarios, Step/Run/Rewind/Reset y timeline con assertions. **Sólo simula:** no modifica interfaces, rutas ni configuración del Mac; no necesita root, Docker ni paquetes externos. [Contrato y alcance W1.9.K](docs/tasks/w1.9-k-statechart-dashboard.md).
 
 `npm test` ejecuta la suite Node built-in (incluyendo journal con `fsync` y crash de un proceso hijo), `npm run emulate` los escenarios deterministas y `npm run lab:loopback` prueba HTTP/TCP en localhost. **W1.9.H** verifica routing + selección automática por probes reales **únicamente en namespaces Linux aislados de un runner GitHub-hosted efímero**; no ejecutar fault injection con root en equipos personales. Ver [Emulator](docs/12-emulator.md) y [Tasks W1.9](docs/tasks/w1.9-emulator-execution.md). `SIM_PASS` **no certifica hardware** ni la durabilidad física.
 
@@ -75,7 +85,7 @@ flowchart TB
 | W1.6 Software Runtime Contract | DOCUMENTED; architecture contracts only | PENDING |
 | W1.7 Benchmark & Failure Harness | SPECIFIED; scenarios/evidence schemas | **NO RUNS** |
 | W1.8 Architecture Shootout | A–D DOCUMENTED; E–G BLOCKED | **NO HARDWARE RUNS** |
-| W1.9 Virtual Edge Emulator | A–I implemented + J1 control reserve; CI **24/24 tests PASS**, Linux namespace LAB_PASS; J2 NEXT | **physical HW UNVALIDATED** |
+| W1.9 Virtual Edge Emulator | A–I + J1 + **K1–K4 Dashboard**; CI 34/34 tests PASS, SIM/LAB PASS | **physical HW UNVALIDATED** |
 
 > **Integridad del import:** `SHA256SUMS` conserva los checksums de la **primera importación Foundation**; no es un manifiesto vivo del HEAD después de los commits documentales. Usar `git`/GitHub para verificar la versión vigente.
 
@@ -89,4 +99,4 @@ flowchart TB
 
 ## Entrega y próxima transición
 
-**Repositorio de trabajo:** [`krukmat/logistica`](https://github.com/krukmat/logistica), rama principal `main`. Esta baseline documenta trabajo de diseño; los commits de integración no constituyen validación empírica. Para avanzar: ejecutar **W1.9.J2 safe compaction y critical retention** y evolucionar el [emulador](docs/12-emulator.md) hacia un Core mínimo, antes de pruebas físicas W1.8.E–G. [CI H/I audit](docs/audit/w1.9-h-i-2026-10-12.md). [W1.8 Shootout](docs/11-architecture-shootout.md) y [subtasks](docs/tasks/w1.8-shootout-execution.md). No hay hardware certificado, y compra/producción sigue NO-GO. `node bin/pef-emulator.js --all` ofrece pruebas **lógicas** reproducibles, no benchmarks.
+**Repositorio de trabajo:** [`krukmat/logistica`](https://github.com/krukmat/logistica), rama principal `main`. Esta baseline documenta trabajo de diseño; los commits de integración no constituyen validación empírica. Para avanzar: probar **W1.9.K Dashboard** en macOS con `npm run dashboard` y continuar **W1.9.J2 safe compaction y critical retention**; evolucionar el [emulador](docs/12-emulator.md) hacia un Core mínimo, antes de pruebas físicas W1.8.E–G. [CI H/I audit](docs/audit/w1.9-h-i-2026-10-12.md). [W1.8 Shootout](docs/11-architecture-shootout.md) y [subtasks](docs/tasks/w1.8-shootout-execution.md). No hay hardware certificado, y compra/producción sigue NO-GO. `node bin/pef-emulator.js --all` ofrece pruebas **lógicas** reproducibles, no benchmarks.

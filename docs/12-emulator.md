@@ -121,3 +121,26 @@ El emulador de journal en archivo admite ahora `controlReserveBytes`, un espacio
 `file-journal.compact()` now stages a new NDJSON image on the **same filesystem**, fsyncs the staging file, atomically renames it and fsyncs the parent directory before declaring completion; the active file descriptor is reopened. **O0/O1 records and their cloud-ACK markers remain intact**, as do all pending events. For already-cloud-ACKed O2/O3 events, payloads can be replaced by compact `ACKED_REF` tombstones containing the original event SHA-256 and category; this preserves local dedup/event-ID conflict detection. Retention is bounded by journal capacity; there is no guarantee of infinite dedup history. Compaction refuses to exceed the regular write allocation, leaving control reserve untouched.
 
 Interrupted staging leaves the prior file as the source of truth; interruption after rename requires reopening and digest-based validation. In either case the live instance rejects further writes after uncertainty. **This is laboratory filesystem crash consistency, not evidence of physical controller durability, multi-writer locking or SSD endurance.** The tests inject failures at before/after rename and verify reopening and critical evidence preservation.
+
+## W1.9.K — Statechart y Control Panel local para Mac
+
+**K1 · Parallel states:** `src/emulator/statechart.js` proyecta las dimensiones independientes `Core / Connectivity / Cloud / Journal / Runtime / Security` del motor existente; identifica transiciones y el WAN seleccionado. **No duplica la lógica de enrutamiento ni añade un sexto componente PEF**. El journal de esta proyección es el journal **lógico**, no el fichero fsync del laboratorio.
+
+**K2 · Sesión determinista:** `src/emulator/session.js` implementa `load/next/run/rewind/reset/enqueue` y recalcula el estado retrocediendo mediante replay desde el inicio, sin rehidratar snapshots opacos. Registra `before/after`, respuesta, oráculo `expect/assert`, divergencias y eventos. Un fallo de assertion detiene el runner hasta retroceder/reiniciar, y al insertar un evento manual se ramifica la secuencia desde el cursor.
+
+**K3 · Dashboard web:** `src/emulator/dashboard-server.js` y `public/dashboard.html|css|js` proporcionan el panel visual responsivo en `127.0.0.1` (sin acceso desde LAN). Las mutaciones HTTP requieren token de sesión y comprobación de Origin; todas las operaciones permitidas están limitadas a comandos del modelo, sin ejecutar comandos shell ni tocar red física. Un solo proceso/una sola sesión compartida entre pestañas: **herramienta de desarrollo local, no servidor multiusuario**.
+
+**K4 · Escenarios existentes:** sólo se pueden cargar los fixtures JSON `scenarios/*.json` incluidos en el repositorio. La UI ofrece carga, paso siguiente, ejecución completa, retroceso, reinicio, fallos manuales WAN/cloud, journal/sync y powercut **simulado**. Timeline y trace muestran resultados sin convertir `SIM_PASS` en aceptación física.
+
+**Prueba local en tu Mac (Node >=20):**
+
+```bash
+git switch main
+git pull
+npm run dashboard
+# abre http://127.0.0.1:8787
+```
+
+Para salir pulsa `Ctrl+C` en la terminal. También se mantienen `npm test`, `npm run emulate` y `npm run smoke`.
+
+**Evidencia automatizada:** [GitHub Actions #38263883556](https://github.com/krukmat/logistica/actions/runs/38263883556): 34/34 tests Node, 7/7 escenarios de simulación, loopback LAB_PASS y namespace Linux LAB_PASS (ambos jobs success). Cubre transiciones paralelas, replay determinista, rechazo de acciones, endpoints HTTP, token y origen. No incluye test real de un navegador Safari/Chrome ni prueba visual manual en macOS; ese chequeo es una actividad local adicional, no un bloqueo para consumir el panel. **Sin pruebas físicas de hardware.**

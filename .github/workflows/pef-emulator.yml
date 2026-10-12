@@ -25,6 +25,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Browser client syntax check
+        run: node --check public/dashboard.js
       - name: Node regression suite
         run: npm test
       - name: Deterministic scenarios
