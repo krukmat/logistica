@@ -54,3 +54,27 @@ test("committed file-journal record survives SIGKILL of the owning child process
   assert.deepEqual(reopened.pending().map(x=>x.eventId),["crash-acked"]);
   reopened.close();
 }));
+
+test("control reserve lets a cloud ACK persist after normal event space saturates",()=>sandbox(dir=>{
+  let j=createFileJournal({dir,capacityBytes:4096,controlReserveBytes:1024});
+  let accepted=0,rejected=null;
+  for(let i=0;i<100;i++){
+    const res=j.append({eventId:"log-"+i,payload:{message:"m".repeat(120)},category:"O2"});
+    if(!res.ack){rejected=res;break;}
+    accepted++;
+  }
+  assert.ok(accepted>1);
+  assert.equal(rejected.error,"STORAGE_FULL_OR_UNSAFE");
+  assert.equal(rejected.controlReserveProtected,true);
+  assert.ok(j.status().bytesUsed<=j.status().regularWriteLimitBytes);
+  const ack=j.cloudAck("log-0");
+  assert.equal(ack.ack,true);assert.equal(ack.fsyncCompleted,true);
+  j.close();j=createFileJournal({dir,capacityBytes:4096,controlReserveBytes:1024});
+  assert.equal(j.status().cloudAcked,1);
+  assert.equal(j.pending().length,accepted-1);
+  j.close();
+}));
+test("invalid P1 control reserve configuration is rejected",()=>sandbox(dir=>{
+  assert.throws(()=>createFileJournal({dir,capacityBytes:4096,controlReserveBytes:4096}),/INVALID_CONTROL_RESERVE/);
+  assert.throws(()=>createFileJournal({dir,capacityBytes:4096,controlReserveBytes:-1}),/INVALID_CONTROL_RESERVE/);
+}));
