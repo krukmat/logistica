@@ -132,7 +132,7 @@ test("T4 OS SIGKILL of daemon reclaims stale ownership and replays durable P1 af
     assert.notEqual(after.identity.sessionId,originalSession);
     assert.equal(after.receipts.length,1);
     assert.equal(after.receipts[0].packageId,"BOX-POWER");
-    assert.equal(after.storage.pending,2); // first WAN transition and business receipt
+    assert.equal(after.storage.pending,3); // first/second session WAN transitions + business receipt
     assert.equal((await req(two.ready.url,"receipts",{
       method:"POST",body:{receiptId:"POWER-REC",packageId:"BOX-POWER"}})).http,200);
     assert.equal(after.dashboardRequired,false);
