@@ -132,6 +132,10 @@ function bind(){
   $("lab-compact").addEventListener("click",()=>labAction("compact"));
   $("lab-lost-ack").addEventListener("click",()=>labAction("lostAck"));
   $("lab-forged-ack").addEventListener("click",()=>labAction("forgedAck"));
+  $("lab-timeout").addEventListener("click",()=>labAction("timeout"));
+  $("lab-missing-proof").addEventListener("click",()=>labAction("missingProof"));
+  $("lab-bad-version").addEventListener("click",()=>labAction("badVersion"));
+  $("lab-retry-sync").addEventListener("click",()=>labAction("syncRetry"));
   $("lab-loopback").addEventListener("click",()=>labAction("loopback"));
   $("lab-reset").addEventListener("click",()=>labAction("reset",{profile:$("lab-profile").value}));
   $("load").addEventListener("click",()=>dispatch({command:"load",scenario:$("scenario-select").value}));
