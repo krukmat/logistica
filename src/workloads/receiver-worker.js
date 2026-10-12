@@ -31,7 +31,7 @@ process.on("message",async m=>{
     reply(m,{ok:true,pressureBytes:128*1048576});
     setImmediate(()=>{
       // Intentionally retain and dirty actual resident pages under an isolated CI-only cgroup.
-      globalThis.__pefIsolatedMemoryPressure=Buffer.allocUnsafe(128*1048576);
+      globalThis.__pefIsolatedMemoryPressure=Buffer.alloc(192*1048576,1);
       const page=globalThis.__pefIsolatedMemoryPressure;
       for(let i=0;i<page.length;i+=4096)page[i]=1;
       setInterval(()=>{
