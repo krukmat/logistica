@@ -65,3 +65,6 @@ Los gates de fallos detallados están en [`04`](04-failure-offline-contract.md);
 | W1.5.A/B | Escenarios de carga y networking provisional | REQ-CON-01 + [`06`](06-resource-envelope.md) |
 | W1.5.C | Presupuesto CPU/RAM provisional y carga bajo presión | REQ-WRK-02, REQ-REC-01 + [`06`](06-resource-envelope.md) |
 | W1.5.D | Modelo 72 h/7 d, protección P0/P1, ACK/backpressure, endurance (sin mediciones) | REQ-STA-01/02/03, REQ-REC-02, REQ-WRK-02, REQ-OBS-01 + [`06`](06-resource-envelope.md) |
+| W1.5.E | Manifests, admission, Network Intent, isolation (sin enforcement) | REQ-WRK-01/02/03, REQ-STA-03 + [`05`](05-overlays-workload-contract.md), [`06`](06-resource-envelope.md) |
+| W1.5.F | Potencia, térmica, UPS modeladas (sin lecturas W) | REQ-LOC-01, REQ-REC-01, REQ-CON-03 + [`06`](06-resource-envelope.md) |
+| W1.5.G | Métricas reproducibles de recuperación y percentiles (sin ensayos) | REQ-CON-02, REQ-REC-01/02, REQ-STA-01, REQ-OBS-01 + [`06`](06-resource-envelope.md) |

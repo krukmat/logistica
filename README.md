@@ -60,8 +60,11 @@ flowchart TB
 | W1.5.B Networking envelope | DOCUMENTED; **targets propuestos** | PENDING |
 | W1.5.C Compute & Memory | DOCUMENTED; **presupuesto provisional** | PENDING |
 | W1.5.D Storage | DOCUMENTED; **escenarios provisionales** | PENDING |
-| **W1.5.E Workload Resource Model** | **NEXT** | PENDING |
-| W1.5.F–J / W1.6–W1.8 | PLANNED | PENDING |
+| W1.5.E Workload Resource Model | DOCUMENTED; schema, admission design | PENDING |
+| W1.5.F Power & Thermal | DOCUMENTED; methodology, W TBD | PENDING |
+| W1.5.G Recovery Targets | DOCUMENTED; timing model | PENDING |
+| **W1.5.H–J Consolidation & Gate** | **NEXT** | PENDING |
+| W1.6–W1.8 | PLANNED | PENDING |
 
 > **Integridad del import:** `SHA256SUMS` conserva los checksums de la **primera importación Foundation**; no es un manifiesto vivo del HEAD después de los commits documentales. Usar `git`/GitHub para verificar la versión vigente.
 
@@ -75,4 +78,4 @@ flowchart TB
 
 ## Entrega y próxima transición
 
-**Repositorio de trabajo:** [`krukmat/logistica`](https://github.com/krukmat/logistica), rama principal `main`. Esta baseline documenta trabajo de diseño; los commits de integración no constituyen validación empírica. Para avanzar: ejecutar **W1.5.E** siguiendo el [plan granular de W1.5](docs/tasks/w1.5-resource-execution.md). Los resultados numéricos de C/D son provisionales hasta W1.7 (benchmarks) y W1.8 (comparación de plataformas).
+**Repositorio de trabajo:** [`krukmat/logistica`](https://github.com/krukmat/logistica), rama principal `main`. Esta baseline documenta trabajo de diseño; los commits de integración no constituyen validación empírica. Para avanzar: **W1.5.H–J** (matriz Base/Pro, criterios agnósticos de hardware y gate hacia W1.6–W1.8), siguiendo el [plan granular de W1.5](docs/tasks/w1.5-resource-execution.md). Los resultados de A–G están documentados como diseño y aún requieren validación en W1.7/W1.8.

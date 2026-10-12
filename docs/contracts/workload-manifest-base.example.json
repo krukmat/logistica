@@ -1,0 +1,34 @@
+{
+  "manifest_version": 1,
+  "workload_id": "pef.property.automation",
+  "compatibility": "pef-core-v0.1",
+  "connectivity_mode": "LOCAL_ONLY_CAPABLE",
+  "priority": "optional",
+  "resources": {
+    "cpu_request_millicores": 100,
+    "cpu_limit_millicores": 300,
+    "memory_request_mib": 64,
+    "memory_limit_mib": 128,
+    "storage_request_mib": 64,
+    "storage_limit_mib": 256,
+    "storage_class": "P2"
+  },
+  "network_intents": [
+    {
+      "kind": "local_service_discovery",
+      "scope": "site",
+      "destination_class": "local_site",
+      "justification": "Discover local sensors explicitly allowed at the site"
+    }
+  ],
+  "health": {
+    "liveness": "runtime-health-check",
+    "readiness": "local-service-ready",
+    "restart_policy": {
+      "strategy": "bounded",
+      "max_attempts": 3,
+      "window_seconds": 300,
+      "backoff_seconds": 15
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # 06 — Resource envelope v0.1 (W1.5)
 
-**Status:** W1.5.A–D DOCUMENTED, **PROVISIONAL / UNMEASURED**; W1.5.E–J TODO. W1.5.D is a design gate only, without storage benchmarks. Este es un **contrato de benchmarks por evaluar**, NO una lista certificada de prestaciones o especificaciones físicas ya aprobadas.
+**Status:** W1.5.A–G DOCUMENTED (DESIGN ONLY), **UNMEASURED**; W1.5.H–J TODO. E/F/G contracts and test targets are not functional validations. Este es un **contrato de benchmarks por evaluar**, NO una lista certificada de prestaciones o especificaciones físicas ya aprobadas.
 
 ## Convención de etiquetas
 
@@ -242,15 +242,172 @@ append request
 **Requisitos impactados (sin cambio de prioridad):** `REQ-STA-01` (ACK durable), `REQ-STA-02` (bounded backlog/quota/backpressure), `REQ-STA-03` (P0/P1 protection), `REQ-REC-02` (known-good software recovery), `REQ-WRK-02` (workload storage admission), `REQ-OBS-01` (O0/O1 evidence). **Sin sextos componentes ni dependencia cloud.**
 
 
+## W1.5.E — Workload Resource Model (E1–E4)
+
+**Status: DOCUMENTED / UNIMPLEMENTED / UNVALIDATED.** Dependencias [C CPU/RAM](06-resource-envelope.md), [D storage](06-resource-envelope.md), [Workload Contract](05-overlays-workload-contract.md). Referencia de contrato versionable: [JSON Schema](contracts/workload-manifest-v0.1.schema.json), [ejemplo](contracts/workload-manifest-base.example.json). El esquema permite revisar manifests, **no implementa** aislamiento por sí solo.
+
+### E1 — Declaración de recursos y capacidades
+
+Cada módulo debe declarar `workload_id`, `manifest_version`, `connectivity_mode`, prioridad `essential|optional`, `cpu_request/limit_millicores`, `memory_request/limit_mib`, `storage_request/limit_mib`, clase de datos P2/P3, intents de red permitidos, health contract y política de restart **acotada**. Requests siempre ≤ limits; requests son reserva/admission, limits son techo de ejecución, nunca una garantía de rendimiento sin cgroups/runtime real. Configuración, secrets y principal de identidad pertenecen al runtime/Trust; **no** incluir claves privadas en el manifest.
+
+- `LOCAL_ONLY_CAPABLE`: workload funciona localmente sin WAN ni Cloud; **no implica** que sus integraciones remotas funcionen.
+- `INTERNET_OPTIONAL`: mantiene función degradada local, pero no se certifica funcionalidad completa.
+- `INTERNET_REQUIRED`: no sirve para prometer continuidad local durante all-WAN outage.
+- `essential` es una etiqueta de admisión/prioridad, **no** licencia para reservar CPU/RAM o P1 por encima de Core; la evaluación de función crítica requiere evidencia y puede fallar. No elevar datos del workload a P0/P1 implícitamente.
+
+**Network Intent** sólo expresa capacidades limitadas a revisión: `local_service_discovery`, `egress`, `isolated_network`, `local_service_publish`; contiene `scope`, `destination_class` cuando aplica y `justification`. El modelo no acepta comandos shell, reglas raw firewall, bind host arbitrario ni escrituras a Trust/Journal. Supervisor autoriza y Connectivity aplica la intención bajo la política del sitio; Runtime actúa de intermediario. Las categorías de destino y políticas concretas quedan en W1.6.
+
+### E2 — Admission control / accounting
+
+```text
+REGISTER → SCHEMA_VALIDATION → TRUST/POLICY_VALIDATION
+         → RESOURCE_FIT (CPU, RAM, P2 storage, intents, reserve)
+         → ADMIT | REJECT(reason)
+ADMIT → START → HEALTHY | DEGRADED | FAILED
+FAILED → BOUNDED_RESTART | ISOLATE; no Core dependency on workload
+```
+
+Para el **perfil PoC de prueba**, calcular:
+
+```text
+available_workload_memory_mib
+  = physical_memory_mib − observed_OS_and_Core_peak_mib
+    − recovery_reserve_mib − extra_unallocated_headroom_mib
+required_mib = Σ admitted_memory_requests_mib + proposed_memory_request_mib
+ADMIT iff required_mib ≤ available_workload_memory_mib
+```
+
+La misma disciplina se aplica a storage P2 (enforcement por volumen/cuota) y CPU requests, además de revisar que los limits individuales no superen política. **No sumar dos veces** recovery reserve y la reserva libre si ésta ya la incluye el modelo W1.5.C; los presupuestos Base 4 GiB / Pro 8 GiB son fixtures, no compromisos de SKU. Bajo presión real puede degradar workloads admitidos; `ADMIT` no promete ausencia de throttling. Los números de `available_` sólo son verificables tras instrumentación de SO/runtime.
+
+Causas explícitas de rechazo: `INVALID_MANIFEST`, `UNTRUSTED_WORKLOAD`, `INSUFFICIENT_CPU`, `INSUFFICIENT_MEMORY`, `INSUFFICIENT_P2_STORAGE`, `NETWORK_INTENT_DENIED`, `CORE_RESERVE_AT_RISK`, `INCOMPATIBLE_RUNTIME`. Registrar decisión y `correlation_id` en journal (sin aceptar nuevas escrituras si P1 ya no admite ACK).
+
+### E3 — Aislamiento, presión y degraded mode
+
+1. P0 (identidad/known-good), P1 (journal/commits), control local y recovery nunca comparten cuota writable sin protección exigible con workload P2/P3.
+2. Una carga opcional que supera `memory_limit`, CPU o I/O se regula, reinicia acotadamente o aísla; si supera `storage_limit`, las escrituras se rechazan dentro de su cuota P2. Nunca pasar datos de vídeo/debug al journal crítico por defecto.
+3. `PRESSURE` → denegar nuevas admissions → frenar opcionales → aislar offender → preservar Core local + evidencias P1 si aún se pueden confirmar; si P1 está al límite, **backpressure honesta** y operación local degradada.
+4. Recovery ejecuta escalación tras crash-loop bounded con backoff; workloads no pueden impedir rollback, safe mode ni local recovery API autenticada.
+5. Workload `essential` con presión se notifica y puede degradarse: proteger supervivencia Core no implica garantía absoluta de servicio opcional o dependiente de Internet.
+
+### E4 — Contract test design (W1.7, NOT RUN)
+
+| Gate | Fixture | PASS observable |
+|---|---|---|
+| E-01/G-WRK-02 | manifest Base light válido; RAM/CPU/P2 bajo presupuesto | admit, health y límites visibles |
+| E-02/G-WRK-02 | manifest NVR/Host sobre RAM o P2 disponible | REJECT code, Core y P0/P1 siguen |
+| E-03/G-WRK-01 | workload pide raw routing/firewall/keys o intent no autorizado | deny sin modificación de política ni identidad |
+| E-04/G-SW-01/02 | CPU hog, OOM, disk-fill, crash loop | aislamiento/backoff bounded; LAN/Core observable |
+| E-05/G-CON-03 | workload local-only, WAN/cloud desconectados | función local certificada continúa |
+| E-06/G-PER-03 | journal casi lleno + workload productor de eventos | sin ACK falso, backpressure y prioridad evidenciada |
+
+**Design DoD:** schema + ejemplo concretos, reason codes, lifecycle, budgets y tests especificados. **No se han ejecutado implementaciones/test engines**; enforcement y timings permanecen TBD (W1.6/1.7).
+
+
+## W1.5.F — Power & Thermal Envelope (F1–F4)
+
+**Status: DOCUMENTED / UNMEASURED.** Depende de recursos C/D/E. No se asignan watts arbitrarios ni se asegura fanless/UPS; separar perfiles **Base low cost/power** y **Pro capacity/support**, no elegir SKU.
+
+### F1 — Modelo de potencia a medir
+
+```text
+P_at_wall = P_appliance_board + P_internal_storage + P_internal_WAN_interfaces
+            + P_power_conversion_loss (+ P_integrated_radio_if_present)
+E_24h_Wh = sum_over_modes(P_mode_W × duration_mode_h)
+E_month_kWh = E_24h_Wh × days / 1000
+```
+
+Registrar si adaptador de pared está incluido. **Excluir y mostrar aparte** APs, switches, cámaras PoE, antenas/modems externos, NVR externo y UPS; mezclar estos consumos falsearía comparaciones Base/Pro. Los periféricos sí cuentan para dimensionar **UPS de sitio completo** si se les promete continuidad.
+
+| Profile/mode | Idle W | Steady routing W | VPN+journal W | Peak/recovery W |
+|---|---|---|---|---|
+| Core-only | TBD | TBD | TBD | TBD |
+| Property Base | TBD | TBD | TBD | TBD |
+| Property Pro | TBD | TBD | TBD | TBD |
+| Host | TBD | TBD | TBD | TBD |
+
+Para cada modo: measured wall power `avg,p95,peak`, energía Wh, CPU frequency, NIC link rates, disco/módem conectado, firmware/kernel, temperatura ambiente y ruido cuando relevante. Promesa de bajo consumo sólo después de datos.
+
+### F2 — Thermal/cooling constraints
+
+- Definir antes de benchmark rango de temperatura ambiente de instalación y ventilación (TBD por segmento/sitio); medir temperaturas SoC, SSD, modem, NIC y caja externa.
+- Test con carga conjunta: routing/firewall (packet size mix), overlay, journal burst/compactación y workloads admitidos, no sólo pruebas aisladas.
+- Registrar throttling, pérdida de throughput, fallos de fsync, fallo por sobretemperatura y recuperación bajo ambiente elevado.
+- `Fanless` es una **preferencia Property**, no requisito congelado; ventilación/ventilador pueden ser necesarios en Pro.
+
+### F3 — Resilience eléctrica / UPS
+
+```text
+effective_backup_Wh = UPS_nominal_Wh × observed_usable_fraction
+runtime_h = effective_backup_Wh / measured_average_supported_load_W
+```
+
+La fracción usable depende de descarga, conversión, aging, temperatura y corte/traspaso; no asumir 100%. Fijar luego target de autonomía por caso de uso; **no** prometer LAN/automations cuando switch, AP, cámaras o actuadores externos carecen de energía. Power-loss sudden (sin UPS) debe mantener garantías de P0/P1 ACK conforme a D/W1.2, condicionado a hardware real.
+
+### F4 — Tests requeridos (W1.7/W1.8, NO RUN)
+
+| Test | Escenario | Evidencia / regla |
+|---|---|---|
+| F-PWR-01 | 24h simuladas/medidas por perfil con WAN y journaling real | idle/avg/p95/peak W; Wh y fuentes incluidas |
+| F-PWR-02 | sustained 1Gbps Base / 2.5Gbps target Pro, overlay, pressure | saturación, watts/throughput, failure rate; registrar incompatibilidades |
+| F-THM-01 | carga conjunta en ambiente representativo y elevado | throttling, temperature/time, servicio degradado, recuperación |
+| F-UPS-01 | brownout/corte+reconexión, opcional UPS validada | ACK P1 tras reboot, boot path válido; presupuesto completo de dependencias locales |
+
+**Design DoD:** magnitudes y método contrastable; tablas TBD explícitas; retorno a W1.5.B/C si el consumo/thermal invalida el target. La validación necesita hardware y medición; no está completada.
+
+
+## W1.5.G — Recovery Performance Targets (G1–G4)
+
+**Status: DOCUMENTED / UNMEASURED.** Se mantienen [W1.2 acceptance gates](04-failure-offline-contract.md) y los **únicos** tiempos candidatos previamente acordados: WAN failover **<10 s p95 MUST propuesto, <5 s p95 TARGET**. Ningún otro valor temporal puede afirmarse como alcanzado ni inventarse.
+
+### G1 — Clock and scenario model
+
+Registrar ambos relojes: UTC (trazabilidad) y monotonic (duraciones), `scenario_id`, `correlation_id`, `t0_fault_injected`, `t_detected`, `t_action_started`, `t_service_restored`, `t_stable`, `t_cloud_synced` si procede. Distinguir:
+
+- `WAN_LINK_DOWN` y `UPSTREAM_BLACKHOLE_CARRIER_UP`; outage cloud solo vs all-WAN; no combinar distribuciones.
+- En failover: `t0` = pérdida real inducida (confirmada por harness), `t1` = **primera conexión nueva útil** por WAN alternativa y acceso LAN requerido; **no** prometer preservación de sesiones TCP existentes (sin bonding/seamless migration).
+- En failback: `t0` = WAN primaria vuelve detectable; `t1` = conmutación estable tras ventana configurable; minimizar falsos positivos tiene prioridad sobre tiempo mínimo.
+- En boot: inicio observable de energía/boot → local Core ready **sin necesidad de cloud**. Para reboot/recovery distinguir warm/cold/powercut.
+- En journal replay: medir `pending_events`, tasa de ACK confirmado y tiempo hasta cursor actualizado, con nuevos eventos concurrentes.
+
+### G2 — Matriz de tiempos candidatos
+
+| Operation | Proposed MUST | Proposed TARGET | Distribution & caveat |
+|---|---|---|---|
+| WAN failover normal | **p95 <10 s** | **p95 <5 s** | medir separado link-down y carrier-up blackhole; estado de conexión nueva |
+| WAN failback stable | bounded / policy-controlled | TBD | estabilidad mínima, false flips y sesiones; jamás fastest wins |
+| Workload restart/recovery | bounded retries, health pass | TBD p50/p95 | esencial/optional por separado |
+| Core boot to local-ready | local-first, cloud independent | TBD p50/p95 | hardware-specific; report cold/warm |
+| Cloud reconnect/auth | eventual success with backoff | TBD p95 | excluye caída persistente del proveedor |
+| Journal replay | no committed event lost / cursor idempotent | TBD events/s, drain time | backpressure y backlog concurrente |
+| Config rollback | known-good restored and verified | TBD p95 | no failure-induced lockout local |
+| Software rollback | valid boot path, signature verified | TBD p95 | depende de update mechanism |
+| Crash-loop/isolation | finite attempts/no infinite loop | TBD max attempts/time | no starvation de LAN/Core |
+
+**S3 safety:** un test rápido que destruye P1, omite autenticación o entra en bucle **FAIL**, aunque cumpla latencia.
+
+### G3 — Reliability, sampling and acceptance
+
+- Para diseño exploratorio **≥30** corridas por escenario independiente; para evaluar p95 con mínima estabilidad, **≥100** (aumentar según varianza y confianza requerida); p99 con pocas corridas se reporta como **exploratorio**, no gate estadísticamente defendible. Protocolo final y CIs W1.7.
+- Mantener raw samples, errores, censura/timeouts, runs fallidas, firmware/hardware y carga concomitante. No excluir automáticamente fallos de timeout de percentiles.
+- Flapping: definir falso failover bajo red sana y flip count/intervalo observado. Objetivo es **no oscilación ilimitada**, no una falsa cifra de 0 falsos positivos sin evidencia.
+- La aceptación exige invariantes (INV-01/02/08/10) además de tiempo; almacenamiento a presión y cloud outage se ensayan por separado y combinados.
+
+### G4 — Evidence handoff a W1.7
+
+Formato mínimo de trial: `run_id, scenario_id, profile, fault_type, t0_mono, detected_mono, first_service_mono, stable_mono, duration_ms, correlation_id, transport_before/after, remaining_backlog, ACK_count, duplicate_count, false_flips, cpu/mem/disk/watts, outcome, artifacts`.
+
+**DoD de diseño:** cada latencia define `t0/t1`, modos, método, límites de estadística y dependencias de W1.2. **No PASS / no test físico**. Las latencias TBD se ajustarán con un harness y hardware piloto, no con afirmaciones teóricas.
+
+
 ## W1.5.C–J — Implementation roadmap / inputs y outputs
 
 | Task | Inputs de esta baseline | Entregable / gate |
 |---|---|---|
 | **C Compute & Memory** | perfiles A + envelopes B | **DOCUMENTED PROVISIONAL**: presupuesto CPU/RAM, fixtures de validación y falsificación; pendiente benchmark |
 | **D Storage** | eventos/s y 72h/7d + clases P0–P3 | **DOCUMENTED / CONDITIONAL**: escenarios de capacidad, P0/P1 quotas, ACK/pressure/endurance; mediciones pendientes |
-| **E Workload Resource Model** | manifest ejemplo + C/D | schema de requests/limits/admission/isolations; test de rechazo y no-starvation |
-| **F Power/Thermal** | C + perfiles Base/Pro | idle/load/peak W, temperatura, throttle, UPS/autonomía y cooling constraints |
-| **G Recovery Targets** | fallos W1.2 + B | métricas p50/p95/p99; scopes (WAN, cloud, restart, boot, config, OTA, replay) |
+| **E Workload Resource Model** | manifest + C/D | **DOCUMENTED / UNVALIDATED**: schema JSON, admission, isolation and negative tests |
+| **F Power/Thermal** | C + perfiles Base/Pro | **DOCUMENTED / UNMEASURED**: power/UPS models, method, temperatures TBD |
+| **G Recovery Targets** | fallos W1.2 + B | **DOCUMENTED / UNMEASURED**: t0/t1 definitions, failover thresholds proposed, test protocol |
 | **H Base vs Pro Matrix** | B–G | min/target/stress consolidado y trade-offs |
 | **I Hardware-agnostic Constraints** | H | cpu/RAM/NIC/storage/power thresholds sin nombres de vendors |
 | **J Resource Gate** | I + benchmark plan | GO / REVISIT / BLOCKED con supuestos y prioridades explícitos |

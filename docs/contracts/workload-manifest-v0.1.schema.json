@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/krukmat/logistica/blob/main/docs/contracts/workload-manifest-v0.1.schema.json",
+  "title": "PEF Workload Manifest v0.1 — design-time schema",
+  "description": "Schema for W1.5.E manifest linting; it does not implement scheduling, resource or network enforcement.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "manifest_version",
+    "workload_id",
+    "compatibility",
+    "connectivity_mode",
+    "priority",
+    "resources",
+    "network_intents",
+    "health"
+  ],
+  "properties": {
+    "manifest_version": {
+      "const": 1
+    },
+    "workload_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$",
+      "minLength": 3,
+      "maxLength": 128
+    },
+    "compatibility": {
+      "const": "pef-core-v0.1"
+    },
+    "connectivity_mode": {
+      "enum": [
+        "LOCAL_ONLY_CAPABLE",
+        "INTERNET_OPTIONAL",
+        "INTERNET_REQUIRED"
+      ]
+    },
+    "priority": {
+      "enum": [
+        "essential",
+        "optional"
+      ]
+    },
+    "resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cpu_request_millicores",
+        "cpu_limit_millicores",
+        "memory_request_mib",
+        "memory_limit_mib",
+        "storage_request_mib",
+        "storage_limit_mib",
+        "storage_class"
+      ],
+      "properties": {
+        "cpu_request_millicores": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "cpu_limit_millicores": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "memory_request_mib": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "memory_limit_mib": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "storage_request_mib": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "storage_limit_mib": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "storage_class": {
+          "enum": [
+            "P2",
+            "P3"
+          ]
+        }
+      }
+    },
+    "network_intents": {
+      "type": "array",
+      "maxItems": 32,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "scope",
+          "justification"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "local_service_discovery",
+              "egress",
+              "isolated_network",
+              "local_service_publish"
+            ]
+          },
+          "scope": {
+            "enum": [
+              "site",
+              "workload",
+              "isolated"
+            ]
+          },
+          "destination_class": {
+            "enum": [
+              "explicitly_approved",
+              "local_site",
+              "none"
+            ]
+          },
+          "justification": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 240
+          }
+        }
+      }
+    },
+    "health": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "liveness",
+        "readiness",
+        "restart_policy"
+      ],
+      "properties": {
+        "liveness": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "readiness": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "restart_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "strategy",
+            "max_attempts",
+            "window_seconds",
+            "backoff_seconds"
+          ],
+          "properties": {
+            "strategy": {
+              "const": "bounded"
+            },
+            "max_attempts": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 20
+            },
+            "window_seconds": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "backoff_seconds": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}

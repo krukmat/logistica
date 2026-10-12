@@ -21,10 +21,10 @@
 | W1.5.B | Networking envelope | **DOCUMENTED / PROVISIONAL** | [`06-resource-envelope`](06-resource-envelope.md) |
 | **W1.5.C** | **Compute/Memory Envelope** | **DOCUMENTED / PROVISIONAL** | [`06-resource-envelope`](06-resource-envelope.md): presupuesto CPU/RAM hipotético; validación pendiente |
 | **W1.5.D** | **Storage Envelope** | **DOCUMENTED / PROVISIONAL** | [`06-resource-envelope`](06-resource-envelope.md): scenario capacity, reservations, durability; sampling/testing pending |
-| **W1.5.E** | **Workload Resource Model** | **NEXT** | manifests, admission, isolation, network intents |
-| W1.5.F | Power/Thermal Envelope | PLANNED | idle/load/peak, UPS/thermal budget |
-| W1.5.G | Recovery Performance Targets | PLANNED | umbrales medibles p50/p95/p99 + metodología |
-| W1.5.H | Base vs Pro Resource Matrix | PLANNED | matriz consolidada |
+| **W1.5.E** | **Workload Resource Model** | **DOCUMENTED / UNVALIDATED** | manifests, admission, isolation, network intents |
+| W1.5.F | Power/Thermal Envelope | **DOCUMENTED / UNVALIDATED** | idle/load/peak, UPS/thermal budget |
+| W1.5.G | Recovery Performance Targets | **DOCUMENTED / UNVALIDATED** | umbrales medibles p50/p95/p99 + metodología |
+| **W1.5.H** | Base vs Pro Resource Matrix | **NEXT** | matriz consolidada |
 | W1.5.I | Hardware-agnostic Constraints | PLANNED | minimum/recommended specs sin modelos |
 | W1.5.J | Resource Gate | PLANNED | GO/revisit y riesgos |
 | W1.6 | Software Runtime Contract | PLANNED | OS/process/service model, IPC, state engine, trust/update strategy |
@@ -37,7 +37,7 @@ The working decomposition is [**W1.5 execution breakdown**](tasks/w1.5-resource-
 
 **Completed as design:** C1–C5, each DOCUMENTED / UNMEASURED. See [06 § W1.5.C](06-resource-envelope.md). Proposed memory fixtures Base 4 GiB / Pro 8 GiB are **experiment resources**, not selected device specifications. Packet-rate formulas and RAM arithmetic remain subject to benchmark.
 
-**W1.5.D design output:** [06 § W1.5.D](06-resource-envelope.md), model for 72h/7d, P0/P1 isolation, durable ACK and explicit pressure handling; **real event sampling, power-cut and write-endurance tests pending**, so no definitive storage GB or SSD/eMMC chosen. **Next W1.5.E:** workload requests/limits, admission and isolation, with P2 quotas and Core survival reserve.
+**W1.5.D–G design output:** [06](06-resource-envelope.md), storage/backpressure, [05](05-overlays-workload-contract.md) + [schema](contracts/workload-manifest-v0.1.schema.json) for resource admission, power/thermal model and recovery time measurement contract. **All physical measurements and negative tests pending**. **Next W1.5.H–J:** integrated Base/Pro matrix, hardware-neutral constraints and design-only benchmark gate.
 
 ## D. Decisiones y ADRs (acuerdo conceptual; no evidencia de campo)
 
@@ -73,6 +73,9 @@ The working decomposition is [**W1.5 execution breakdown**](tasks/w1.5-resource-
 | RISK-11 | Fuentes externas del research pueden estar desactualizadas / citas no exportables | verificación independiente antes de compras y external claims |
 | RISK-12 | Operación indefinida offline ≠ backlog infinito: con P1 lleno habrá rechazo/backpressure | W1.5.E admission, W1.7 stress y definición de error visible |
 | RISK-13 | Tamaños/retención no pueden fijarse sin muestras y contrato de evento máximo | W1.7 corpus y percentiles; revisar W1.5.D y memoria/CPU |
+| RISK-14 | Aceptar workloads mediante schema sin enforcement de cuotas sería una falsa garantía | W1.6 admission/runtime isolation; W1.7 E-01–E-06 |
+| RISK-15 | Potencia y thermal de WAN/modem/disco/UPS pueden invalidar coste y failover objetivos | W1.7/1.8 F-PWR/F-THM, comparar carga combinada |
+| RISK-16 | Percentiles p95/p99 no son defendibles sin muestras suficientes y t0/t1 precisos | W1.7 G protocol, raw runs y CIs |
 
 ## F. Experimentos y estrategia de evidencia futura
 
@@ -83,4 +86,4 @@ The working decomposition is [**W1.5 execution breakdown**](tasks/w1.5-resource-
 
 ## G. Próxima acción en repositorio
 
-Repositorio de trabajo: `krukmat/logistica`, rama `main`. **W1.5.C/D documentadas como hipótesis, sin benchmarks**. Ejecutar **W1.5.E — Workload Resource Model** siguiendo [subtasks](tasks/w1.5-resource-execution.md), usando las reservas P0/P1, resource admission y protección contra almacenamiento P2 del [Storage Envelope](06-resource-envelope.md). Validación de las cifras D y tests de power-cut pendientes de W1.7; W1.6–W1.8 siguen planificadas.
+Repositorio de trabajo: `krukmat/logistica`, rama `main`. **W1.5.C–G documentadas como diseño, sin benchmarks**. Ejecutar **W1.5.H–J** siguiendo [subtasks](tasks/w1.5-resource-execution.md), consolidando la matriz Base/Pro y los filtros agnósticos de hardware. W1.7 deberá ejecutar y archivar evidencia de los gates definidos; W1.6/W1.8 continúan planificadas.

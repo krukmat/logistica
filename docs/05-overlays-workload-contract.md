@@ -99,3 +99,11 @@ Runtime deberá soportar `register → validate/admit → start → health → s
 - ¿Qué workloads verdaderamente requieren funcionamiento offline, y cuáles son integraciones remotas solamente?
 - ¿Qué coste de soporte y mayor consumo justifica el salto Base → Pro?
 - ¿Network Intent básico es suficiente para casos guest reales sin incorporar un controller de hospitality?
+
+## W1.5.E — Workload resource/admission refinement (design only)
+
+La interfaz vertical sigue siendo única. El **esquema versionado** de manifiesto y su ejemplo están en [docs/contracts/workload-manifest-v0.1.schema.json](contracts/workload-manifest-v0.1.schema.json) y [workload-manifest-base.example.json](contracts/workload-manifest-base.example.json). Documenta campos requeridos sin fijar contenedor, cgroups o API runtime. `requests ≤ limits` requiere además **validación cruzada** en Runtime, no sólo schema JSON; compatibilidad/firmas/policy/quotas se validan antes de admission. El esquema no autoriza ejecución, redes ni uso de secretos.
+
+El flujo mínimo es `REGISTER → VALIDATE_SCHEMA → VALIDATE_TRUST_AND_POLICY → FIT_RESOURCES_AND_INTENTS → ADMIT|REJECT → RUN → HEALTH → BOUNDED_RECOVERY`. `INSUFFICIENT_P2_STORAGE` y `CORE_RESERVE_AT_RISK` obligan a rechazo, no overcommit silencioso. Quotas P0/P1 protegidas, P2/P3 workload; prioridad `essential` no eleva datos a P1 ni excluye fallos durante outage.
+
+**Fuente detallada:** [W1.5.E](06-resource-envelope.md#w15e--workload-resource-model-e1e4). **Pruebas E-01–E-06 pendientes de W1.7**. Los valores numéricos del ejemplo son únicamente fixture sintético.
