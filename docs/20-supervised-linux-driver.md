@@ -1,6 +1,6 @@
 # 20 — S3.4–S3.8: Supervisor → Linux Isolated Process Driver
 
-**Estado: IMPLEMENTED / LAB VERIFIED en GitHub-hosted Linux CI, NO productivo.** La misma API `createWorkloadSupervisor` del Product Core controla ahora **el propio proceso aislado Linux**, eliminando la brecha anterior entre el supervisor local y un harness de aislamiento independiente. [Prueba CI con kernel OOM](https://github.com/krukmat/logistica/actions/runs/38299458656).
+**Estado: IMPLEMENTED / LAB VERIFIED en GitHub-hosted Linux CI, NO productivo.** La misma API `createWorkloadSupervisor` del Product Core controla ahora **el propio proceso aislado Linux**, eliminando la brecha anterior entre el supervisor local y un harness de aislamiento independiente. [Prueba CI con kernel OOM](https://github.com/krukmat/logistica/actions/runs/38299928948).
 
 ## Contrato ejecutado
 
@@ -39,12 +39,12 @@ El driver deriva CPU/RAM/PIDs de `makeLinuxIsolationPlan(demoManifest())`, compr
 
 ### S3.7 — Emulador y visibilidad
 
-Abrir el panel con `npm run dashboard` → **Laboratorio integrado → Workload Runtime**. En macOS, los botones start/stop/crash/health/recepción controlan **sólo un proceso Node local NO aislado por el kernel**. En la misma sección hay un bloque **S3.4–S3.6 Linux CI-only** con enlace a [ejecución validada](https://github.com/krukmat/logistica/actions/runs/38299458656) y [evidencia CI reciente](https://github.com/krukmat/logistica/actions/workflows/pef-emulator.yml).
+Abrir el panel con `npm run dashboard` → **Laboratorio integrado → Workload Runtime**. En macOS, los botones start/stop/crash/health/recepción controlan **sólo un proceso Node local NO aislado por el kernel**. En la misma sección hay un bloque **S3.4–S3.6 Linux CI-only** con enlace a [ejecución validada](https://github.com/krukmat/logistica/actions/runs/38299928948) y [evidencia CI reciente](https://github.com/krukmat/logistica/actions/workflows/pef-emulator.yml).
 
 El estado muestra `localProcessIsolated=false` para el Mac y `linuxCiEvidence.state=LAB_PASS_CI_ONLY` por separado. **El panel no ofrece un botón para ejecutar cgroups/netns como root en el Mac.**
 
 ### S3.8 — Aceptación
 
-[GitHub Actions #38299458656](https://github.com/krukmat/logistica/actions/runs/38299458656): 84/84 Node PASS, 7 escenarios SIM_PASS, loopback LAB_PASS, Linux WAN netns LAB_PASS y S3 Linux supervisor isolado LAB_PASS/CLEAN. Las pruebas de S3.7 añaden comprobación de los enlaces y de que la interfaz nunca atribuye enforcement kernel al Mac.
+[GitHub Actions #38299928948](https://github.com/krukmat/logistica/actions/runs/38299928948): 87/87 Node PASS, 7 escenarios SIM_PASS, loopback LAB_PASS, Linux WAN netns LAB_PASS y S3 Linux supervisor isolado LAB_PASS/CLEAN. Las pruebas de S3.7 añaden comprobación de los enlaces y de que la interfaz nunca atribuye enforcement kernel al Mac.
 
 **Límites pendientes para hardware productivo:** proceso Linux sólo bajo guardas GitHub-hosted efímeras, sin instalación de daemon/servicio de arranque, políticas seccomp completas, network policy productiva, cuota durable P2/P3, aislamiento multi-tenant certificado, credenciales/PKI, OTA ni pruebas de corte eléctrico físico. Cerrar el **bridge de laboratorio** no cierra el **device driver/product deployment**.
