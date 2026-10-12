@@ -6,6 +6,7 @@ const {createConnectivityController}=require("./netns-policy.js");
 const {createFileJournal}=require("./file-journal.js");
 const {syncJournal}=require("./cloud-replay.js");
 const {validateIdentity,EPOCH}=require("./event-envelope.js");
+const {createLocalReceipts}=require("./local-receipts.js");
 function createEdgeRuntime({dir,probe,applyRoute,simulatorOptions={},journalOptions={},
                            sessionId=randomUUID(),identity,maxVolatileEvents=8}={}){
   const stable=validateIdentity(identity);
@@ -14,6 +15,7 @@ function createEdgeRuntime({dir,probe,applyRoute,simulatorOptions={},journalOpti
   if(!Number.isSafeInteger(maxVolatileEvents)||maxVolatileEvents<1||maxVolatileEvents>4096)throw Error("INVALID_VOLATILE_BOUND");
   const journal=createFileJournal({dir,...journalOptions});
   const controller=createConnectivityController({probe,applyRoute,simulatorOptions});
+  const receipts=createLocalReceipts({journal,identity:stable});
   const deferred=[];
   let sequence=0,closed=false,busy=false,last=null,droppedEvidence=0,lastError=null;
   function check(){if(closed)throw Error("EDGE_RUNTIME_CLOSED");}
@@ -77,10 +79,15 @@ function createEdgeRuntime({dir,probe,applyRoute,simulatorOptions={},journalOpti
     check();if(busy)throw Error("EDGE_RUNTIME_BUSY");busy=true;
     try{return await syncJournal({journal,transport,maxEvents,...options});}finally{busy=false;}
   }
+  function receivePackage(input){
+    check();if(busy)throw Error("EDGE_RUNTIME_BUSY");
+    return receipts.receive(input);
+  }
+  function listReceipts(){check();return receipts.list();}
   function cloudAck(eventId){check();return journal.cloudAck(eventId);}
   function compact(options){check();return journal.compact(options);}
   function close(){if(closed)return;closed=true;journal.close();}
-  return {sample,status,cloudAck,compact,pending,sync,close,controllerTrace:()=>controller.trace(),
+  return {sample,status,cloudAck,compact,pending,sync,receivePackage,listReceipts,close,controllerTrace:()=>controller.trace(),
     journalPath:journal.file,observations:()=>controller.observations()};
 }
 module.exports={createEdgeRuntime};
