@@ -4,7 +4,7 @@
 
 ## Emulator software-first (W1.9)
 
-`npm test` ejecuta la suite Node built-in, `npm run emulate` los escenarios deterministas y `npm run lab:loopback` prueba HTTP/TCP en localhost (sin tocar interfaces del host). Para forwarding IP real en un **runner GitHub-hosted efímero**, `W1.9.G` ejecuta `scripts/lab/netns-smoke.sh` mediante GitHub Actions con preflight y cleanup; **no ejecutarlo con root en equipos locales**. Ver [Emulator](docs/12-emulator.md) y [Tasks W1.9](docs/tasks/w1.9-emulator-execution.md). `SIM_PASS` **no certifica hardware** ni la durabilidad física.
+`npm test` ejecuta la suite Node built-in (incluyendo journal con `fsync` y crash de un proceso hijo), `npm run emulate` los escenarios deterministas y `npm run lab:loopback` prueba HTTP/TCP en localhost. **W1.9.H** verifica routing + selección automática por probes reales **únicamente en namespaces Linux aislados de un runner GitHub-hosted efímero**; no ejecutar fault injection con root en equipos personales. Ver [Emulator](docs/12-emulator.md) y [Tasks W1.9](docs/tasks/w1.9-emulator-execution.md). `SIM_PASS` **no certifica hardware** ni la durabilidad física.
 
 ## Propósito
 
@@ -75,7 +75,7 @@ flowchart TB
 | W1.6 Software Runtime Contract | DOCUMENTED; architecture contracts only | PENDING |
 | W1.7 Benchmark & Failure Harness | SPECIFIED; scenarios/evidence schemas | **NO RUNS** |
 | W1.8 Architecture Shootout | A–D DOCUMENTED; E–G BLOCKED | **NO HARDWARE RUNS** |
-| W1.9 Virtual Edge Emulator | Node JS lógico + CI PASS; loopback-lab siguiente | HW UNVALIDATED |
+| W1.9 Virtual Edge Emulator | A–I IMPLEMENTED; CI **22/22 tests PASS**, Linux namespace LAB_PASS; J NEXT | **physical HW UNVALIDATED** |
 
 > **Integridad del import:** `SHA256SUMS` conserva los checksums de la **primera importación Foundation**; no es un manifiesto vivo del HEAD después de los commits documentales. Usar `git`/GitHub para verificar la versión vigente.
 
@@ -89,4 +89,4 @@ flowchart TB
 
 ## Entrega y próxima transición
 
-**Repositorio de trabajo:** [`krukmat/logistica`](https://github.com/krukmat/logistica), rama principal `main`. Esta baseline documenta trabajo de diseño; los commits de integración no constituyen validación empírica. Para avanzar: usar **W1.9 Virtual Emulator** como ejecución determinista para preparar los adapters de laboratorio y refinar el Core, antes de desbloquear pruebas físicas W1.8.E–G. [W1.8 Shootout](docs/11-architecture-shootout.md) y [subtasks](docs/tasks/w1.8-shootout-execution.md). No hay hardware certificado, y compra/producción sigue NO-GO. `node bin/pef-emulator.js --all` ofrece pruebas **lógicas** reproducibles, no benchmarks.
+**Repositorio de trabajo:** [`krukmat/logistica`](https://github.com/krukmat/logistica), rama principal `main`. Esta baseline documenta trabajo de diseño; los commits de integración no constituyen validación empírica. Para avanzar: ejecutar **W1.9.J protected journal lifecycle** y evolucionar el [emulador](docs/12-emulator.md) hacia un Core mínimo, antes de pruebas físicas W1.8.E–G. [CI H/I audit](docs/audit/w1.9-h-i-2026-10-12.md). [W1.8 Shootout](docs/11-architecture-shootout.md) y [subtasks](docs/tasks/w1.8-shootout-execution.md). No hay hardware certificado, y compra/producción sigue NO-GO. `node bin/pef-emulator.js --all` ofrece pruebas **lógicas** reproducibles, no benchmarks.

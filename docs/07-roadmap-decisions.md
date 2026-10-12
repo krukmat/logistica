@@ -89,7 +89,8 @@ The working decomposition is [**W1.5 execution breakdown**](tasks/w1.5-resource-
 | RISK-23 | Virtual-only PEF PoC cannot verify hardware power/flash/offload/UPS | W1.8 requires instrumented physical evidence and declared gaps |
 | RISK-24 | Scoring without measured hard gates could select a false winner | W1.8 HARD GATES first; all candidates BLOCKED until tested |
 | RISK-25 | Un `SIM_PASS` puede interpretarse como prueba física de durable ACK/failover | [W1.9](12-emulator.md) tags and Linux/device evidence separado |
-| RISK-26 | Divergencia del emulador ante restricciones de SO/kernel/NIC/storage reales | W1.9.D/E adapter ports y shadow comparison físico posterior |
+| RISK-26 | Divergencia del emulador ante restricciones de SO/kernel/NIC/storage reales | W1.9.H test confirmó necesidad de restaurar rutas de retorno WAN para HTTP end-to-end; W1.8 físico aún pendiente |
+| RISK-27 | Journal puede consumir toda capacidad y bloquear CLOUD_ACK/evidencia O0/O1, sin compaction segura | W1.9.J reserva protegida, pruebas disk-full y restore/compaction |
 
 ## F. Experimentos y estrategia de evidencia futura
 
@@ -100,10 +101,10 @@ The working decomposition is [**W1.5 execution breakdown**](tasks/w1.5-resource-
 
 ## G. Próxima acción en repositorio
 
-Repositorio de trabajo: `krukmat/logistica`, rama `main`. **W1.5.A–J, W1.6.A–I, W1.7.A–I, W1.8.A–D DOCUMENTED/SPECIFIED (DESIGN ONLY); no benchmarks executed.** [W1.8](11-architecture-shootout.md) is design-ready; **W1.8.E–G are BLOCKED** pending a working PEF DUT, harness drivers, instrumented physical candidates. Next unblocker: software-first [Virtual Edge Emulator](12-emulator.md) → schema/ports refinement → Linux-lab driver → real PEF Core + physical comparison. No purchase, production or SKU freeze approved.
+Repositorio de trabajo: `krukmat/logistica`, rama `main`. **W1.5.A–J, W1.6.A–I, W1.7.A–I, W1.8.A–D DOCUMENTED/SPECIFIED (DESIGN ONLY); no benchmarks executed.** [W1.8](11-architecture-shootout.md) is design-ready; **W1.8.E–G are BLOCKED** pending a working PEF DUT, harness drivers, instrumented physical candidates. Next unblocker: **W1.9.J** protected journal lifecycle → extend Linux-lab into Core runtime implementation → controlled physical comparison; existing namespace model is validated for sandbox behavior only. No purchase, production or SKU freeze approved.
 
 ## H. Referencia de conectividad y simulación
 
 [13 — Conectividad PEF](13-connectivity-topology.md) es el documento principal de topología y secuencias editables. La evolución W1.9 prioriza `loopback-lab` seguro para pruebas reales localhost, antes del driver `linux-lab` con redes virtuales y finalmente W1.8 con interfaces físicas. Los resultados de localhost **no** certifican el throughput/failover de NICs reales.
 
-**W1.9.F evidence:** [loopback smoke audit](audit/w1.9-loopback-smoke-2026-10-12.md) — CI Node.js: 12 tests y 7 escenarios `SIM_PASS`; `LAB_PASS` para probes reales TCP/HTTP exclusivamente en localhost. W1.9.G NEXT; W1.8.E–G siguen bloqueadas para claims físicos.
+**W1.9.F–I evidence:** [loopback audit](audit/w1.9-loopback-smoke-2026-10-12.md) y [H/I audit](audit/w1.9-h-i-2026-10-12.md), CI #38259618954: **22/22 Node tests PASS, namespace policy LAB_PASS CLEANUP=CLEAN**, sandbox file journal crash/reopen PASS. **Next W1.9.J** protected journal lifecycle. W1.8.E–G siguen bloqueadas para claims físicos.

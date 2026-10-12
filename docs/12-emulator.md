@@ -95,3 +95,17 @@ Ejecutar **sólo en un runner efímero de GitHub Actions**, con aprobación expl
 **Alcance estricto:** la conmutación de ruta se aplica mediante el script de laboratorio después de observar el fallo; no hay aún `Connectivity Core` del producto aplicando rutas automáticamente. `LAB_PASS` valida forwarding de un sandbox Linux, **no** failover de NIC real ni latencias p95, fiabilidad ISP o hardware.
 
 **Nunca ejecutar con permisos de root en el Mac ni en hosts de producción.** En un host sin el preflight de GitHub Actions el script termina `LAB_BLOCKED` (exit 78). La implementación física futura reutilizará estos oráculos, pero requerirá diseño de seguridad independiente.
+
+## W1.9.H — Linux sandbox with real probes and applied routing
+
+`src/emulator/lab/netns-policy.js` now separates **probe measurement** from **routing decision** and **kernel route application**; tests exercise this abstraction with mock ports. Only the hosted Linux namespace driver has permission to apply `ip route` within an isolated Edge namespace. The peer probe uses real TCP/HTTP from Edge to both WAN gateways, and the LAN client exercises forwarding to the shared TEST-NET-3 service address. `W1.9.H` passed in [CI #38259618954](https://github.com/krukmat/logistica/actions/runs/38259618954).
+
+**Important bug discovered:** restoring WAN interface addressing may not restore its prior return routes. An early test reported a selected, healthy primary but **failed LAN HTTP** after failback; the adapter now restores the WAN peer's static return path. This is a design requirement for future hardware adapters: dataplane must be confirmed *bidirectionally*, not inferred from health probing or route-table desired state alone.
+
+## W1.9.I — File-backed crash/recovery laboratory
+
+The separate `src/emulator/lab/file-journal.js` stores events in an append-only NDJSON file under an explicitly provided lab directory. It validates SHA-256 records on reopen, enforces a bounded byte budget, rejects event-ID collisions, appends cloud ACK markers, and only sends its **OS-level durability ACK after `fsync` completes**. Tests use temporary directories and kill a dedicated child process after ACK to verify reopen. They never terminate the runner or touch a real device's journal.
+
+This **does not certify power-loss persistence**: a process crash does not exercise hardware cache, controller barriers or filesystem after sudden power loss. Also pending: single-writer locking, directory creation durability, P1 emergency reserve, compaction and durable retention policy; W1.9.J will cover lifecycle constraints before hardware adapters.
+
+**Current independent evidence:** [W1.9.H–I CI audit](audit/w1.9-h-i-2026-10-12.md), **22/22 Node tests**, simulation scenarios, loopback lab and namespace networking job PASS; PEF Core hardware acceptance remains NOT_RUN.

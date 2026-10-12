@@ -116,7 +116,7 @@ flowchart LR
 
 ### Matriz de puertos evolutivos
 
-| Contrato | `sim` (actual) | `loopback-lab` (próximo) | `linux-lab` | `device` |
+| Contrato | `sim` (actual) | `loopback-lab` (CI verificado) | `linux-lab` | `device` |
 |---|---|---|---|---|
 | `WanProbe` | `link/upstream` flags | HTTP localhost, blackhole/503/latencia mock | veth/namespace/route | modem/NIC/ISP |
 | `NetworkPolicy` | selección lógica | selección de cliente para probes, no rutas | routing/firewall en sandbox | gateway real |
@@ -155,3 +155,7 @@ flowchart LR
 ```
 
 En el smoke Linux, una prueba HTTP originada dentro de LAN cruza efectivamente la namespace Edge y un enlace veth a WAN-A o WAN-B. Se provoca blackhole en WAN-A manteniendo el enlace `UP`, se cambia la ruta por defecto **sólo dentro de Edge**, se prueba failover a WAN-B y después se quita WAN-B para comprobar que LAN sigue accesible. La política de recuperación automática y métricas de tiempo permanecen **pendientes de W1.9.H/W1.7**.
+
+## H. Observación W1.9.H sobre failback y rutas de retorno
+
+El [laboratorio Linux de política automática](audit/w1.9-h-i-2026-10-12.md) pasó `LAB_PASS` en CI #38259618954. El controlador hizo probes HTTP desde Edge en veth por WAN, aplicó `default route` en Edge bajo la selección del modelo, y validó por **HTTP originado en LAN** la WAN realmente alcanzada. Una regresión identificó que restablecer sólo la IP de WAN-A no restablecía la ruta estática de retorno hacia la LAN; corregir esa ruta fue necesario para que el failback entregara tráfico bidireccional. **Regla de diseño:** no dar por recuperada una WAN sólo por probe/control plane; la prueba end-to-end desde LAN es parte de la aceptación. No se midió p95 en segundos reales.
