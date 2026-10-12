@@ -51,7 +51,7 @@ test("S5 displays CI-only S3 evidence separate from unsandboxed Mac child and po
  try{
    const html=await (await fetch(url)).text();
    const js=await (await fetch(url+"dashboard.js")).text();
-   assert.match(html,/S3 Linux kernel lab: LAB_PASS/);
+   assert.match(html,/S3.4–S3.6 Supervisor.*LAB_PASS \(CI-only\)/);
    assert.match(html,/CPU\/RAM\/FS\/red NO aislados/);
    assert.match(html,/actions\/workflows\/pef-emulator.yml/);
    assert.ok(js.includes('fetch("/api/state"'),"No automatic live workload status refresh");
