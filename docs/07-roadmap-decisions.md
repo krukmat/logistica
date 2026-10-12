@@ -30,7 +30,7 @@
 | W1.6 | Software Runtime Contract | **DOCUMENTED / DESIGN ONLY** | [`09`](09-runtime-contract.md): bootstrap, IPC/state, journal, sync, trust, workload; tests pending |
 | W1.7 | Benchmark & Failure Harness Specification | **DOCUMENTED / SPECIFIED** | [`10`](10-benchmark-harness.md) + scenario/evidence schemas; drivers/benchmarks pending |
 | W1.8 | Architecture Shootout | **A–D DOCUMENTED; E–G BLOCKED** | [`11`](11-architecture-shootout.md) / candidate architecture templates; no hardware result |
-| W1.9 | Virtual Edge Emulator | **A–O IMPLEMENTED / CI VERIFIED (lab only)**; physical UNVALIDATED | [`12`](12-emulator.md), [O contract](14-identity-replay-contract.md), [CI](https://github.com/krukmat/logistica/actions/runs/38268776321): 51 Node tests, 7 SIM_PASS, two lab jobs PASS |
+| W1.9 | Virtual Edge Emulator | **A–O + P0 integrated dashboard, CI VERIFIED**; P1–P3 planned; physical UNVALIDATED | [W1.9.P0](15-emulator-integration.md), [CI](https://github.com/krukmat/logistica/actions/runs/38272443257): 58 Node tests, 7 SIM_PASS, loopback + namespace PASS |
 
 ## C. Execution contract / granular W1.5 subtasks
 
@@ -118,3 +118,5 @@ Repositorio de trabajo: `krukmat/logistica`, rama `main`. **W1.5.A–J, W1.6.A�
 **W1.9.N CI VERIFIED:** [run #38266099521](https://github.com/krukmat/logistica/actions/runs/38266099521), 45/45 Node PASS, 7 SIM_PASS, both lab jobs success. Controlled storage pressure produced explicit `ack=false` without halting the local route; `CLOUD_ACK` + compaction + retry restored a durable OS journal ACK. Process restart used a distinct session epoch without losing earlier events. [Audit](audit/w1.9-n-2026-10-12.md). **Next W1.9.O:** stable device/revision envelope; no physical product evidence.
 
 **W1.9.O completed (lab):** [audit O](audit/w1.9-o-2026-10-12.md) / [CI #38268776321](https://github.com/krukmat/logistica/actions/runs/38268776321). Versioned edge envelope + explicit site/device/session/config identifiers, mocked remote durable-ACK ambiguity, idempotent replay, negative cross-device/payload/revision cases. **51/51 tests PASS**, 7 SIM_PASS, loopback and Linux sandbox PASS. **Next W1.9.P** trust/transport lab hardening. W1.8.E–G physical still NOT_RUN / BLOCKED.
+
+**W1.9.P0 — UI integration gate CLOSED (lab scope, 2026-10-12).** [Contract](15-emulator-integration.md), [registry](contracts/emulator-integration-v1.json), [GitHub Actions run 38272443257](https://github.com/krukmat/logistica/actions/runs/38272443257) (58/58 Node PASS, 7 SIM_PASS, loopback LAB_PASS, netns LAB_PASS CLEAN). Quedan conectados a la UI identidad/revisión, WAN probes simulados, journal P1 con fsync host, presión, compaction, Cloud mock ACK perdido/forjado, reboot de sesión y loopback real. **No** hay ruta física/PKI/cloud real. **Mandatory next-gate:** Core+UI/API+E2E+docs+CI before declaring any future feature implemented; Linux/device only as CI-only/BLOCKED until preflight and actual evidence.

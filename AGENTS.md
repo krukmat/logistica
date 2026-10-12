@@ -81,3 +81,5 @@ Resumen de decisión → cambios en `.md` → requisitos afectados → tests/acc
 6. Cuando se alteren contratos, identidad, estados o eventos, revisar dashboard, scenarios, tests, `docs/12-emulator.md`, `README.md` y tasks. Evitar bifurcar la semántica entre dashboard y Core.
 
 El dashboard de laboratorio opera sin privilegios sobre ficheros temporales creados por el servidor y probes sintéticos; el escenario `linux-lab` sigue ejecutándose únicamente en un runner efímero autorizado.
+
+El registro de capacidades [`docs/contracts/emulator-integration-v1.json`](docs/contracts/emulator-integration-v1.json) y `test/dashboard-integration-gate.test.js` implementan parte de esta puerta en CI. Es responsabilidad del agente **añadir las nuevas tasks a ese registro y probar la acción/UI/API real** antes de dar la task por cerrada; el registro por sí solo no sustituye el E2E.
