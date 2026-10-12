@@ -73,9 +73,9 @@ function createEdgeRuntime({dir,probe,applyRoute,simulatorOptions={},journalOpti
   }
   function pending(max=20){check();if(!Number.isSafeInteger(max)||max<1||max>256)throw Error("INVALID_PENDING_BOUND");
     return journal.pending().slice(0,max);}
-  async function sync(transport,maxEvents=16){
+  async function sync(transport,maxEvents=16,options={}){
     check();if(busy)throw Error("EDGE_RUNTIME_BUSY");busy=true;
-    try{return await syncJournal({journal,transport,maxEvents});}finally{busy=false;}
+    try{return await syncJournal({journal,transport,maxEvents,...options});}finally{busy=false;}
   }
   function cloudAck(eventId){check();return journal.cloudAck(eventId);}
   function compact(options){check();return journal.compact(options);}
