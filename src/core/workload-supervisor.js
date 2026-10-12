@@ -61,9 +61,14 @@ function createWorkloadSupervisor({manager,driver,clock=()=>Date.now(),autoRecon
     for(const x of entries.values()){
       if(x.state==="BACKOFF"&&x.nextRetryAt<=now)results.push(await boot(x));
       else if(x.state==="RUNNING"){
-        try{const h=await x.handle.health();
-          if(h?.ok!==true)onExit(x,"HEALTH_CHECK_FAILED");
-        }catch{onExit(x,"HEALTH_CHECK_FAILED");}
+        let healthy=false;
+        try{healthy=(await x.handle.health())?.ok===true;}catch{ /* IPC timeout */ }
+        if(!healthy){
+          // An unhealthy child must be stopped before scheduling a new one.
+          const stale=x.handle;
+          try{await stale.stop();}catch{ /* report failed health below */ }
+          onExit(x,"HEALTH_CHECK_FAILED");
+        }
       }
     }
     return {ok:true,changes:results,status:list()};
