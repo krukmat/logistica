@@ -66,12 +66,25 @@ function createWorkloadSupervisor({manager,driver,clock=()=>Date.now()}={}){
     finally{entries.delete(id);manager.release(id);}
     return {ok:true,workloadId:id,state:"STOPPED"};
   }
+  async function processReceipt(id,input){
+    ensure();const x=entries.get(id);
+    if(!x||x.state!=="RUNNING"||!x.handle||typeof x.handle.processReceipt!=="function")
+      return {ok:false,error:"WORKLOAD_NOT_RUNNING"};
+    try{return await x.handle.processReceipt(input);}
+    catch{return {ok:false,error:"WORKLOAD_IPC_FAILURE"};}
+  }
+  async function crash(id){
+    ensure();const x=entries.get(id);
+    if(!x||x.state!=="RUNNING"||!x.handle||typeof x.handle.injectCrash!=="function")
+      return {ok:false,error:"WORKLOAD_NOT_RUNNING"};
+    return await x.handle.injectCrash();
+  }
   function list(){return [...entries.values()].map(show);}
   async function close(){
     if(closed)return;const ids=[...entries.keys()];
     for(const id of ids)await stop(id);
     closed=true;
   }
-  return {start,reconcile,stop,list,close,limits:manager.limits,usage:manager.usage};
+  return {start,reconcile,stop,list,close,processReceipt,crash,limits:manager.limits,usage:manager.usage};
 }
 module.exports={createWorkloadSupervisor};
