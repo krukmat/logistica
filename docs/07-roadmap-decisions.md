@@ -1,6 +1,6 @@
 # 07 — Wave 1 Plan, ADR register y riesgos
 
-**Corte de consolidación:** 2026-10-12. **Entrega:** baseline documental inicial para `krukmat/logistica` (`main`); **sin código ni tests de producto**.
+**Última actualización:** 2026-10-12. **Entrega:** baseline arquitectónica W1.1–W1.5.D documentada para `krukmat/logistica` (`main`); **sin código PEF ni tests de producto**.
 
 ## A. Definición de completitud
 
@@ -20,8 +20,8 @@
 | W1.5.A | Workload profiles | **DOCUMENTED / PROVISIONAL** | [`06-resource-envelope`](06-resource-envelope.md) |
 | W1.5.B | Networking envelope | **DOCUMENTED / PROVISIONAL** | [`06-resource-envelope`](06-resource-envelope.md) |
 | **W1.5.C** | **Compute/Memory Envelope** | **DOCUMENTED / PROVISIONAL** | [`06-resource-envelope`](06-resource-envelope.md): presupuesto CPU/RAM hipotético; validación pendiente |
-| **W1.5.D** | **Storage Envelope** | **NEXT** | cuotas y durabilidad, IOPS, endurance, persistence test plan |
-| W1.5.E | Workload Resource Model | PLANNED | manifests, admission, isolation, network intents |
+| **W1.5.D** | **Storage Envelope** | **DOCUMENTED / PROVISIONAL** | [`06-resource-envelope`](06-resource-envelope.md): scenario capacity, reservations, durability; sampling/testing pending |
+| **W1.5.E** | **Workload Resource Model** | **NEXT** | manifests, admission, isolation, network intents |
 | W1.5.F | Power/Thermal Envelope | PLANNED | idle/load/peak, UPS/thermal budget |
 | W1.5.G | Recovery Performance Targets | PLANNED | umbrales medibles p50/p95/p99 + metodología |
 | W1.5.H | Base vs Pro Resource Matrix | PLANNED | matriz consolidada |
@@ -37,7 +37,7 @@ The working decomposition is [**W1.5 execution breakdown**](tasks/w1.5-resource-
 
 **Completed as design:** C1–C5, each DOCUMENTED / UNMEASURED. See [06 § W1.5.C](06-resource-envelope.md). Proposed memory fixtures Base 4 GiB / Pro 8 GiB are **experiment resources**, not selected device specifications. Packet-rate formulas and RAM arithmetic remain subject to benchmark.
 
-**Next W1.5.D:** D1 measured event sizes + backlog arithmetic; D2 protected P0/P1 capacity; D3 power-cut/ACK durability; D4 endurance; D5 sizing gate. No fixed storage GB without payload observations.
+**W1.5.D design output:** [06 § W1.5.D](06-resource-envelope.md), model for 72h/7d, P0/P1 isolation, durable ACK and explicit pressure handling; **real event sampling, power-cut and write-endurance tests pending**, so no definitive storage GB or SSD/eMMC chosen. **Next W1.5.E:** workload requests/limits, admission and isolation, with P2 quotas and Core survival reserve.
 
 ## D. Decisiones y ADRs (acuerdo conceptual; no evidencia de campo)
 
@@ -61,8 +61,8 @@ The working decomposition is [**W1.5 execution breakdown**](tasks/w1.5-resource-
 | ID | Riesgo | Próximo control |
 |---|---|---|
 | RISK-01 | 1Gbps Base + baja potencia/coste + WAN redundantes pueden ser incompatibles | W1.5.C/F/I + W1.8 comparativa |
-| RISK-02 | 72h/7d Host journal muy grande con write amplification | W1.5.D capacity + bounded loss semantics |
-| RISK-03 | P0/P1 requieren atomicidad/particiones bajo power cut | W1.6 storage design + W1.7 tests |
+| RISK-02 | Host 7d/20 eventos/s: 11.54–46.14 GiB **ilustrativos** para 1–4 KiB/evento, sin overheads; puede romper PoC económico | W1.7 medir payload p50/p95/p99 + storage amplification; W1.8 evaluar coste/capacidad |
+| RISK-03 | P0/P1 deben protegerse del fill de P2; flush/commit/ACK no garantiza durabilidad ante controlador inseguro | W1.6 cuotas/fsync/boot; W1.7 power-cut, corrupción y disco lleno |
 | RISK-04 | Recovery+identity como bloque único oculta dependencia boot/storage | `OPEN-BOOT-01`, W1.6 |
 | RISK-05 | Estado `LOCAL_ONLY` y `HEALTHY` ambiguos | `OPEN-STATE-01`, W1.6 |
 | RISK-06 | Reconciliación, idempotency y conflicto cloud/edge sin política final | `OPEN-SYNC-01`, W1.6 |
@@ -71,6 +71,8 @@ The working decomposition is [**W1.5 execution breakdown**](tasks/w1.5-resource-
 | RISK-09 | Router differentiation/WTP/installer economics sin pilotos | discovery comercial, mantener fuera de validación técnica W1 |
 | RISK-10 | Claims de cloud/offline mal interpretados como remote access ilimitado | UX/contratos explícitos y local workload classification |
 | RISK-11 | Fuentes externas del research pueden estar desactualizadas / citas no exportables | verificación independiente antes de compras y external claims |
+| RISK-12 | Operación indefinida offline ≠ backlog infinito: con P1 lleno habrá rechazo/backpressure | W1.5.E admission, W1.7 stress y definición de error visible |
+| RISK-13 | Tamaños/retención no pueden fijarse sin muestras y contrato de evento máximo | W1.7 corpus y percentiles; revisar W1.5.D y memoria/CPU |
 
 ## F. Experimentos y estrategia de evidencia futura
 
@@ -81,4 +83,4 @@ The working decomposition is [**W1.5 execution breakdown**](tasks/w1.5-resource-
 
 ## G. Próxima acción en repositorio
 
-Repositorio de trabajo: `krukmat/logistica`, rama `main`. Mantener docs versionados; ejecutar **W1.5.D** con la estructura de [subtasks](tasks/w1.5-resource-execution.md), actualizar [06](06-resource-envelope.md) y registrar hipótesis/riesgos. W1.5.C está documentado, **sin benchmarks**. W1.6–W1.8 siguen pendientes.
+Repositorio de trabajo: `krukmat/logistica`, rama `main`. **W1.5.C/D documentadas como hipótesis, sin benchmarks**. Ejecutar **W1.5.E — Workload Resource Model** siguiendo [subtasks](tasks/w1.5-resource-execution.md), usando las reservas P0/P1, resource admission y protección contra almacenamiento P2 del [Storage Envelope](06-resource-envelope.md). Validación de las cifras D y tests de power-cut pendientes de W1.7; W1.6–W1.8 siguen planificadas.

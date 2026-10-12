@@ -63,3 +63,5 @@ Los gates de fallos detallados están en [`04`](04-failure-offline-contract.md);
 | W1.3 | Owners e interfaces lógicas; cloud management-only | SUP, CLO, API |
 | W1.4.D | Resource admission, network intent y bounded journal | WRK-02/03, STA-02/03 |
 | W1.5.A/B | Escenarios de carga y networking provisional | REQ-CON-01 + [`06`](06-resource-envelope.md) |
+| W1.5.C | Presupuesto CPU/RAM provisional y carga bajo presión | REQ-WRK-02, REQ-REC-01 + [`06`](06-resource-envelope.md) |
+| W1.5.D | Modelo 72 h/7 d, protección P0/P1, ACK/backpressure, endurance (sin mediciones) | REQ-STA-01/02/03, REQ-REC-02, REQ-WRK-02, REQ-OBS-01 + [`06`](06-resource-envelope.md) |

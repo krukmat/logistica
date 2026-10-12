@@ -1,6 +1,6 @@
 # 06 — Resource envelope v0.1 (W1.5)
 
-**Status:** W1.5.A/B and W1.5.C DOCUMENTED, **PROVISIONAL / UNMEASURED**; W1.5.D–J TODO. Este es un **contrato de benchmarks por evaluar**, NO una lista certificada de prestaciones o especificaciones físicas ya aprobadas.
+**Status:** W1.5.A–D DOCUMENTED, **PROVISIONAL / UNMEASURED**; W1.5.E–J TODO. W1.5.D is a design gate only, without storage benchmarks. Este es un **contrato de benchmarks por evaluar**, NO una lista certificada de prestaciones o especificaciones físicas ya aprobadas.
 
 ## Convención de etiquetas
 
@@ -133,12 +133,121 @@ For B's conntrack TARGET values (Base 16k, Pro 64k), **do not extrapolate RAM wi
 **Inputs to D/E:** storage must bound journal write buffering and P0/P1 reserve; Runtime admission must map memory requests/limits to these budgets. **Open:** OS/kernel choice, process accounting, packet acceleration, swap policy, NVR-specific resource profile, observed peak RAM, actual PoC hardware.
 
 
+## W1.5.D — Storage Envelope (D1–D5, provisional y sin pruebas físicas)
+
+**Estado:** DOCUMENTED (contrato y cálculos por escenarios), **EMPIRICAL VALIDATION PENDING**. Subtasks [W1.5.D](tasks/w1.5-resource-execution.md); entradas: [W1.5.A/C](06-resource-envelope.md), [requisitos REQ-STA-01/02/03, REQ-REC-02, REQ-WRK-02, REQ-OBS-01](02-core-requirements.md) y [contrato W1.2](04-failure-offline-contract.md). Este presupuesto no implica un SSD/eMMC concreto, sistema de archivos, base de datos ni tamaño final del hardware.
+
+### D1 — Capacidad de journal y eventos offline
+
+**D1.a — Plan de instrumentación, no ejecutado.** En W1.7 obtener un corpus por perfil (Core-only, Base, Property Pro y Host), con muestras de eventos O0/O1 y O2/O3, incluyendo steady, burst, reconnect y fallos. Para cada tipo medir cantidad de eventos, bytes serializados (`payload + headers`), percentiles p50/p95/p99/máximo, tamaño real almacenado incluyendo índices/WAL/metadata, ocupación antes/después de checkpoint/compactación, bytes físicos escritos, frecuencia de `fsync` y latencia p50/p95/p99 de commit. Muestrear una ventana temporal representativa y, como punto de partida operativo, ≥10.000 registros por perfil cuando existan datos; registrar insuficiencia de muestra, sesgo, serializador y versión. No almacenar PII/credenciales en los artefactos. **No existen muestras reales todavía.**
+
+**D1.b — Modelo calculado** a partir de tasas de eventos sintéticas definidas en W1.5.A. Se modela conservadoramente que todos los eventos de la tasa del perfil requieren persistencia; la clasificación real entre O0/O1/O2/O3 se revisará con el corpus. 72 h = 259.200 s; 7 días = 604.800 s.
+
+```text
+events(R,t)                  = R_events_per_second × t_seconds
+effective_record_bytes      = serialized_event_bytes + measured_index_and_metadata_bytes
+journal_gib                 = events × effective_record_bytes × capacity_factor / 1_073_741_824
+physical_write_gib_per_day  = R × 86400 × effective_record_bytes × write_amplification / 1_073_741_824
+```
+
+- `capacity_factor` debe incluir el espacio transitorio para WAL/checkpoints/compactación, índices auxiliares y margen de crecimiento **que no esté contabilizado ya** en `effective_record_bytes`. Evitar doble contabilización.
+- `write_amplification` es **diferente** de `capacity_factor`: representa bytes escritos al medio físico frente a datos lógicos comprometidos; usarla para **endurance**, no para duplicar tamaño de retención.
+- En el ejemplo siguiente se fija `capacity_factor = 1`, `effective_record_bytes = 1 KiB o 4 KiB`, sin reservas P0, filesystem, OTA ni vídeo. **Ambos tamaños son hipótesis sintéticas, no percentiles observados.**
+
+| Perfil | Eventos/s | Eventos 72 h | Eventos 7 d | 72 h @1 KiB (GiB) | 72 h @4 KiB (GiB) | 7 d @1 KiB (GiB) | 7 d @4 KiB (GiB) |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Core-only | 0.5 | 129.600 | 302.400 | 0.12 | 0.49 | 0.29 | 1.15 |
+| Property Base | 2 | 518.400 | 1.209.600 | 0.49 | 1.98 | 1.15 | 4.61 |
+| Property Pro | 10 | 2.592.000 | 6.048.000 | 2.47 | 9.89 | 5.77 | 23.07 |
+| Host | 20 | 5.184.000 | 12.096.000 | 4.94 | 19.78 | 11.54 | 46.14 |
+
+**Interpretación:** Host a 20 eventos/s y 7 días offline **no cabe dentro de una supuesta reserva de journal de 8–16 GiB** si el tamaño real se acerca a 4 KiB/evento. Aún faltan índices transitorios, P0, OS, rollback, almacenamiento de workloads y margen. La cifra de almacenamiento definitivo queda **TBD** hasta medir payload y estrategia de persistencia. El objetivo de retención `MUST propuesto ≥72 h` y `TARGET ≥7 d` permanece **condicionado al perfil de carga y al tamaño máximo admitido por registro**; debe definirse una política contractual de tamaños y tasas aceptados. Aportar más disco no garantiza disponibilidad ilimitada.
+
+**Escenarios de sensibilidad para W1.7:** variar tamaño persistido p50/p95/p99, ráfaga de 200 eventos/s Host, compactación concurrente, retrasos en cloud ACK, I/O lento y ocupación de P2 por NVR. El `p95` de bytes **por sí solo no** acota matemáticamente todo el backlog: hay que incluir cola pesada, máximos, tamaño contractual y ráfagas.
+
+### D2 — Clases de almacenamiento y reservas de supervivencia
+
+| Dominio lógico | Clase | Incluye | Política bajo presión |
+|---|---|---|---|
+| Boot/trust/known-good | P0 | device identity reference, configuración válida, selector de software activo/rollback, recovery metadata | proteger, verificar integridad; nunca reemplazar identidad silenciosamente |
+| Journal/sync | P1 | eventos comprometidos, ACK/cursor, operaciones durables, evidencia O0/O1 | reserva finita + cuota supervisada; **nunca descartar evento ACKed**; al llenarse rechazar *nuevos* commits con error explícito |
+| Vertical workloads | P2 | NVR, PMS/automation caches, historiales no Core | aislamiento por cuota/volumen, throttling o parada; no puede consumir reserva P0/P1 |
+| Disposable/telemetry | P3 | logs verbosos, debug, estadísticas reconstruibles O2/O3 | borrar/compactar primero con políticas documentadas |
+
+**Criterios de diseño (technology-neutral):**
+1. Separar garantías de espacio de P0/P1 respecto de P2/P3 mediante **particiones/volúmenes/cuotas exigibles** o aislamiento físico equivalente. Las simples carpetas o una quota sin enforcement no son protección suficiente. Implementación W1.6; comprobar adversarialmente en W1.7.
+2. No comprometer toda la reserva P1 a backlog normal: mantener un *emergency evidence budget* para O0/O1/metadata y un umbral de high-water que active degradación y backpressure antes de agotarlo. **Cuánto reservar y cuáles son los umbrales: TBD medible**, no asumir capacidad infinita de evidencia.
+3. Calcular el disco utilizable como `OS+boot/update/rollback + protected_P0 + journal_P1(72h/7d) + bounded_transient_space + P2_workloads + P3 + free_operational_reserve`. Medir cada sumando y evitar doble conteo.
+4. La clave privada o trust root puede residir en hardware seguro u otro almacenamiento protegido: este modelo no selecciona TPM/secure element ni asume que su capacidad de almacenamiento comparte la del journal.
+5. OTA/rollback debe conservar **al menos una ruta conocida válida de boot** frente a actualización interrumpida; el dimensionamiento de imagen activa, candidata y fallback depende de la estrategia elegida en W1.6.
+6. El journal de eventos P1 no debe alojarse en la misma cuota de NVR, aunque ambos compartan el mismo medio físico. Un fallo físico del propio medio o pérdida de energía más allá de sus garantías queda fuera de una promesa absoluta de cero pérdida; debe declararse límite de fiabilidad.
+
+### D3 — Commit, ACK, backpressure y recuperación
+
+```text
+append request
+  -> validate identity/class, event_id, limits and remaining reserved capacity
+  -> append into durable transactional store / WAL
+  -> guarantee commit according to chosen sync/write-barrier semantics
+  -> ACK committed (and only then tell caller the event is durable)
+  -> when connected: replay ordered pending batches (at-least-once)
+  -> cloud durable-ingestion ACK -> atomically advance local cursor
+  -> prune only records eligible after ACK and applicable retention
+```
+
+- `Journal.Append` puede usar **group commit**, pero sólo devuelve ACK de los registros cuya durabilidad ya está confirmada; nunca ACK sólo por buffer de proceso, page cache sin barrera comprobada o envío de red.
+- Si se pierde alimentación **antes** de ACK, el evento puede existir o no tras reboot: reintento seguro exige `event_id` estable y deduplicación. Si el corte ocurre **después** de ACK, debe permanecer. Persistencia física real sujeta a controlador, firmware, barreras/flush y medio probado.
+- Reenvío **at-least-once + ingestion idempotente** es propuesta de contrato: un replay duplicado no debe duplicar efectos; transacciones cloud/cursor y semántica exacta se confirman en `OPEN-SYNC-01`, W1.6. No anunciar exactly-once.
+- Proteger cursores y metadatos de recuperación como transacciones durables; si cloud ACK es dudoso, **no avanzar** cursor. Eliminar/compactar registros sólo después de cumplir ACK remoto y política local de retención O0/O1.
+- Estados de presión: `NORMAL → PRESSURE → P1_WRITE_RESTRICTED → SAFE_DEGRADED`. Recuperar con histéresis y evidencia. Acciones: purgar O3/P3, agregar O2, limitar/quitar P2, preservar O0/O1 y P0/P1; rechazar nuevas escrituras P1 antes de ACK con error `STORAGE_FULL_OR_UNSAFE`, permitir reintento y visibilizar backlog no aceptado. Si la capa de storage no puede garantizar la durabilidad, deshabilitar funciones que la requieran, **sin bloquear arbitrariamente LAN/DHCP/DNS**.
+- Diferenciar `Core local operativo` de `todos los workloads con capacidad de escritura`. Un sistema offline indefinidamente y un journal finito **no pueden** aceptar una tasa positiva e ilimitada de eventos P1 sin pérdida: debe haber backpressure/degradación o expansión.
+
+#### D3 — Matriz de pruebas requerida (W1.7)
+
+| Test | Estímulo | Evidencia mínima de aceptación |
+|---|---|---|
+| D-PER-01 / G-PER-01 | corte abrupto **después** de ACK P1 | evento y hash presentes tras reboot; identidad/config intactas |
+| D-PER-02 | corte **antes** de ACK P1 | caller distingue estado incierto; `event_id` permite replay/idempotencia |
+| D-PER-03 / G-OBS-03 | journal casi lleno y cloud offline | high-water, error explícito antes de promesa de durabilidad, O0/O1 protegidas |
+| D-PER-04 / G-PER-03 | workload Host/NVR consume toda su P2 | P0/P1 no afectados; operación LAN/Core recuperable |
+| D-PER-05 / G-PER-04 | corromper P2 | fallo aislado; Core intacto |
+| D-PER-06 | corrupción P1 / read-only filesystem / media I/O error | evidencia diagnóstica si aún escribible; safe mode y ninguna falsa confirmación |
+| D-SYN-01 / G-CLOUD-02 | crash/reboot entre cloud ACK y persistir cursor | duplicación tolerada, ningún evento P1 perdido ni doble efecto en cloud |
+| D-OTA-01 / G-OTA-01 | corte durante staging/boot de nueva imagen | fallback boot válido y known-good accesible |
+| D-END-01 | steady/burst 72h simuladas + cloud replay/compactación | tamaño real, write amp, IOPS, sync latency p95/p99, backlog drain sin starvation |
+
+**Método obligatorio:** registrar `scenario_id, profile, event_schema, payload_size_distribution, event_rate, retention_window, OS/kernel/filesystem/storage_model, flush_policy, phase, event_ids/hashes, p95/p99 latency, bytes_written, power_cut_timing, result`. Ninguno de estos tests se ha ejecutado ni puede declararse PASS en esta task documental.
+
+### D4 — Endurance, IOPS y lifecycle del medio
+
+- **Escrituras del journal:** `physical_write_gib/day = event_rate × 86400 × effective_record_bytes × observed_write_amp / 2^30` (añadir actualizaciones de P0/OS/logs/OTA/replay y workloads, especialmente NVR). `observed_write_amp` se obtiene de instrumentación, **no** del tamaño de la imagen del SO.
+- Ejemplo exclusivamente de sensibilidad: Host, `20 eventos/s × 1 KiB efectivos × write_amp hipotética 3` ≈ **4.94 GiB físicos/día del journal**; ≈ **1.76 TiB/año**, antes de otros escritores. No extrapolar esto a TBW certificada ni a NVR.
+- **Rendimiento:** medir latencia durable de commits individuales y por lote (p50/p95/p99), burst sostenido, checkpoints, compaction, IOPS aleatorias, read amplification, backlog replay y efectos de latencia/concurrencia sobre LAN/Recovery.
+- **Endurance:** comparar bytes totales escritos por año y vida útil requerida frente a especificaciones reales de TBW/DWPD (una vez elegido medio), con margen, temperaturas, wear level y power-loss characteristics. No extrapolar desgaste de flash del simple volumen lógico. 
+- **Rollback y mantenimiento:** incluir tamaño de dos estados recuperables, staging/firmware, space reclamation y estrategia para reemplazar migrar la unidad sin regenerar identidad. Estrategia tecnológica se decide W1.6.
+
+### D5 — Gate de dimensionamiento
+
+| Gate de diseño | Resultado W1.5.D | Qué falta para validar |
+|---|---|---|
+| Formula volumétrica 72h/7d trazable por perfil | **DOCUMENTED** | distribución real de tamaños + amplificación |
+| Base/Pro capacity specification definitiva | **TBD** | medir eventos, OS, runtime, fallback y workload datasets |
+| Protección P0/P1 versus P2/P3 | **DEFINED** | prueba de cuotas/particiones ante fill y corrupción |
+| Durable ACK + idempotencia + cursor seguro | **DEFINED** | test de power-cut y failover entre ACK y cursor |
+| Retención sin cloud y high-water/backpressure | **DEFINED** | stress prolongado con backlog y carga mixta |
+| SSD/eMMC endurance y elección física | **TBD** | medición de writes, thermal, TBW y hardware shootout |
+
+**Decisión:** `GO_TO_W1.5.E (DESIGN ONLY)` con reservas explícitas; **NO GO para capacidad de disco comercial o elección de medio**. No hay tamaños mínimos de hardware certificados. El riesgo dominante es Host siete días offline con eventos mayores a 1 KiB, junto con la reserva para rollback y workloads. La validación física pertenece a W1.7/W1.8.
+
+**Requisitos impactados (sin cambio de prioridad):** `REQ-STA-01` (ACK durable), `REQ-STA-02` (bounded backlog/quota/backpressure), `REQ-STA-03` (P0/P1 protection), `REQ-REC-02` (known-good software recovery), `REQ-WRK-02` (workload storage admission), `REQ-OBS-01` (O0/O1 evidence). **Sin sextos componentes ni dependencia cloud.**
+
+
 ## W1.5.C–J — Implementation roadmap / inputs y outputs
 
 | Task | Inputs de esta baseline | Entregable / gate |
 |---|---|---|
 | **C Compute & Memory** | perfiles A + envelopes B | **DOCUMENTED PROVISIONAL**: presupuesto CPU/RAM, fixtures de validación y falsificación; pendiente benchmark |
-| **D Storage** | eventos/s y 72h/7d + clases P0–P3 | reserva Core, tamaños journal, IOPS/fsync, endurance, recovery, quota y presión |
+| **D Storage** | eventos/s y 72h/7d + clases P0–P3 | **DOCUMENTED / CONDITIONAL**: escenarios de capacidad, P0/P1 quotas, ACK/pressure/endurance; mediciones pendientes |
 | **E Workload Resource Model** | manifest ejemplo + C/D | schema de requests/limits/admission/isolations; test de rechazo y no-starvation |
 | **F Power/Thermal** | C + perfiles Base/Pro | idle/load/peak W, temperatura, throttle, UPS/autonomía y cooling constraints |
 | **G Recovery Targets** | fallos W1.2 + B | métricas p50/p95/p99; scopes (WAN, cloud, restart, boot, config, OTA, replay) |
