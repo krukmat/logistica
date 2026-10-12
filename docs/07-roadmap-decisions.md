@@ -53,7 +53,6 @@ The working decomposition is [**W1.5 execution breakdown**](tasks/w1.5-resource-
 | ADR-008 | ACCEPTED-DESIGN | Sin private 5G, PCB propia, Kubernetes, bonding requerido en v0.1 | coste/alcance |
 | ADR-009 | PROPOSED | Separar health status de connectivity mode (`HEALTHY + LOCAL_ONLY`) | ver `OPEN-STATE-01` |
 | ADR-010 | PROPOSED | Minimal trusted bootstrap separado del supervisor completo | ver `OPEN-BOOT-01` |
-
 | ADR-011 | ACCEPTED-DESIGN | H/I/J: GO sólo a diseño runtime/harness, no a hardware, producción ni SKU | baselines numéricas no verificadas; pruebas W1.7/1.8 obligatorias |
 
 **Criterio para reabrir ADR ACCEPTED-DESIGN:** evidencia de requisito incumplido, coste/energía inaceptable o incompatibilidad demostrada; documentar alternativa y efecto.

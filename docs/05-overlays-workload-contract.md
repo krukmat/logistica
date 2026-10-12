@@ -55,31 +55,9 @@
 
 ## E. Contrato mínimo del workload (W1.3.I → W1.4.D)
 
-Ejemplo **ilustrativo**, sin esquema final ni elección de tecnología:
+El manifiesto de W1.4 que aparecía como YAML con campos `TBD` queda **superseded** por el contrato versionado [workload-manifest-v0.1.schema.json](contracts/workload-manifest-v0.1.schema.json) y el [ejemplo concreto sintético](contracts/workload-manifest-base.example.json) de W1.5.E. **No duplicar** aquí el schema para evitar divergencia. La validación cross-field `request ≤ limit` y resource policy debe implementarse en Runtime (W1.6).
 
-```yaml
-workload_id: example.property.automation
-compatibility: pef-core-v0.1
-connectivity_mode: LOCAL_ONLY_CAPABLE # INTERNET_OPTIONAL|INTERNET_REQUIRED
-resources:
-  cpu_request_millicores: TBD
-  cpu_limit_millicores: TBD
-  memory_request_mib: TBD
-  memory_limit_mib: TBD
-  storage_request_mib: TBD
-  storage_limit_mib: TBD
-network_intents:
-  - kind: local_service_discovery
-    scope: site
-  - kind: egress
-    destination_class: explicitly_approved
-health:
-  readiness: TBD
-  liveness: TBD
-  restart_policy: bounded
-```
-
-Runtime deberá soportar `register → validate/admit → start → health → stop/restart`, notificación de eventos y cuota de storage. `REJECT` si falta recurso/capacidad; degradación explícita cuando supera límites. Semánticas de requests/limits y medición se fijarán en W1.5.E / W1.6.
+Runtime deberá soportar `register → validate/admit → start → health → stop/restart`, notificación de eventos y cuota de storage. `REJECT` si falta recurso/capacidad; degradación explícita cuando supera límites. La semántica de requests/limits está definida en W1.5.E; su implementación, enforcement y medición quedan para W1.6/W1.7.
 
 **Prohibido al workload**: modificar rutas, firewall, claves, P0/P1, otro workload o asumir privilegios host. Las necesidades de red son *intents* aprobados, no comandos nft/iptables.
 
@@ -102,7 +80,7 @@ Runtime deberá soportar `register → validate/admit → start → health → s
 
 ## W1.5.E — Workload resource/admission refinement (design only)
 
-La interfaz vertical sigue siendo única. El **esquema versionado** de manifiesto y su ejemplo están en [docs/contracts/workload-manifest-v0.1.schema.json](contracts/workload-manifest-v0.1.schema.json) y [workload-manifest-base.example.json](contracts/workload-manifest-base.example.json). Documenta campos requeridos sin fijar contenedor, cgroups o API runtime. `requests ≤ limits` requiere además **validación cruzada** en Runtime, no sólo schema JSON; compatibilidad/firmas/policy/quotas se validan antes de admission. El esquema no autoriza ejecución, redes ni uso de secretos.
+La interfaz vertical sigue siendo única. El **esquema versionado** de manifiesto y su ejemplo están en [workload-manifest-v0.1.schema.json](contracts/workload-manifest-v0.1.schema.json) y [workload-manifest-base.example.json](contracts/workload-manifest-base.example.json). Documenta campos requeridos sin fijar contenedor, cgroups o API runtime. `requests ≤ limits` requiere además **validación cruzada** en Runtime, no sólo schema JSON; compatibilidad/firmas/policy/quotas se validan antes de admission. El esquema no autoriza ejecución, redes ni uso de secretos.
 
 El flujo mínimo es `REGISTER → VALIDATE_SCHEMA → VALIDATE_TRUST_AND_POLICY → FIT_RESOURCES_AND_INTENTS → ADMIT|REJECT → RUN → HEALTH → BOUNDED_RECOVERY`. `INSUFFICIENT_P2_STORAGE` y `CORE_RESERVE_AT_RISK` obligan a rechazo, no overcommit silencioso. Quotas P0/P1 protegidas, P2/P3 workload; prioridad `essential` no eleva datos a P1 ni excluye fallos durante outage.
 
