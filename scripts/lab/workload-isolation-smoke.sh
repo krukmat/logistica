@@ -103,7 +103,7 @@ echo "PEF_S3_KERNEL_LIMITS=PASS cpu.max=${limits[0]} memory.max=${limits[1]} pid
 cp "$PEF_S3_REPO_ROOT/src/workloads/receiver-worker.js" "$root/app/receiver-worker.js"
 mkdir -p "$tmpdir/host-journal"
 printf 'PEF_S34_HOST_SENTINEL\n' > "$tmpdir/host-canary"
-"$PEF_S3_NODE" "$PEF_S3_REPO_ROOT/scripts/lab/supervised-linux-worker.js" \
+timeout -k 3s 45s "$PEF_S3_NODE" "$PEF_S3_REPO_ROOT/scripts/lab/supervised-linux-worker.js" \
   "$name" "$cg" "$root" "$node_bin" "$tmpdir/host-journal" "$tmpdir/host-canary" \
   >"$tmpdir/supervised.out" 2>&1 || {
     cat "$tmpdir/supervised.out" >&2
