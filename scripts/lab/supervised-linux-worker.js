@@ -52,8 +52,6 @@ async function run(){
     check("AUTONOMOUS_RESTART",supervisor.list()[0].attempts===1);
     const cpuBefore=fs.readFileSync(path.join(cgroup,"cpu.stat"),"utf8");
     // CPU fault is bounded to 1 second *inside* the constrained child.
-    const busy=await driver.start; // no-op: only supervisor owns the actual driver handle
-    void busy;
     const cpustat=()=>fs.readFileSync(path.join(cgroup,"cpu.stat"),"utf8");
     check("CGROUP_LIMITS",fs.readFileSync(path.join(cgroup,"cpu.max"),"utf8").trim()===plan.cpuMax&&
       fs.readFileSync(path.join(cgroup,"memory.max"),"utf8").trim()===plan.memoryMax);
