@@ -78,3 +78,62 @@ test("invalid P1 control reserve configuration is rejected",()=>sandbox(dir=>{
   assert.throws(()=>createFileJournal({dir,capacityBytes:4096,controlReserveBytes:4096}),/INVALID_CONTROL_RESERVE/);
   assert.throws(()=>createFileJournal({dir,capacityBytes:4096,controlReserveBytes:-1}),/INVALID_CONTROL_RESERVE/);
 }));
+
+test("compaction retains O0/O1 ACKed evidence and pending records, replaces O2/O3 ACKed payload with refs",()=>sandbox(dir=>{
+  let j=createFileJournal({dir,capacityBytes:65536,controlReserveBytes:4096});
+  j.append({eventId:"security",payload:{s:"retain"},category:"O0"});
+  j.append({eventId:"critical",payload:{s:"retain"},category:"O1"});
+  j.append({eventId:"telemetry",payload:{s:"x".repeat(4000)},category:"O2"});
+  j.append({eventId:"debug",payload:{s:"y".repeat(4000)},category:"O3"});
+  j.append({eventId:"pending",payload:{keep:true},category:"O2"});
+  for(const id of ["security","critical","telemetry","debug"])assert.equal(j.cloudAck(id).ack,true);
+  const before=j.status().bytesUsed;
+  const result=j.compact();
+  assert.equal(result.ok,true,JSON.stringify(result));
+  assert.ok(result.afterBytes<before);
+  assert.equal(result.compactedRefs,2);
+  assert.equal(result.retainedCritical,2);
+  assert.equal(j.status().pending,1);
+  j.close();j=createFileJournal({dir,capacityBytes:65536,controlReserveBytes:4096});
+  assert.deepEqual(j.pending().map(x=>x.eventId),["pending"]);
+  assert.equal(j.status().cloudAcked,4);
+  assert.equal(j.append({eventId:"telemetry",payload:{s:"x".repeat(4000)},category:"O2"}).duplicate,true);
+  assert.equal(j.append({eventId:"telemetry",payload:{s:"DIFFERENT"},category:"O2"}).error,"EVENT_ID_CONFLICT");
+  assert.equal(j.cloudAck("telemetry").duplicate,true);
+  assert.equal(j.cloudAck("security").duplicate,true);
+  j.close();
+}));
+test("compaction interruption before rename retains original ACK and event history",()=>sandbox(dir=>{
+  let j=createFileJournal({dir,capacityBytes:65536});
+  j.append({eventId:"x",payload:{big:"x".repeat(4096)},category:"O2"});j.cloudAck("x");
+  const result=j.compact({testHook:stage=>{if(stage==="afterStageFsync")throw Error("SIMULATED_ABORT");}});
+  assert.equal(result.ok,false);assert.equal(result.phase,"BEFORE_RENAME");
+  assert.equal(j.append({eventId:"other"}).error,"STORAGE_UNSAFE");
+  j.close();j=createFileJournal({dir,capacityBytes:65536});
+  assert.equal(j.cloudAck("x").duplicate,true);
+  assert.equal(j.append({eventId:"x",payload:{big:"x".repeat(4096)},category:"O2"}).duplicate,true);
+  j.close();
+}));
+test("compaction interruption after atomic rename is recoverable without ACK loss",()=>sandbox(dir=>{
+  let j=createFileJournal({dir,capacityBytes:65536});
+  j.append({eventId:"x",payload:{big:"x".repeat(4096)},category:"O2"});j.cloudAck("x");
+  j.append({eventId:"pending",payload:{keep:true},category:"O1"});
+  const result=j.compact({testHook:stage=>{if(stage==="afterRename")throw Error("SIMULATED_ABORT");}});
+  assert.equal(result.ok,false);assert.equal(result.phase,"AFTER_RENAME");
+  j.close();j=createFileJournal({dir,capacityBytes:65536});
+  assert.equal(j.status().pending,1);
+  assert.equal(j.cloudAck("x").duplicate,true);
+  assert.equal(j.append({eventId:"x",payload:{big:"changed"},category:"O2"}).error,"EVENT_ID_CONFLICT");
+  j.close();
+}));
+test("safe compaction refuses if staged data exceeds regular P1 budget",()=>sandbox(dir=>{
+  let j=createFileJournal({dir,capacityBytes:1024,controlReserveBytes:700});
+  j.append({eventId:"large",payload:{s:"a".repeat(60)},category:"O0"});
+  j.cloudAck("large");
+  const before=j.status().bytesUsed;
+  const r=j.compact();
+  assert.equal(r.ok,false);assert.equal(r.error,"COMPACTION_NO_SPACE");
+  assert.equal(j.status().bytesUsed,before);
+  j.close();j=createFileJournal({dir,capacityBytes:1024,controlReserveBytes:700});
+  assert.equal(j.status().cloudAcked,1);j.close();
+}));
