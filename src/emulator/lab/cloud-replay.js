@@ -21,6 +21,8 @@ function createLabCloudReplica({siteId,deviceId,allowedRevisions,proofKey=null}=
         return {ok:false,durable:false,error:"INVALID_EVENT_CHECKSUM"};
       const env=validateEnvelope(event.payload,event.eventId);
       if(!env.ok)return {ok:false,durable:false,error:env.error};
+      if(env.eventType==="RECEIPT_REGISTERED"&&event.category!=="O1")
+        return {ok:false,durable:false,error:"INVALID_RECEIPT_CATEGORY"};
       if(env.siteId!==scope.siteId||env.deviceId!==scope.deviceId)
         return {ok:false,durable:false,error:"DEVICE_SCOPE_MISMATCH"};
       if(revisions&&!revisions.has(env.configRevision))
