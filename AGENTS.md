@@ -83,3 +83,11 @@ Resumen de decisión → cambios en `.md` → requisitos afectados → tests/acc
 El dashboard de laboratorio opera sin privilegios sobre ficheros temporales creados por el servidor y probes sintéticos; el escenario `linux-lab` sigue ejecutándose únicamente en un runner efímero autorizado.
 
 El registro de capacidades [`docs/contracts/emulator-integration-v1.json`](docs/contracts/emulator-integration-v1.json) y `test/dashboard-integration-gate.test.js` implementan parte de esta puerta en CI. Es responsabilidad del agente **añadir las nuevas tasks a ese registro y probar la acción/UI/API real** antes de dar la task por cerrada; el registro por sí solo no sustituye el E2E.
+
+## Gate de portabilidad hardware (W1.9.R — obligatorio antes de avanzar features)
+
+**Regla permanente:** una función destinada al producto debe implementar su **dominio en `src/core/`** y exponer dependencias de IO como puertos. No se admite que `src/core/` importe `src/emulator/`, `node:fs`, `node:child_process` ni que ejecute comandos del host. Los ports concretos viven en `src/adapters/`, compuestos por `src/runtime/` y compartidos por emulador/CI/hardware.
+
+Una feature nueva no está `IMPLEMENTED/CLOSED` si no cumple simultáneamente: (1) Core común/adapter explícito; (2) integración en emulador/dashboard con evidencia visible; (3) tests de contrato/paridad `sim ↔ runtime/Linux` cuando aplique; (4) regresión E2E de API/durabilidad; (5) documentación y CI verde. Mantener `docs/contracts/emulator-integration-v1.json` sincronizado. Rechazar ACK de journal sin `fsyncCompleted` o duplicado realmente confirmado; jamás inventar durabilidad.
+
+**Alcance obligatorio:** backend `device` es `BLOCKED/NOT_RUN` hasta instalar drivers, PKI, boot/init/OTA y correr pruebas físicas. Usar `openRuntimeBackend("linux-lab")` únicamente con guardas GitHub-hosted/root/ns; no ejecutar scripts privilegiados en Mac/hosts de producción. El servidor del dashboard es cliente inyectable, nunca dueño obligatorio del proceso Edge. [Arquitectura R](docs/18-hardware-portability-bridge.md) y [tasks R](docs/tasks/w1.9-hardware-portability.md).
