@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="color-scheme" content="dark"/>
+  <title>PEF Control Panel · Virtual Edge</title>
+  <link rel="stylesheet" href="/dashboard.css"/>
+  <script src="/dashboard.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand"><span class="logo">P</span><div><span class="overline">PRIVATE EDGE FABRIC</span><h1>Control Panel <span class="version">v0.1</span></h1></div></div>
+      <div class="top-right"><span class="chip simulation">● SIMULATION ONLY</span><span id="connection" class="chip">Conectando…</span></div>
+    </header>
+    <main class="container">
+      <div class="intro"><div><h2>Centro de simulación</h2><p>Inyecta fallos, inspecciona las transiciones y reproduce escenarios sin afectar la red de tu Mac.</p></div><span id="scenario-title" class="scenario-name">INTERACTIVE</span></div>
+      <section class="regions" aria-label="Estados independientes">
+        <article class="region" id="region-core"><div class="region-name">CORE HEALTH</div><strong class="region-value">—</strong><small>Supervisor</small></article>
+        <article class="region" id="region-connectivity"><div class="region-name">CONNECTIVITY</div><strong class="region-value">—</strong><small>Selección WAN</small></article>
+        <article class="region" id="region-cloud"><div class="region-name">CLOUD SYNC</div><strong class="region-value">—</strong><small>Conexión remota</small></article>
+        <article class="region" id="region-journal"><div class="region-name">JOURNAL</div><strong class="region-value">—</strong><small>Eventos P1</small></article>
+        <article class="region" id="region-runtime"><div class="region-name">WORKLOADS</div><strong class="region-value">—</strong><small>Admisión y salud</small></article>
+        <article class="region" id="region-security"><div class="region-name">SECURITY</div><strong class="region-value">—</strong><small>Trust / Recovery</small></article>
+      </section>
+      <div class="columns">
+        <section class="panel network">
+          <div class="panel-heading"><div><h3>Topología simulada</h3><p>Estados derivados del motor PEF</p></div><span id="clock" class="micro">t = 0</span></div>
+          <div class="network-diagram">
+            <div class="wan-group">
+              <div class="wan-node" id="primary-node"><span class="node-caption">WAN A · PRIMARY</span><strong id="wan-a-state">—</strong></div>
+              <div class="wan-node" id="backup-node"><span class="node-caption">WAN B · BACKUP</span><strong id="wan-b-state">—</strong></div>
+            </div>
+            <div class="connectors"><div></div><span>▼</span><div></div></div>
+            <div class="core-node"><span>EDGE GATEWAY</span><strong id="active-wan">—</strong></div>
+            <div class="vertical-line">│</div>
+            <div class="lan-node"><span>SITE LAN</span><strong>LOCAL READY</strong></div>
+          </div>
+          <div class="storage-heading"><span>Journal P1</span><span id="journal-metrics">0 / 0 bytes</span></div>
+          <div class="progress"><div id="journal-progress"></div></div>
+          <p class="micro">El journal de esta vista es lógico. No representa durabilidad física.</p>
+        </section>
+        <section class="panel operations">
+          <div class="panel-heading"><div><h3>Inyección de eventos</h3><p>Controles seguros sobre el simulador</p></div></div>
+          <div class="control-row"><div><strong>WAN primaria</strong><span id="wan-a-descr">—</span></div><button id="toggle-primary" type="button" class="secondary">Cortar upstream</button></div>
+          <div class="control-row"><div><strong>WAN secundaria</strong><span id="wan-b-descr">—</span></div><button id="toggle-backup" type="button" class="secondary">Cortar upstream</button></div>
+          <div class="control-row"><div><strong>Cloud</strong><span id="cloud-descr">—</span></div><button id="toggle-cloud" type="button" class="secondary">Desconectar</button></div>
+          <div class="control-row"><div><strong>Reloj lógico</strong><span>Avanzar 1 segundo</span></div><button id="tick" type="button" class="secondary">Tick +1</button></div>
+          <div class="button-grid">
+            <button id="append-event" type="button" class="secondary">+ Crear evento</button>
+            <button id="sync-cloud" type="button" class="secondary">Sincronizar</button>
+            <button id="power-cut" type="button" class="secondary warning">Power cut simulado</button>
+            <button id="rollback-config" type="button" class="secondary">Probar rollback</button>
+          </div>
+        </section>
+      </div>
+      <section class="panel scenarios">
+        <div class="panel-heading"><div><h3>Scenario Runner</h3><p>Ejecutar · pausar · retroceder · reproducir</p></div><span id="progress" class="chip">0 / 0 steps</span></div>
+        <div class="runner-actions">
+          <label for="scenario-select" class="select-label">Escenario <select id="scenario-select"></select></label>
+          <button id="load" type="button" class="primary">Cargar</button>
+          <button id="next" type="button" class="secondary">Paso siguiente →</button>
+          <button id="run" type="button" class="secondary">▶ Ejecutar todo</button>
+          <button id="back" type="button" class="secondary">← Retroceder</button>
+          <button id="reset" type="button" class="secondary">↺ Reiniciar</button>
+        </div>
+        <div id="feedback" class="feedback" role="status" aria-live="polite">Selecciona un escenario o inyecta un fallo desde el panel.</div>
+        <div class="timeline-heading"><h4>Timeline</h4><span class="micro">Haz clic en un paso para retroceder</span></div>
+        <div class="table-wrap">
+          <table><thead><tr><th>#</th><th>Acción</th><th>Resultado</th><th>Transiciones</th></tr></thead><tbody id="timeline"><tr><td colspan="4">Todavía no hay eventos</td></tr></tbody></table>
+        </div>
+      </section>
+      <section class="panel raw">
+        <div class="panel-heading"><div><h3>Trace del simulador</h3><p>Registro de transiciones y operaciones</p></div><span class="micro">Sólo memoria</span></div>
+        <pre id="trace" aria-label="Traza JSON">[]</pre>
+      </section>
+      <footer><span>PEF Emulator · W1.9.K</span><span>No altera interfaces, rutas, disco del sistema ni Cloud real</span></footer>
+    </main>
+  </div>
+</body>
+</html>
