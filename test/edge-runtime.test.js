@@ -84,3 +84,76 @@ test("cloud ACK and compaction preserve critical event after integrated runtime 
   assert.equal(check.status().pending,1);
   check.close();
 }));
+
+test("after P1 pressure, cloud ACK and compaction let deferred route evidence be persisted",()=>sandbox(async dir=>{
+  const a=adapters();
+  const journalOptions={capacityBytes:1900,controlReserveBytes:320};
+  const edge=createEdgeRuntime({dir,probe:a.probe,applyRoute:a.applyRoute,
+    sessionId:"pressure",journalOptions});
+  const primary=await edge.sample(1);
+  assert.equal(primary.event.ack,true);
+  a.wan.primary.upstream=false;
+  const backup=await edge.sample(1);
+  assert.equal(backup.event.ack,true);
+  a.wan.backup.upstream=false;
+  const offline=await edge.sample(1);
+  assert.equal(offline.observed.connectivity,"LOCAL_ONLY");
+  assert.equal(offline.event.ack,true);
+  a.wan.primary.upstream=true;
+  const recovered=await edge.sample(1);
+  assert.equal(recovered.observed.selectedWan,"primary");
+  assert.equal(recovered.event.ack,false);
+  assert.equal(recovered.runtimeHealth,"DEGRADED");
+  assert.equal(recovered.volatilePending,1);
+  assert.equal(edge.cloudAck(primary.event.eventId).ack,true);
+  const compacted=edge.compact();
+  assert.equal(compacted.ok,true,JSON.stringify(compacted));
+  const retry=await edge.sample(1);
+  assert.equal(retry.event,null);
+  assert.equal(retry.volatilePending,0);
+  assert.equal(retry.runtimeHealth,"HEALTHY");
+  edge.close();
+  const reopened=createFileJournal({dir,...journalOptions});
+  const seen=reopened.pending().map(x=>x.eventId);
+  assert.ok(seen.includes(recovered.event.eventId));
+  assert.ok(seen.includes(offline.event.eventId));
+  assert.equal(reopened.cloudAck(primary.event.eventId).duplicate,true);
+  reopened.close();
+}));
+test("restart uses a distinct boot/session epoch and preserves previously ACKed WAN evidence",()=>sandbox(async dir=>{
+  const a=adapters(),journalOptions={capacityBytes:16384};
+  const first=createEdgeRuntime({dir,probe:a.probe,applyRoute:a.applyRoute,
+    sessionId:"boot-A",journalOptions});
+  const firstId=(await first.sample(1)).event.eventId;
+  a.wan.primary.upstream=false;
+  const backupId=(await first.sample(1)).event.eventId;
+  first.close();
+  const second=createEdgeRuntime({dir,probe:a.probe,applyRoute:a.applyRoute,
+    sessionId:"boot-B",journalOptions});
+  const rebootId=(await second.sample(1)).event.eventId;
+  assert.notEqual(rebootId,firstId);assert.notEqual(rebootId,backupId);
+  assert.equal(second.status().storage.events,3);
+  assert.equal(second.status().storage.pending,3);
+  second.close();
+  const reopened=createFileJournal({dir,...journalOptions});
+  assert.deepEqual(reopened.pending().map(x=>x.eventId),[firstId,backupId,rebootId]);
+  reopened.close();
+}));
+test("bounded volatile journal queue reports lost evidence honestly without interrupting LAN",()=>sandbox(async dir=>{
+  const a=adapters();
+  const edge=createEdgeRuntime({dir,probe:a.probe,applyRoute:a.applyRoute,
+    sessionId:"bounded",maxVolatileEvents:1,
+    journalOptions:{capacityBytes:512,controlReserveBytes:128}});
+  await edge.sample(1);
+  a.wan.primary.upstream=false;await edge.sample(1);
+  a.wan.backup.upstream=false;
+  const offline=await edge.sample(1);
+  a.wan.primary.upstream=true;const restored=await edge.sample(1);
+  assert.equal(offline.observed.connectivity,"LOCAL_ONLY");
+  assert.equal(restored.observed.selectedWan,"primary");
+  assert.equal(edge.status().runtimeHealth,"DEGRADED");
+  assert.equal(edge.status().volatilePending,1);
+  assert.ok(edge.status().droppedEvidence>=1);
+  assert.ok(a.applied.includes(null));
+  edge.close();
+}));
