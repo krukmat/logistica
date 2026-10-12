@@ -2,7 +2,7 @@
 // Dashboard-integrated lab controller: real fsync in a private temp directory,
 // synthetic WAN probes/routes and in-memory cloud mock, no physical networking.
 const fs=require("node:fs"),os=require("node:os"),path=require("node:path");
-const {randomUUID}=require("node:crypto");
+const {randomUUID,randomBytes}=require("node:crypto");
 const {createEdgeRuntime}=require("./lab/edge-runtime.js");
 const {createLabCloudReplica}=require("./lab/cloud-replay.js");
 const {openLabBoot}=require("./lab/lab-bootstrap.js");
@@ -10,7 +10,8 @@ const {runLoopbackSuite}=require("./lab/loopback.js");
 const CAPABILITIES=Object.freeze([
   "wan-probes","local-routing-model","os-file-fsync","journal-pressure",
   "journal-compaction","durable-ack-replay","identity-revision","boot-session",
-  "lost-remote-ack","forged-remote-ack","loopback-tcp-http","lab-evidence"
+  "lost-remote-ack","forged-remote-ack","loopback-tcp-http","lab-evidence",
+  "lab-identity-bootstrap","bounded-deadline","bounded-retry","lab-ack-proof","protocol-v1"
 ]);
 const IDENTITY=Object.freeze({siteId:"demo-site",deviceId:"demo-edge",configRevision:"cfg-demo-1"});
 function createDashboardLab({tmpParent=os.tmpdir()}={}){
@@ -24,8 +25,9 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
     dir=fs.mkdtempSync(path.join(tmpParent,"pef-visual-lab-"));
     profile=next;history=[];lastResult=null;route=null;revision=0;cloudAvailable=true;
     wan={primary:{link:true,upstream:true},backup:{link:true,upstream:true}};
+    const proofKey=randomBytes(32);
     cloud=createLabCloudReplica({siteId:IDENTITY.siteId,deviceId:IDENTITY.deviceId,
-      allowedRevisions:[IDENTITY.configRevision]});
+      allowedRevisions:[IDENTITY.configRevision],proofKey});
     openRuntime();
   }
   function openRuntime(){
@@ -55,6 +57,8 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
       runtimeHealth:status.runtimeHealth,volatilePending:status.volatilePending,
       droppedEvidence:status.droppedEvidence,lastError:status.lastError,
       routeAppliedInMemory:route,wans:Object.entries(wan).map(([id,w])=>({id,...w})),
+      transport:{schemaVersion:1,frame:"PEF-LAB-ACK-v1",timeoutMs:250,maxAttempts:1,
+        proof:"EPHEMERAL_LAB_ONLY",authenticated:false,realNetwork:false},
       cloud:{...cloud.status(),available:cloudAvailable,
         connected:cloudAvailable&&status.network.selectedWan!==null},
       pending:edge.pending(30).map(x=>({eventId:x.eventId,category:x.category,
@@ -95,6 +99,19 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
             return emit("sync",{ok:false,status:"SYNC_INCOMPLETE",error:"CLOUD_UNAVAILABLE"});
           result=await edge.sync(cloud,16);
           return emit("sync",result);
+        case "syncRetry":
+          if(!cloudAvailable||edge.status().network.selectedWan===null)
+            return emit("syncRetry",{ok:false,status:"SYNC_INCOMPLETE",error:"CLOUD_UNAVAILABLE"});
+          return emit("syncRetry",await edge.sync(cloud,16,{timeoutMs:70,maxAttempts:2}));
+        case "timeout":
+          cloud.stallNextIngest();
+          return emit("inject-timeout",{ok:true,nextIngest:"DEADLINE_EXCEEDED"});
+        case "missingProof":
+          cloud.omitNextProof();
+          return emit("inject-no-proof",{ok:true,nextAck:"NO_PROOF"});
+        case "badVersion":
+          cloud.useWrongVersionNext();
+          return emit("inject-schema-mismatch",{ok:true,nextAck:"WRONG_VERSION"});
         case "compact":return emit("compact",edge.compact());
         case "lostAck":
           cloud.dropNextDurableAck();
