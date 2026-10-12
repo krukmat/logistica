@@ -221,6 +221,17 @@
       "test": "test/linux-workload-isolation.test.js",
       "hardwareValidated": false,
       "uiEvidenceUrl": "https://github.com/krukmat/logistica/actions/workflows/pef-emulator.yml"
+    },
+    {
+      "task": "W1.9.S3.4",
+      "mode": "ci-evidence",
+      "title": "Product Workload Supervisor drives real cgroup-v2/network-namespace/chroot process: lifecycle, offline IPC, crash, CPU throttle, OOM and recovery",
+      "controlIds": [],
+      "actions": [],
+      "implementation": "src/adapters/linux-isolated-process-driver.js",
+      "test": "test/linux-isolated-process-driver.test.js",
+      "hardwareValidated": false,
+      "uiEvidenceUrl": "https://github.com/krukmat/logistica/actions/workflows/pef-emulator.yml"
     }
   ]
 }

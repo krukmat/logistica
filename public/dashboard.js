@@ -101,6 +101,8 @@ function renderIntegrated(lab){
   const cloudAcked=(lab.receipts||[]).filter(r=>r.cloudAcked).length;
   setText("receipt-count",accepted+" recepciones locales · "+cloudAcked+" confirmadas en Cloud mock");
   $("workload-status").textContent=JSON.stringify(lab.workloads,null,2);
+  if(lab.workloads.linuxCiEvidence)
+    setText("workload-linux-evidence-status",lab.workloads.linuxCiEvidence.state);
   setText("workload-scope",lab.workloads.entries.length+
     " procesos supervisados · "+lab.workloads.reserved.memoryMiB+" MiB límite solicitado · "+
     "cgroups: "+(lab.workloads.actualLimitsEnforced?"ENFORCED":"NO ENFORCED")+

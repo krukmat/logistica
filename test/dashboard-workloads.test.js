@@ -57,3 +57,17 @@ test("S5 displays CI-only S3 evidence separate from unsandboxed Mac child and po
    assert.ok(js.includes('fetch("/api/state"'),"No automatic live workload status refresh");
  }finally{await app.close();}
 });
+
+test("S3.7 UI exposes real supervised Linux evidence without claiming sandbox on the Mac",()=>withPanel(async({url,send})=>{
+  const html=await (await fetch(url)).text(),client=await (await fetch(url+"dashboard.js")).text();
+  assert.ok(html.includes('id="workload-linux-evidence-status"'));
+  assert.ok(html.includes("Supervisor → Linux Driver → proceso aislado"));
+  assert.ok(html.includes("actions/runs/38299458656"));
+  assert.ok(client.includes('lab.workloads.linuxCiEvidence'));
+  const enabled=await send({command:"mode",mode:"lab"});
+  assert.equal(enabled.lab.workloads.actualLimitsEnforced,false);
+  assert.equal(enabled.lab.workloads.linuxIsolationValidated,false);
+  assert.equal(enabled.lab.workloads.linuxCiEvidence.localProcessIsolated,false);
+  assert.equal(enabled.lab.workloads.linuxCiEvidence.supervisorIntegrated,true);
+  assert.equal(enabled.lab.workloads.linuxCiEvidence.state,"LAB_PASS_CI_ONLY");
+}));

@@ -17,7 +17,8 @@ const CAPABILITIES=Object.freeze([
   "lost-remote-ack","forged-remote-ack","loopback-tcp-http","lab-evidence",
   "lab-identity-bootstrap","bounded-deadline","bounded-retry","lab-ack-proof","protocol-v1",
   "local-logistics-receipts","offline-workload-replay",
-  "workload-admission","node-worker-process","bounded-supervisor","ipc-health","offline-worker-receipts"
+  "workload-admission","node-worker-process","bounded-supervisor","ipc-health","offline-worker-receipts",
+  "ci-linux-supervised-worker"
 ]);
 const IDENTITY=Object.freeze({siteId:"demo-site",deviceId:"demo-edge",configRevision:"cfg-demo-1"});
 function createDashboardLab({tmpParent=os.tmpdir()}={}){
@@ -82,7 +83,11 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
       workloads:{entries:supervisor?.list()||[],budgets:supervisor?.limits()||{},
         reserved:supervisor?.usage()||{},runtime:"NODE_PROCESS_ONLY",
         actualLimitsEnforced:false,linuxIsolationValidated:false,
-        status:"LAB_ONLY_NOT_SANDBOXED"},
+        status:"LAB_ONLY_NOT_SANDBOXED",
+        linuxCiEvidence:{kind:"CI_LINUX_ISOLATED_PROCESS_DRIVER",state:"LAB_PASS_CI_ONLY",
+          runId:38299458656,supervisorIntegrated:true,cpuMax:"15000 100000",
+          memoryMaxBytes:67108864,swapMaxBytes:0,pidsMax:16,oomKillObserved:true,
+          localProcessIsolated:false,hardwareValidated:false}},
       pending:edge.pending(30).map(x=>({eventId:x.eventId,category:x.category,
         sha256:x.sha256,configRevision:x.payload?.configRevision,sessionId:x.payload?.sessionId})),
       history:history.slice(),lastResult,physicalValidated:false,remoteAuthenticated:false,

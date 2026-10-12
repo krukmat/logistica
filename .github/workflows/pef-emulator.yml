@@ -80,7 +80,7 @@ jobs:
           sudo -n env CI="$CI" GITHUB_ACTIONS="$GITHUB_ACTIONS" RUNNER_ENVIRONMENT="$RUNNER_ENVIRONMENT" \
             PEF_S3_ACK="$PEF_S3_ACK" PEF_S3_REPO_ROOT="$GITHUB_WORKSPACE" \
             PEF_S3_NODE="$(command -v node)" \
-            PEF_S3_EVIDENCE="$RUNNER_TEMP/pef-s3-evidence.json" \
+            PEF_S3_EVIDENCE="$RUNNER_TEMP/pef-s3-evidence.json" PEF_S34_EVIDENCE="$RUNNER_TEMP/pef-s34-evidence.json" \
             bash scripts/lab/workload-isolation-smoke.sh
       - name: Upload lab evidence
         if: always()
@@ -90,4 +90,5 @@ jobs:
           path: |
             ${{ runner.temp }}/pef-netns-*.json
             ${{ runner.temp }}/pef-s3-evidence.json
+            ${{ runner.temp }}/pef-s34-evidence.json
           if-no-files-found: warn

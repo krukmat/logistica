@@ -101,8 +101,12 @@
             <button id="workload-receipt" type="button" class="secondary">Registrar recepción por IPC</button>
           </div>
           <p id="workload-scope" class="micro">Driver de proceso local: CPU/RAM/FS/red NO aislados. El proceso se ejecuta con los permisos del usuario local.</p>
-          <p class="micro"><strong>S3 Linux kernel lab: LAB_PASS (CI separado)</strong> — cgroup v2 (CPU 150 mCPU, memoria 64 MiB, pids 16), netns sin WAN, chroot y UID 65534. No son límites del proceso del Mac.
-            <a href="https://github.com/krukmat/logistica/actions/workflows/pef-emulator.yml" target="_blank" rel="noopener noreferrer">Ver evidencia S3 en Linux CI</a>.</p>
+          <p class="micro" id="workload-linux-evidence"><strong>S3.4–S3.6 Supervisor → Linux Driver → proceso aislado: LAB_PASS (CI-only)</strong>.
+            Kernel cgroup v2 (CPU 150 mCPU, RAM 64 MiB, swap 0, 16 PIDs), netns sin WAN, chroot, UID 65534; IPC, crash, reinicio automático, throttling CPU, OOM kill y fsync offline verificados.
+            <a href="https://github.com/krukmat/logistica/actions/runs/38299458656" target="_blank" rel="noopener noreferrer">Ejecución validada</a> ·
+            <a href="https://github.com/krukmat/logistica/actions/workflows/pef-emulator.yml" target="_blank" rel="noopener noreferrer">Evidencia CI reciente</a>.
+            Esta ejecución ocurre únicamente en el laboratorio Linux. El worker del Mac sigue sin sandbox.</p>
+          <p class="micro">Evidencia de aislamiento Linux: <strong id="workload-linux-evidence-status">CI-only</strong></p>
           <pre id="workload-status">[]</pre>
         </div>
         <div class="lab-detail local-receipts-panel">

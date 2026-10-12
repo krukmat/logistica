@@ -113,7 +113,11 @@ timeout -k 3s 45s "$PEF_S3_NODE" "$PEF_S3_REPO_ROOT/scripts/lab/supervised-linux
     exit 1
   }
 cat "$tmpdir/supervised.out"
-grep -q 'PEF_S34_SUPERVISED_LINUX_PASS=' "$tmpdir/supervised.out" || {
+grep -q '^PEF_S34_SUPERVISED_LINUX_PASS=' "$tmpdir/supervised.out" || {
   echo "supervised Linux lifecycle evidence absent" >&2
   exit 1
 }
+if [[ -n "${PEF_S34_EVIDENCE:-}" ]]; then
+  sed -n 's/^PEF_S34_SUPERVISED_LINUX_PASS=//p' "$tmpdir/supervised.out" > "$PEF_S34_EVIDENCE"
+  [[ -s "$PEF_S34_EVIDENCE" ]] || { echo "missing S3.4 artifact" >&2; exit 1; }
+fi
