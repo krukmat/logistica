@@ -88,7 +88,7 @@ test("cloud ACK and compaction preserve critical event after integrated runtime 
 
 test("after P1 pressure, cloud ACK and compaction let deferred route evidence be persisted",()=>sandbox(async dir=>{
   const a=adapters();
-  const journalOptions={capacityBytes:1750,controlReserveBytes:300};
+  const journalOptions={capacityBytes:2400,controlReserveBytes:400};
   const edge=createEdgeRuntime({dir,identity,probe:a.probe,applyRoute:a.applyRoute,
     sessionId:"pressure",journalOptions});
   const primary=await edge.sample(1);
