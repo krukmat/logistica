@@ -13,7 +13,7 @@ test("implemented features require a dashboard entry, actual backend and integra
   const ids=registry.features.map(x=>x.task);
   assert.equal(new Set(ids).size,ids.length);
   for(const required of ["W1.9.F","W1.9.I","W1.9.J","W1.9.K",
-    "W1.9.L","W1.9.M","W1.9.N","W1.9.O"])assert.ok(ids.includes(required));
+    "W1.9.L","W1.9.M","W1.9.N","W1.9.O","W1.9.P","W1.9.Q","W1.9.R"])assert.ok(ids.includes(required));
   for(const feature of registry.features){
     assert.ok(fs.existsSync(path.join(root,feature.implementation)),"Backend absent: "+feature.task);
     assert.ok(fs.existsSync(path.join(root,feature.test)),"Integration test absent: "+feature.task);
