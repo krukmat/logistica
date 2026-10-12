@@ -90,7 +90,7 @@ The working decomposition is [**W1.5 execution breakdown**](tasks/w1.5-resource-
 | RISK-24 | Scoring without measured hard gates could select a false winner | W1.8 HARD GATES first; all candidates BLOCKED until tested |
 | RISK-25 | Un `SIM_PASS` puede interpretarse como prueba física de durable ACK/failover | [W1.9](12-emulator.md) tags and Linux/device evidence separado |
 | RISK-26 | Divergencia del emulador ante restricciones de SO/kernel/NIC/storage reales | W1.9.H test confirmó necesidad de restaurar rutas de retorno WAN para HTTP end-to-end; W1.8 físico aún pendiente |
-| RISK-27 | Journal puede consumir toda capacidad y bloquear CLOUD_ACK/evidencia O0/O1, sin compaction segura | W1.9.J reserva protegida, pruebas disk-full y restore/compaction |
+| RISK-27 | Journal puede consumir toda capacidad y bloquear CLOUD_ACK/evidencia O0/O1, sin compactación segura | W1.9.J1 controlReserveBytes implementado y probado, **no** reserva específica O0/O1; W1.9.J2 compactación/retención pendiente |
 
 ## F. Experimentos y estrategia de evidencia futura
 
@@ -107,4 +107,4 @@ Repositorio de trabajo: `krukmat/logistica`, rama `main`. **W1.5.A–J, W1.6.A�
 
 [13 — Conectividad PEF](13-connectivity-topology.md) es el documento principal de topología y secuencias editables. La evolución W1.9 prioriza `loopback-lab` seguro para pruebas reales localhost, antes del driver `linux-lab` con redes virtuales y finalmente W1.8 con interfaces físicas. Los resultados de localhost **no** certifican el throughput/failover de NICs reales.
 
-**W1.9.F–I evidence:** [loopback audit](audit/w1.9-loopback-smoke-2026-10-12.md) y [H/I audit](audit/w1.9-h-i-2026-10-12.md), CI #38259618954: **22/22 Node tests PASS, namespace policy LAB_PASS CLEANUP=CLEAN**, sandbox file journal crash/reopen PASS. **Next W1.9.J** protected journal lifecycle. W1.8.E–G siguen bloqueadas para claims físicos.
+**W1.9.F–I evidence:** [loopback audit](audit/w1.9-loopback-smoke-2026-10-12.md) y [H/I audit](audit/w1.9-h-i-2026-10-12.md), CI #38259618954: **22/22 Node tests PASS, namespace policy LAB_PASS CLEANUP=CLEAN**, sandbox file journal crash/reopen PASS. **W1.9.J1 IMPLEMENTED / CI PASS:** controlReserveBytes, ACK durable bajo presión; [CI #38260694016](https://github.com/krukmat/logistica/actions/runs/38260694016) confirma 24/24 Node tests. **Next W1.9.J2:** compaction y retención crítica. W1.8.E–G siguen bloqueadas para claims físicos.
