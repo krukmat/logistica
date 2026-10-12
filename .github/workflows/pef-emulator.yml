@@ -1,0 +1,29 @@
+name: PEF Emulator Smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/emulator/**'
+      - 'bin/**'
+      - 'test/**'
+      - 'scenarios/**'
+      - 'package.json'
+      - '.github/workflows/pef-emulator.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  emulator:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Node regression suite
+        run: npm test
+      - name: Deterministic scenarios
+        run: npm run emulate
