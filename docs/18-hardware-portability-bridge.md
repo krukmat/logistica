@@ -87,3 +87,7 @@ Desde el panel: observar la casilla **Runtime / adaptador** (`virtual-lab · sha
 6. **Core aún lógico**: admission/isolation del Workload Runtime en `src/emulator/core.js` sigue modelado; faltan componentes runtime reales equivalentes, aunque la política WAN y el flujo de negocio/journal/replay sí se comparten.
 
 **Criterio de paso a W1.8:** implementar driver/device y ejecutar la misma batería de contratos de Core en equipo real con instrumentación. El verde de CI es suficiente sólo para cerrar **W1.9.R software bridge**, no para `DEVICE VALIDATED`.
+
+## S — Product Core para workloads (refinamiento posterior)
+
+`src/core/workload-manager.js` y `workload-supervisor.js` incorporan admisión y coordinación de procesos al Core portable. `src/adapters/node-process-driver.js` ejecuta en laboratorio un child allowlisted con IPC, **sin sandbox OS**. `src/adapters/linux-workload-isolation.js` deriva de la misma manifest cuotas cgroup verificadas en un **runner Linux efímero separado**; el harness ejecuta el mismo admission/local-receipts Core dentro de chroot+netns, sin WAN y con fsync. El adaptador físico o driver de producción que una el supervisor a esta protección queda abierto. [19 — Workload Runtime](19-workload-runtime.md), [CI #38293362918](https://github.com/krukmat/logistica/actions/runs/38293362918).

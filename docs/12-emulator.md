@@ -210,3 +210,11 @@ Con ambas WAN sintéticas desactivadas, registrar `R001/PKG001` sigue devolviend
 **Durabilidad:** la capa Core ahora rechaza explícitamente un port de almacenamiento que devuelva `ack=true` sin `fsyncCompleted=true` (salvo confirmación duplicada ya durable). Se comprueba en tres fronteras: recepción local, evento WAN y cursor de Cloud. No certifica power-cut físico.
 
 [Diagrama, port matrix y alcance físico](18-hardware-portability-bridge.md) · [R tasks](tasks/w1.9-hardware-portability.md) · [CI #38284356529](https://github.com/krukmat/logistica/actions/runs/38284356529): **76 Node PASS**, siete escenarios SIM_PASS, loopback LAB_PASS y namespaces/veth LAB_PASS CLEAN. Los 128 vectores de políticas WAN demuestran equivalencia funcional en laboratorio, **no rendimiento físico**.
+
+## W1.9.S — Workloads reales del emulador e aislamiento kernel CI-only
+
+El dashboard (modo Laboratorio integrado) integra un `Workload Manager` de dominio y `Process Supervisor` independientes de la UI. Botones de **Admitir/Iniciar**, **Detener**, **Simular crash**, **Comprobar health/recovery** y **Registrar recepción por IPC** usan un proceso Node allowlisted `pef-receiver`. Se visualizan reservas lógicas, estados RUNNING/BACKOFF/ISOLATED y `actualLimitsEnforced=false` para el Mac. Un timer del host reintenta tras backoff; polling del panel sólo refresca la vista.
+
+Linux CI prueba por separado un child workload con **límites reales kernel** derivados del mismo manifest (cgroup v2 150 mCPU / 64 MiB / 16 PIDs), network namespace sin WAN, chroot temporal, UID sin privilegios y P1 fsync, con limpieza. La UI contiene un enlace CI-only para esa evidencia, sin privilegios ni modificaciones de host en el Mac.
+
+[W1.9.S guía](19-workload-runtime.md), [tasks S1–S6](tasks/w1.9-workload-runtime.md), [CI #38293362918](https://github.com/krukmat/logistica/actions/runs/38293362918): **84 Node PASS**, 7 SIM_PASS, loopback, veth, S3 PASS/CLEAN. S3 product driver aún pendiente; W1.8 hardware físico NOT_RUN.
