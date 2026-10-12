@@ -7,7 +7,7 @@ const fs=require("node:fs");
 const path=require("node:path");
 const os=require("node:os");
 const {createFileJournal}=require("../../src/emulator/lab/file-journal.js");
-const {openEdgeService}=require("../../src/runtime/edge-service.js");
+const {openRuntimeBackend}=require("../../src/runtime/backend-registry.js");
 function need(name){if(!process.env[name])throw Error("LAB_BLOCKED:"+name);return process.env[name];}
 function ip(...args){return execFileSync("ip",args,{encoding:"utf8",timeout:5000}).trim();}
 if(process.platform!=="linux"||process.getuid?.()!==0||
@@ -21,9 +21,10 @@ const root=need("PEF_NETNS_REPO_ROOT");
 const probeScript=path.join(root,"scripts/lab/netns-probe.py");
 const clientScript=path.join(root,"scripts/lab/netns-client.py");
 if(!fs.statSync(probeScript).isFile()||!fs.statSync(clientScript).isFile())throw Error("LAB_BLOCKED:missing-lab-script");
-const {openLinuxNetnsPorts}=require("../../src/adapters/linux-netns-ports.js");
-const ports=openLinuxNetnsPorts({ns,repoRoot:root});
-const {probe:probeWan,applyRoute,checkRoute}=ports;
+let activeBackend=null;
+const probeWan=id=>activeBackend.ports.probe(id);
+const applyRoute=id=>activeBackend.ports.applyRoute(id);
+const checkRoute=id=>activeBackend.ports.checkRoute(id);
 async function client(expect){
   let failure;
   // Only new TCP flows; tolerate brief ARP/neighbour convergence after route migration.
@@ -34,8 +35,11 @@ async function client(expect){
   throw Error("LAN_PROBE_FAILED_AFTER_RETRIES:"+String(failure?.message||failure));
 }
 const scratch=fs.mkdtempSync(path.join(os.tmpdir(),"pef-netns-edge-"));
-const ctrl=openEdgeService({dir:scratch,ports,identity:{siteId:"lab-site",deviceId:"lab-netns",configRevision:"cfg-1"},probe:probeWan,applyRoute,
+const opened=openRuntimeBackend("linux-lab",{dir:scratch,ns,repoRoot:root,identity:{siteId:"lab-site",deviceId:"lab-netns",configRevision:"cfg-1"},probe:probeWan,applyRoute,
   simulatorOptions:{failbackHoldSeconds:5},journalOptions:{capacityBytes:65536,controlReserveBytes:8192}});
+if(!opened.ok)throw Error("LAB_BLOCKED:"+opened.error);
+activeBackend=opened;
+const ctrl=opened.engine;
 const assertions=[],failures=[];
 function assertLab(id,valid,details){
   assertions.push({id,ok:!!valid,details});

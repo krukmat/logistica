@@ -1,9 +1,10 @@
 "use strict";
 const {createSimulator}=require("./core.js");
-// Capability negotiation boundary. Only sim is executable in this revision.
+// Synchronous deterministic scenario runner only. Runtime-capable Linux driver is
+// separately registered in src/runtime/backend-registry.js and gated to CI.
 const BACKENDS=Object.freeze({
   "sim":Object.freeze({implemented:true,environment:"JS_LOGICAL",ports:["Clock","WanProbe","CloudTransport","Journal","WorkloadLimiter","RecoveryBoot"],physical:false}),
-  "linux-lab":Object.freeze({implemented:false,environment:"LINUX_NAMESPACE_OR_VM",ports:[],physical:false}),
+  "linux-lab":Object.freeze({implemented:false,runtimeSupported:true,environment:"LINUX_NAMESPACE_OR_VM",ports:["WanProbe","RouteWriter","OSFileJournal"],physical:false}),
   "device":Object.freeze({implemented:false,environment:"INSTRUMENTED_PHYSICAL_DEVICE",ports:[],physical:true})
 });
 function openBackend(kind="sim",config={}){
