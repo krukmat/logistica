@@ -1,6 +1,6 @@
 "use strict";
 const $=id=>document.getElementById(id);
-let token=null,current=null,busy=false,eventSeq=0;
+let token=null,current=null,currentLab=null,currentMode="sim",busy=false,eventSeq=0;
 function labelState(node,state){
   node.querySelector(".region-value").textContent=String(state.state||"—");
   node.classList.toggle("active",["HEALTHY","MULTI_WAN_HEALTHY","CONNECTED","ONLINE","READY","RUNNING","SECURE","IDLE"].includes(state.state));
@@ -8,8 +8,8 @@ function labelState(node,state){
   node.classList.toggle("bad",["CRITICAL","FULL","REMOTE_ISOLATED"].includes(state.state));
 }
 function setText(id,value){$(id).textContent=String(value);}
-function render(session){
-  current=session;
+function render(session,lab,mode="sim"){
+  current=session;currentLab=lab;currentMode=mode;
   const st=session.state,regions=session.chart.regions;
   for(const name of ["core","connectivity","cloud","journal","runtime","security"]){labelState($("region-"+name),regions[name]);}
   setText("scenario-title",session.scenario_id);
@@ -43,9 +43,66 @@ function render(session){
     tr.addEventListener("click",()=>dispatch({command:"rewind",cursor:item.index}));t.append(tr);
   }
   $("trace").textContent=JSON.stringify(session.trace.slice(-18),null,2);
-  if(session.halted)message("Escenario detenido: assertion o acción fallida. Retrocede o reinicia.",true);
+  if(session.halted&&mode==="sim")message("Escenario detenido: assertion o acción fallida. Retrocede o reinicia.",true);
+  const integrated=mode==="lab";
+  $("lab-panel").hidden=!integrated;
+  $("sim-runner").hidden=integrated;
+  $("mode-sim").className=integrated?"secondary":"primary";
+  $("mode-lab").className=integrated?"primary":"secondary";
+  setText("mode-description",integrated?
+    "Journal temporal fsync + Cloud mock; sin privilegios ni hardware":
+    "Tiempo lógico · datos en memoria");
+  for(const name of ["next","run","back","reset","load","scenario-select","append-event","power-cut","rollback-config"])
+    $(name).disabled=integrated||$(name).disabled;
+  // Re-enable controls in the pure simulator after switching back.
+  if(!integrated){
+    $("load").disabled=false;$("scenario-select").disabled=false;
+    for(const id of ["append-event","power-cut","rollback-config"])$(id).disabled=false;
+  }
+  if(integrated&&lab)renderIntegrated(lab);
 }
-function message(text,failed=false){$("feedback").textContent=text;$("feedback").classList.toggle("failed",failed);}
+function renderIntegrated(lab){
+  const net=lab.network,store=lab.storage,online=lab.cloud.connected;
+  const regions={
+    core:lab.runtimeHealth,connectivity:net.connectivity,
+    cloud:online?"ONLINE":"CLOUD_DISCONNECTED",
+    journal:store.unsafe?"CRITICAL":store.bytesUsed>=store.regularWriteLimitBytes?"FULL":
+      store.bytesUsed/store.regularWriteLimitBytes>.85?"PRESSURE":"READY",
+    runtime:"LAB_ONLY",security:"UNAUTHENTICATED"};
+  for(const [name,state] of Object.entries(regions))labelState($("region-"+name),{state});
+  setText("scenario-title","INTEGRATED_LAB / "+lab.profile.toUpperCase());
+  setText("clock","t = "+net.clock+" s");
+  setText("active-wan",net.selectedWan?net.selectedWan.toUpperCase():"LOCAL_ONLY");
+  setText("journal-metrics",store.bytesUsed+" / "+store.capacityBytes+" bytes · "+store.pending+" pending");
+  $("journal-progress").style.width=Math.min(100,100*store.bytesUsed/Math.max(1,store.capacityBytes))+"%";
+  setText("journal-scope","P1 con fsync del SO, persistencia en directorio temporal; NO validación de corte eléctrico físico.");
+  for(const [name,id] of [["primary","a"],["backup","b"]]){
+    const w=lab.wans.find(x=>x.id===name);
+    const up=Boolean(w?.link&&w?.upstream);
+    const node=$(name+"-node");node.classList.toggle("good",up);node.classList.toggle("down",!up);
+    setText("wan-"+id+"-state",up?"UP":"DOWN");
+    setText("wan-"+id+"-descr",up?"Probe simulado alcanzable":"Probe sintético indisponible");
+    setText("toggle-"+name,up?"Cortar upstream":"Restaurar");
+  }
+  setText("cloud-descr",online?"Cloud mock accesible (sin autenticación)":"Cloud mock sin conectividad");
+  setText("toggle-cloud",lab.cloud.available?"Desconectar":"Restaurar");
+  setText("lab-identity",lab.identity.siteId+" / "+lab.identity.deviceId);
+  setText("lab-session",lab.identity.sessionId);
+  setText("lab-revision",lab.identity.configRevision);
+  setText("lab-storage",store.bytesUsed+" bytes · "+store.pending+" pendientes · "+store.cloudAcked+" ACK remotos");
+  setText("lab-cloud-state",(online?"ONLINE":"OFFLINE")+" · "+lab.cloud.stored+" eventos mock");
+  setText("lab-health",lab.runtimeHealth+" · "+lab.volatilePending+" volátiles · "+lab.droppedEvidence+" descartados");
+  $("lab-profile").value=lab.profile;
+  $("lab-pending").textContent=JSON.stringify(lab.pending,null,2);
+  $("lab-history").textContent=JSON.stringify(lab.history.slice(-12),null,2);
+  $("trace").textContent=JSON.stringify({mode:"integrated-lab",lastResult:lab.lastResult,
+    recentActions:lab.history.slice(-8),physicalValidated:false,remoteAuthenticated:false},null,2);
+}
+function message(text,failed=false){
+  for(const id of ["feedback","lab-feedback"]){
+    $(id).textContent=text;$(id).classList.toggle("failed",failed);
+  }
+}
 async function dispatch(command){
   if(busy||!token)return;
   busy=true;
@@ -53,15 +110,30 @@ async function dispatch(command){
     const res=await fetch("/api/command",{method:"POST",headers:{"content-type":"application/json","x-pef-session":token},body:JSON.stringify(command)});
     const data=await res.json();
     if(!res.ok||!data.ok)throw Error(data.error||"Command failed");
-    render(data.session);
+    render(data.session,data.lab,data.mode);
     if(data.result&&data.result.ok===false)message("Evento: "+(data.result.error||"rechazado"),true);
+    else if(command.command==="mode")message(data.mode==="lab"?
+      "Laboratorio integrado activo. Las pruebas se ejecutan en almacenamiento temporal local.":
+      "Simulador lógico activo.");
+    else if(command.command==="lab")message(command.action==="sample"?"Probe y journal reconciliados.":
+      "Operación de laboratorio: "+command.action);
     else if(command.command==="load")message("Escenario cargado. Usa Paso siguiente o Ejecutar todo.");
     else message(command.command==="enqueue"?"Evento inyectado en el simulador.":"Estado actualizado.");
   }catch(err){message(String(err.message||err),true);}
-  finally{busy=false;if(current)render(current);}
+  finally{busy=false;if(current)render(current,currentLab,currentMode);}
 }
 function inject(step){return dispatch({command:"enqueue",step});}
+function labAction(action,options={}){return dispatch({command:"lab",action,...options});}
 function bind(){
+  $("mode-sim").addEventListener("click",()=>dispatch({command:"mode",mode:"sim"}));
+  $("mode-lab").addEventListener("click",()=>dispatch({command:"mode",mode:"lab"}));
+  $("lab-sample").addEventListener("click",()=>labAction("sample"));
+  $("lab-restart").addEventListener("click",()=>labAction("restart"));
+  $("lab-compact").addEventListener("click",()=>labAction("compact"));
+  $("lab-lost-ack").addEventListener("click",()=>labAction("lostAck"));
+  $("lab-forged-ack").addEventListener("click",()=>labAction("forgedAck"));
+  $("lab-loopback").addEventListener("click",()=>labAction("loopback"));
+  $("lab-reset").addEventListener("click",()=>labAction("reset",{profile:$("lab-profile").value}));
   $("load").addEventListener("click",()=>dispatch({command:"load",scenario:$("scenario-select").value}));
   $("next").addEventListener("click",()=>dispatch({command:"next"}));
   $("run").addEventListener("click",()=>dispatch({command:"run"}));
@@ -70,13 +142,20 @@ function bind(){
   for(const id of ["primary","backup"]){
     $("toggle-"+id).addEventListener("click",()=>{
       const w=current.state.wans.find(x=>x.id===id);
-      inject({action:"set_wan",id,link:true,upstream:!(w.link&&w.upstream)});
+      if(currentMode==="lab"){
+        const lw=currentLab.wans.find(x=>x.id===id);
+        labAction("wan",{id,upstream:!(lw.link&&lw.upstream)});
+      }else inject({action:"set_wan",id,link:true,upstream:!(w.link&&w.upstream)});
     });
   }
-  $("toggle-cloud").addEventListener("click",()=>inject({action:"set_cloud",available:!current.state.cloudAvailable}));
-  $("tick").addEventListener("click",()=>inject({action:"tick",seconds:1}));
+  $("toggle-cloud").addEventListener("click",()=>currentMode==="lab"?
+    labAction("cloud",{available:!currentLab.cloud.available}):
+    inject({action:"set_cloud",available:!current.state.cloudAvailable}));
+  $("tick").addEventListener("click",()=>currentMode==="lab"?labAction("sample"):
+    inject({action:"tick",seconds:1}));
   $("append-event").addEventListener("click",()=>inject({action:"append",eventId:"ui-"+(++eventSeq)+"-"+Date.now(),payload:{origin:"dashboard",clock:current.state.clock},category:"O1"}));
-  $("sync-cloud").addEventListener("click",()=>inject({action:"sync"}));
+  $("sync-cloud").addEventListener("click",()=>currentMode==="lab"?labAction("sync"):
+    inject({action:"sync"}));
   $("power-cut").addEventListener("click",()=>inject({action:"power_cut"}));
   $("rollback-config").addEventListener("click",()=>inject({action:"apply_config",revision:"proposed-"+(++eventSeq),healthPass:false,
     expect:{ok:false,error:"HEALTH_CHECK_FAILED"}}));
@@ -88,7 +167,7 @@ async function start(){
     const data=await res.json();
     token=data.token;
     for(const id of data.scenarios){const option=document.createElement("option");option.value=id;option.textContent=id;$("scenario-select").append(option);}
-    bind();render(data.session);
+    bind();render(data.session,data.lab,data.mode);
     setText("connection","● ONLINE / LOCAL");
     message("Listo. Puedes inyectar eventos o cargar un escenario.");
   }catch(err){setText("connection","● OFFLINE");message(String(err.message||err),true);}
