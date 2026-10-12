@@ -178,3 +178,13 @@ Transition events now require explicit `siteId`, `deviceId`, `configRevision`, a
 La UI ahora tiene **dos modos explícitos**: simulación lógica y **laboratorio integrado**. El laboratorio llama al *mismo* `createEdgeRuntime`, al `file-journal` con `fsync` del host y al `cloud-replay` con ACK ambiguo/revisión/identidad que utilizan los tests backend. Se pueden provocar WAN offline, saturación de P1, reinicio/reapertura, compactación, ACK perdido, ACK forjado y TCP/HTTP loopback desde botones visibles. El journal ocupa **sólo una carpeta temporal** aislada del servidor y se elimina al cerrar. No modifica interfaces/rutas del Mac, ni hay una nube real. Linux veth continúa como **CI-only con enlace a evidencia**. La UI no confunde `fsync` con corte eléctrico físico.
 
 **Contrato y tutorial:** [15 — Emulator Integration Contract](15-emulator-integration.md). **Gate automatizado y registro de funcionalidades:** [integration registry](contracts/emulator-integration-v1.json) + `test/dashboard-integration-gate.test.js`. [CI #38272443257](https://github.com/krukmat/logistica/actions/runs/38272443257): 58/58 Node tests, siete escenarios lógicos y ambos laboratorios PASS. A partir de ahora toda función nueva debe ser alcanzable desde la UI o exponerse como `CI-only/BLOCKED` cuando ejecutar localmente fuera inseguro.
+
+## W1.9.P — Trust y transporte integrado (CI VERIFIED)
+
+**P1:** `lab-bootstrap.js` guarda identidad no secreta de sitio/dispositivo/revisión en el directorio temporal privado del emulador (modo 0600, `fsync` de archivo y directorio), y genera un nuevo `sessionId` en cada reinicio. Se rechazan metadatos corruptos o identidad discordante.
+
+**P2:** `transport-frame.js` y `cloud-replay.js` utilizan ACK v1 con tupla ordenada y HMAC efímero **dentro del mismo proceso mock**, además de deadlines (250 ms por defecto) y reintentos limitados. ACK ambiguos o sin prueba, versión incompatible y timeouts no producen marcadores locales falsos. Estos comportamientos están disponibles en el **Laboratorio integrado** mediante botones de timeout, ausencia de prueba, versión errónea y sincronización con dos intentos.
+
+**P3:** [GitHub Actions #38274368734](https://github.com/krukmat/logistica/actions/runs/38274368734): **65/65 Node PASS**, 7 escenarios `SIM_PASS`, loopback y Linux namespaces `LAB_PASS` con limpieza. Los tests de dashboard pasan por la API HTTP y verifican el journal real con `fsync` del sistema operativo.
+
+**Límites:** el HMAC y las identidades son mocks de laboratorio y no prueban autenticación remota, PKI o Cloud productiva. El frame canónico sólo cubre la tupla de ACK v1; el resto del journal sigue usando serialización Node. No hay NIC física, power-cut, ni pruebas de seguridad de dispositivo certificadas.
