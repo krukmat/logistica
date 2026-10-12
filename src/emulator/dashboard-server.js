@@ -3,12 +3,16 @@
 const http=require("node:http"),fs=require("node:fs"),path=require("node:path");
 const {randomBytes,timingSafeEqual}=require("node:crypto");
 const {createSession}=require("./session.js");
+const {createDashboardLab}=require("./dashboard-lab.js");
 const root=path.resolve(__dirname,"../../");
 function createDashboardServer({host="127.0.0.1",port=8787,scenarioDir=path.join(root,"scenarios")}={}){
   if(host!=="127.0.0.1"&&host!=="localhost")throw Error("LOCALHOST_ONLY");
   if(!Number.isSafeInteger(port)||port<0||port>65535)throw Error("INVALID_PORT");
   const secret=randomBytes(32).toString("hex");
   const session=createSession();
+  const lab=createDashboardLab();
+  let mode="sim";
+  const view=()=>({mode,session:session.snapshot(),lab:lab.snapshot()});
   let boundPort=null;
   const assets={
     "/":{file:path.join(root,"public/dashboard.html"),type:"text/html; charset=utf-8"},
@@ -53,8 +57,8 @@ function createDashboardServer({host="127.0.0.1",port=8787,scenarioDir=path.join
     if(req.method==="GET"){
       const asset=assets[url.pathname];
       if(asset){send(res,200,fs.readFileSync(asset.file,"utf8"),asset.type);return;}
-      if(url.pathname==="/api/bootstrap"){send(res,200,{token:secret,scenarios:listScenarios(),session:session.snapshot()});return;}
-      if(url.pathname==="/api/state"){send(res,200,session.snapshot());return;}
+      if(url.pathname==="/api/bootstrap"){send(res,200,{token:secret,scenarios:listScenarios(),...view()});return;}
+      if(url.pathname==="/api/state"){send(res,200,view());return;}
       denied(res,404,"NOT_FOUND");return;
     }
     if(req.method!=="POST"||url.pathname!=="/api/command"){denied(res,404,"NOT_FOUND");return;}
@@ -63,7 +67,16 @@ function createDashboardServer({host="127.0.0.1",port=8787,scenarioDir=path.join
     try{body=await readBody(req);}catch(e){denied(res,400,String(e.message||e));return;}
     try{
       let result;
-      switch(body.command){
+      if(body.command==="mode"){
+        if(!["sim","lab"].includes(body.mode))throw Error("INVALID_DASHBOARD_MODE");
+        mode=body.mode;
+        result={ok:true,mode};
+      }else if(body.command==="lab"){
+        if(mode!=="lab")throw Error("LAB_MODE_REQUIRED");
+        result=await lab.command(body);
+      }else{
+        if(mode!=="sim")throw Error("SIM_MODE_REQUIRED");
+        switch(body.command){
         case "load":{
           if(typeof body.scenario!=="string"||!listScenarios().includes(body.scenario))throw Error("UNKNOWN_SCENARIO");
           const spec=JSON.parse(fs.readFileSync(path.join(scenarioDir,body.scenario+".json"),"utf8"));
@@ -75,8 +88,9 @@ function createDashboardServer({host="127.0.0.1",port=8787,scenarioDir=path.join
         case "rewind":result=session.rewind(body.cursor);break;
         case "enqueue":session.enqueue(body.step);result=session.next();break;
         default:throw Error("UNKNOWN_COMMAND");
+        }
       }
-      send(res,200,{ok:true,result,session:session.snapshot()});
+      send(res,200,{ok:true,result,...view()});
     }catch(e){denied(res,400,String(e.message||e));}
   }
   const instance=http.createServer((req,res)=>{
@@ -91,7 +105,10 @@ function createDashboardServer({host="127.0.0.1",port=8787,scenarioDir=path.join
     boundPort=instance.address().port;
     return `http://127.0.0.1:${boundPort}/`;
   }
-  function close(){return new Promise((resolve,reject)=>instance.close(e=>e?reject(e):resolve()));}
-  return {listen,close,server:instance,snapshot:()=>session.snapshot()};
+  async function close(){
+    try{if(instance.listening)await new Promise((resolve,reject)=>instance.close(e=>e?reject(e):resolve()));}
+    finally{lab.close();}
+  }
+  return {listen,close,server:instance,snapshot:view};
 }
 module.exports={createDashboardServer};

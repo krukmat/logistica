@@ -12,10 +12,15 @@
   <div class="app-shell">
     <header class="topbar">
       <div class="brand"><span class="logo">P</span><div><span class="overline">PRIVATE EDGE FABRIC</span><h1>Control Panel <span class="version">v0.1</span></h1></div></div>
-      <div class="top-right"><span class="chip simulation">● SIMULATION ONLY</span><span id="connection" class="chip">Conectando…</span></div>
+      <div class="top-right"><span class="chip simulation">● SIM / LAB • NO HARDWARE</span><span id="connection" class="chip">Conectando…</span></div>
     </header>
     <main class="container">
-      <div class="intro"><div><h2>Centro de simulación</h2><p>Inyecta fallos, inspecciona las transiciones y reproduce escenarios sin afectar la red de tu Mac.</p></div><span id="scenario-title" class="scenario-name">INTERACTIVE</span></div>
+      <div class="intro"><div><h2>Centro de pruebas PEF</h2><p>Simulador lógico y laboratorio integrado: usa probes sintéticos y un journal con fsync en un directorio temporal. No modifica la red real del Mac.</p></div><span id="scenario-title" class="scenario-name">INTERACTIVE</span></div>
+      <div class="mode-switch" role="group" aria-label="Modo de prueba">
+        <button id="mode-sim" class="primary" type="button">Simulación lógica</button>
+        <button id="mode-lab" class="secondary" type="button">Laboratorio integrado · W1.9.O</button>
+        <span id="mode-description" class="micro">Tiempo lógico · datos en memoria</span>
+      </div>
       <section class="regions" aria-label="Estados independientes">
         <article class="region" id="region-core"><div class="region-name">CORE HEALTH</div><strong class="region-value">—</strong><small>Supervisor</small></article>
         <article class="region" id="region-connectivity"><div class="region-name">CONNECTIVITY</div><strong class="region-value">—</strong><small>Selección WAN</small></article>
@@ -39,7 +44,7 @@
           </div>
           <div class="storage-heading"><span>Journal P1</span><span id="journal-metrics">0 / 0 bytes</span></div>
           <div class="progress"><div id="journal-progress"></div></div>
-          <p class="micro">El journal de esta vista es lógico. No representa durabilidad física.</p>
+          <p class="micro" id="journal-scope">Journal lógico en modo simulación; el laboratorio integrado muestra un fichero temporal con fsync del sistema operativo.</p>
         </section>
         <section class="panel operations">
           <div class="panel-heading"><div><h3>Inyección de eventos</h3><p>Controles seguros sobre el simulador</p></div></div>
@@ -55,7 +60,36 @@
           </div>
         </section>
       </div>
-      <section class="panel scenarios">
+      <section class="panel lab-panel" id="lab-panel" hidden>
+        <div class="panel-heading"><div><h3>Laboratorio integrado: WAN + journal + Cloud mock</h3><p>Ejecuta el Core de integración con fsync real del SO en un directorio temporal seguro.</p></div><span class="chip">LAB • NO NIC / NO ROOT</span></div>
+        <div class="lab-grid">
+          <div class="lab-stat"><span>Identidad lab / sitio</span><strong id="lab-identity">—</strong></div>
+          <div class="lab-stat"><span>Sesión de arranque</span><strong id="lab-session">—</strong></div>
+          <div class="lab-stat"><span>Revisión efectiva</span><strong id="lab-revision">—</strong></div>
+          <div class="lab-stat"><span>Persistencia y presión P1</span><strong id="lab-storage">—</strong></div>
+          <div class="lab-stat"><span>Cloud mock / cursores</span><strong id="lab-cloud-state">—</strong></div>
+          <div class="lab-stat"><span>Estado del Core integrado</span><strong id="lab-health">—</strong></div>
+        </div>
+        <div class="lab-buttons">
+          <button id="lab-sample" class="primary" type="button">Sondear + reconciliar</button>
+          <button id="lab-restart" class="secondary" type="button">Reiniciar sesión / reabrir P1</button>
+          <button id="lab-compact" class="secondary" type="button">Compactar journal</button>
+          <button id="lab-lost-ack" class="secondary warning" type="button">Perder próximo ACK remoto</button>
+          <button id="lab-forged-ack" class="secondary warning" type="button">Falsificar próximo ACK</button>
+          <button id="lab-loopback" class="secondary" type="button">Test TCP/HTTP loopback</button>
+          <label class="select-label" for="lab-profile">Cuota P1
+            <select id="lab-profile"><option value="normal">Normal (64 KiB)</option><option value="pressure">Presión (2.4 KiB)</option></select>
+          </label>
+          <button id="lab-reset" class="secondary" type="button">Restablecer laboratorio</button>
+        </div>
+        <div class="feedback" id="lab-feedback" role="status" aria-live="polite">Utiliza el control WAN, pulsa sondear y comprueba qué se ha persistido.</div>
+        <div class="lab-detail"><h4>Pendientes en el journal</h4><pre id="lab-pending">[]</pre></div>
+        <div class="lab-detail"><h4>Evidencia y resultados</h4><pre id="lab-history">[]</pre></div>
+        <p class="micro">Linux veth / network namespaces: <strong>CI-only</strong> (no se ejecuta localmente).
+          <a href="https://github.com/krukmat/logistica/actions/workflows/pef-emulator.yml" target="_blank" rel="noopener noreferrer">Ver ejecuciones y evidencia de laboratorio Linux</a>.
+          Identidad, ACK remoto y Cloud son mocks. El fsync del host no prueba supervivencia ante corte eléctrico físico.</p>
+      </section>
+      <section class="panel scenarios" id="sim-runner">
         <div class="panel-heading"><div><h3>Scenario Runner</h3><p>Ejecutar · pausar · retroceder · reproducir</p></div><span id="progress" class="chip">0 / 0 steps</span></div>
         <div class="runner-actions">
           <label for="scenario-select" class="select-label">Escenario <select id="scenario-select"></select></label>
@@ -75,7 +109,7 @@
         <div class="panel-heading"><div><h3>Trace del simulador</h3><p>Registro de transiciones y operaciones</p></div><span class="micro">Sólo memoria</span></div>
         <pre id="trace" aria-label="Traza JSON">[]</pre>
       </section>
-      <footer><span>PEF Emulator · W1.9.K</span><span>No altera interfaces, rutas, disco del sistema ni Cloud real</span></footer>
+      <footer><span>PEF Emulator · W1.9.P1</span><span>No altera interfaces o rutas físicas; el laboratorio integrado escribe sólo en un directorio temporal local.</span></footer>
     </main>
   </div>
 </body>

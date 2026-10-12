@@ -78,8 +78,11 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
           if(!["primary","backup"].includes(body.id)||
              typeof body.upstream!=="boolean")throw Error("INVALID_LAB_WAN");
           wan[body.id].upstream=body.upstream;
-          return emit("wan:"+body.id,{ok:true,injected:true,upstream:body.upstream,
-            note:"Probe input updated; select Sample to reconcile route"});
+          result=await edge.sample(1);
+          return emit("wan:"+body.id,{ok:result.event===null||result.event.ack===true,
+            injected:true,upstream:body.upstream,event:result.event,
+            observed:result.observed,fsyncCompleted:Boolean(result.event?.fsyncCompleted),
+            runtimeHealth:result.runtimeHealth});
         case "cloud":
           if(typeof body.available!=="boolean")throw Error("INVALID_LAB_CLOUD");
           cloudAvailable=body.available;
