@@ -148,3 +148,9 @@ Para salir pulsa `Ctrl+C` en la terminal. También se mantienen `npm test`, `npm
 **W1.9.J2 verified:** [CI #38264150746](https://github.com/krukmat/logistica/actions/runs/38264150746) passed all 38 Node tests and both lab jobs; [evidence and backend matrix](audit/w1.9-j2-j3-2026-10-12.md). Original J2 commit needed corrections to mutable file descriptor and newline framing before tests passed. J3 formally separates `sim`, `loopback-lab`, `linux-lab`, `file-journal` and untested `device`. Next W1.9.L integrates connectivity with persisted evidence; physical acceptance remains NOT_RUN.
 
 **CI integral actualizado (K + J2):** [#38264234999](https://github.com/krukmat/logistica/actions/runs/38264234999): 38/38 tests Node PASS, 7 SIM_PASS, loopback LAB_PASS, Linux namespace LAB_PASS y chequeo sintáctico JS del panel PASS. La compaction J2 de laboratorio conserva O0/O1 y comprueba fallos antes/después del rename; **no demuestra durabilidad ante power cut físico**.
+
+## W1.9.L — Local integrated edge runtime slice
+
+`src/emulator/lab/edge-runtime.js` combines the probe-driven Connectivity policy with the filesystem journal, maintaining a **single owner for state transitions** and saving WAN selection/offline events with OS `fsync` before returning a durable acknowledgment. `probe` and `applyRoute` are injected, so this module neither changes routing itself nor requires privileged code. High-impact `LOCAL_ONLY`/backup incidents are classified O1; ordinary initial/restore transitions O2, with `correlationId` and logical clock evidence.
+
+When the journal is full or unsafe, routing still proceeds. The result explicitly returns `ack=false`, `DEGRADED`, an ephemeral bounded retry queue and a dropped-evidence counter: **memory is not durable**. There is no claim of product-grade failover, hardware write barriers or network driver implementation. Node regression tests verify reopen, acknowledged transition IDs, backpressure and route error handling.
