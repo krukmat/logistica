@@ -9,6 +9,7 @@ const {makeLinuxIsolationPlan}=require("../../src/adapters/linux-workload-isolat
 const {createFileJournal}=require("../../src/adapters/os-file-journal.js");
 const {createLocalReceipts}=require("../../src/core/local-receipts.js");
 const {demoManifest}=require("../../src/runtime/demo-workload.js");
+const {createAutonomousEdgeHost}=require("../../src/runtime/autonomous-edge.js");
 async function eventually(fn,label,limitMs=5000){
   const start=Date.now();
   while(Date.now()-start<limitMs){
@@ -79,6 +80,37 @@ async function run(){
     check("STOP_AND_RELEASE",stopped.ok===true&&supervisor.list().length===0&&
       manager.usage().count===0);
     check("RECEIPT_PERSISTS",receiver.list().length===1);
+    journal.close();
+    // T3/S3 joint proof: the standalone Edge HTTP daemon owns a kernel-isolated,
+    // supervisor-managed workload, not just an independent kernel test harness.
+    const token="ci-isolated-standalone-operator-secret-2026";
+    const daemon=createAutonomousEdgeHost({token,workloadDriver:driver,config:{
+      schemaVersion:1,backend:"virtual-lab",
+      identity:{siteId:"s3-supervised-lab",deviceId:"s3-edge",configRevision:"cfg-1"},
+      storageDir:journalDir,http:{host:"127.0.0.1",port:0},
+      sampleIntervalMs:250,workload:{enabled:true,reconcileMs:250},
+      journal:{capacityBytes:8192,controlReserveBytes:2048},
+      wan:{primary:{link:true,upstream:false},backup:{link:true,upstream:false}}
+    }});
+    try{
+      const url=await daemon.listen();
+      const request=async(route,body)=>{
+        const res=await fetch(url+route,{method:body?"POST":"GET",headers:{
+          "x-pef-token":token,...(body?{"content-type":"application/json"}:{})},
+          ...(body?{body:JSON.stringify(body)}:{})});
+        return {http:res.status,...await res.json()};
+      };
+      const current=await request("state");
+      check("STANDALONE_DAEMON_KERNEL_WORKER",current.dashboardRequired===false&&
+        current.workloads[0]?.state==="RUNNING"&&
+        current.workloads[0]?.actualLimitsEnforced===true&&
+        current.workloads[0]?.isolation==="LINUX_CGROUP_NETNS_CHROOT_CI");
+      const accepted=await request("workloads/receipts",{
+        receiptId:"S3-DAEMON-002",packageId:"PKG-DAEMON"});
+      check("STANDALONE_DAEMON_OFFLINE_FSYNC",accepted.http===201&&
+        accepted.fsyncCompleted===true);
+    }finally{await daemon.close();}
+
     process.stdout.write("PEF_S34_SUPERVISED_LINUX_PASS="+JSON.stringify({
       status:"LAB_PASS",checks,
       cpuMax:plan.cpuMax,memoryMax:plan.memoryMax,oomKill:oom,memoryLimitEvents:denied,
