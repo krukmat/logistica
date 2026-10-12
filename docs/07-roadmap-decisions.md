@@ -1,10 +1,10 @@
 # 07 — Wave 1 Plan, ADR register y riesgos
 
-**Última actualización:** 2026-10-12. **Entrega:** baseline arquitectónica W1.1–W1.5.D documentada para `krukmat/logistica` (`main`); **sin código PEF ni tests de producto**.
+**Última actualización:** 2026-10-12. **Entrega:** baseline arquitectónica W1.1–W1.5.J documentada para `krukmat/logistica` (`main`); **sin código de producto PEF ni tests de producto**.
 
 ## A. Definición de completitud
 
-- `DOCUMENTED`: artefacto de diseño escrito. **Sí** aplica a W1.1–W1.4 y W1.5.A/B.
+- `DOCUMENTED`: artefacto de diseño escrito. **Sí** aplica a W1.1–W1.5.J como diseño (sin validación técnica).
 - `VALIDATED`: test o evidencia externa reproducible revisada. **Ningún test ejecutado en esta entrega.**
 - `IMPLEMENTED`: código/config/servicio operativo. **Ninguno creado.**
 - `CLOSED (design task)` sólo cuando documento, decisiones, open questions y trazabilidad están registrados. No confundir con `VALIDATED`.
@@ -24,9 +24,9 @@
 | **W1.5.E** | **Workload Resource Model** | **DOCUMENTED / UNVALIDATED** | manifests, admission, isolation, network intents |
 | W1.5.F | Power/Thermal Envelope | **DOCUMENTED / UNVALIDATED** | idle/load/peak, UPS/thermal budget |
 | W1.5.G | Recovery Performance Targets | **DOCUMENTED / UNVALIDATED** | umbrales medibles p50/p95/p99 + metodología |
-| **W1.5.H** | Base vs Pro Resource Matrix | **NEXT** | matriz consolidada |
-| W1.5.I | Hardware-agnostic Constraints | PLANNED | minimum/recommended specs sin modelos |
-| W1.5.J | Resource Gate | PLANNED | GO/revisit y riesgos |
+| **W1.5.H** | Base vs Pro Resource Matrix | **DOCUMENTED / PROVISIONAL** | matriz consolidada |
+| W1.5.I | Hardware-agnostic Constraints | **DOCUMENTED / PROVISIONAL** | minimum/recommended specs sin modelos |
+| W1.5.J | Resource Gate | **DOCUMENTED / PROVISIONAL** | GO/revisit y riesgos |
 | W1.6 | Software Runtime Contract | PLANNED | OS/process/service model, IPC, state engine, trust/update strategy |
 | W1.7 | Benchmark & Failure Harness Specification | PLANNED | fixtures, reproducible failure tests, measurements + evidence schema |
 | W1.8 | Architecture Shootout | PLANNED | comparativa ARM router vs ARM edge vs x86 vs split bajo el mismo harness |
@@ -37,7 +37,7 @@ The working decomposition is [**W1.5 execution breakdown**](tasks/w1.5-resource-
 
 **Completed as design:** C1–C5, each DOCUMENTED / UNMEASURED. See [06 § W1.5.C](06-resource-envelope.md). Proposed memory fixtures Base 4 GiB / Pro 8 GiB are **experiment resources**, not selected device specifications. Packet-rate formulas and RAM arithmetic remain subject to benchmark.
 
-**W1.5.D–G design output:** [06](06-resource-envelope.md), storage/backpressure, [05](05-overlays-workload-contract.md) + [schema](contracts/workload-manifest-v0.1.schema.json) for resource admission, power/thermal model and recovery time measurement contract. **All physical measurements and negative tests pending**. **Next W1.5.H–J:** integrated Base/Pro matrix, hardware-neutral constraints and design-only benchmark gate.
+**W1.5.D–G output:** [06](06-resource-envelope.md) and [05](05-overlays-workload-contract.md) + [schema](contracts/workload-manifest-v0.1.schema.json). **W1.5.H–J output:** [08 Resource Gate](08-resource-gate.md), consolidates Base/Pro, hardware-neutral constraints and conditional design GO. **No empirical validation conducted**. W1.6/W1.7 are next.
 
 ## D. Decisiones y ADRs (acuerdo conceptual; no evidencia de campo)
 
@@ -53,6 +53,8 @@ The working decomposition is [**W1.5 execution breakdown**](tasks/w1.5-resource-
 | ADR-008 | ACCEPTED-DESIGN | Sin private 5G, PCB propia, Kubernetes, bonding requerido en v0.1 | coste/alcance |
 | ADR-009 | PROPOSED | Separar health status de connectivity mode (`HEALTHY + LOCAL_ONLY`) | ver `OPEN-STATE-01` |
 | ADR-010 | PROPOSED | Minimal trusted bootstrap separado del supervisor completo | ver `OPEN-BOOT-01` |
+
+| ADR-011 | ACCEPTED-DESIGN | H/I/J: GO sólo a diseño runtime/harness, no a hardware, producción ni SKU | baselines numéricas no verificadas; pruebas W1.7/1.8 obligatorias |
 
 **Criterio para reabrir ADR ACCEPTED-DESIGN:** evidencia de requisito incumplido, coste/energía inaceptable o incompatibilidad demostrada; documentar alternativa y efecto.
 
@@ -76,6 +78,8 @@ The working decomposition is [**W1.5 execution breakdown**](tasks/w1.5-resource-
 | RISK-14 | Aceptar workloads mediante schema sin enforcement de cuotas sería una falsa garantía | W1.6 admission/runtime isolation; W1.7 E-01–E-06 |
 | RISK-15 | Potencia y thermal de WAN/modem/disco/UPS pueden invalidar coste y failover objetivos | W1.7/1.8 F-PWR/F-THM, comparar carga combinada |
 | RISK-16 | Percentiles p95/p99 no son defendibles sin muestras suficientes y t0/t1 precisos | W1.7 G protocol, raw runs y CIs |
+| RISK-17 | El hardware split puede añadir dependencia inter-box que viole Local Survivability | W1.6 boot/recovery authority + W1.8 end-to-end tests |
+| RISK-18 | Un único hardware fixture Base/Pro simula software, no garantiza BOM ni energía de Base | W1.8 dispositivos físicos y coste total, no marketing claims |
 
 ## F. Experimentos y estrategia de evidencia futura
 
@@ -86,4 +90,4 @@ The working decomposition is [**W1.5 execution breakdown**](tasks/w1.5-resource-
 
 ## G. Próxima acción en repositorio
 
-Repositorio de trabajo: `krukmat/logistica`, rama `main`. **W1.5.C–G documentadas como diseño, sin benchmarks**. Ejecutar **W1.5.H–J** siguiendo [subtasks](tasks/w1.5-resource-execution.md), consolidando la matriz Base/Pro y los filtros agnósticos de hardware. W1.7 deberá ejecutar y archivar evidencia de los gates definidos; W1.6/W1.8 continúan planificadas.
+Repositorio de trabajo: `krukmat/logistica`, rama `main`. **W1.5.A–J DOCUMENTED (DESIGN ONLY), benchmark evidence NONE**. [Gate W1.5.J](08-resource-gate.md#w15j--resource-gate-design-only) permite avanzar a **W1.6 Software Runtime Contract** y **W1.7 Benchmark Harness**; hardware purchase/production/SKU freeze NO-GO. W1.8 comparará candidatos con mediciones. Antes de cada task, seguir preámbulo del AGENTS.md cuando no se haya pedido expresamente reportar sólo bloqueos.

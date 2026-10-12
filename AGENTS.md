@@ -5,7 +5,7 @@
 1. `README.md` → estado y navegación.
 2. `docs/02-core-requirements.md` → especificación vigente y IDs `REQ-*`.
 3. `docs/03-logical-architecture.md` y `docs/04-failure-offline-contract.md` → invariantes y fronteras.
-4. Archivo específico de task (`05`, `06` o `07`).
+4. Archivo específico de task (`05`, `06`, `07` o [`08` Resource Gate](docs/08-resource-gate.md)).
 5. `source/deep-research-report-original.md` → antecedente largo, consultar por sección, no volcar entero al contexto salvo necesidad.
 
 **Precedencia:** requisitos/decisiones explícitas de esta baseline > diseños provisionales de los otros documentos > material exploratorio del research. Una contradicción se registra, no se resuelve inventando una decisión.

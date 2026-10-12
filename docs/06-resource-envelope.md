@@ -1,6 +1,6 @@
 # 06 — Resource envelope v0.1 (W1.5)
 
-**Status:** W1.5.A–G DOCUMENTED (DESIGN ONLY), **UNMEASURED**; W1.5.H–J TODO. E/F/G contracts and test targets are not functional validations. Este es un **contrato de benchmarks por evaluar**, NO una lista certificada de prestaciones o especificaciones físicas ya aprobadas.
+**Status:** W1.5.A–J DOCUMENTED (DESIGN ONLY), **UNMEASURED**; no hardware or software implementation. W1.5.H–J decision/benchmark handoff is [08](08-resource-gate.md). Este es un **contrato de benchmarks por evaluar**, NO una lista certificada de prestaciones o especificaciones físicas ya aprobadas.
 
 ## Convención de etiquetas
 
@@ -399,6 +399,10 @@ Formato mínimo de trial: `run_id, scenario_id, profile, fault_type, t0_mono, de
 **DoD de diseño:** cada latencia define `t0/t1`, modos, método, límites de estadística y dependencias de W1.2. **No PASS / no test físico**. Las latencias TBD se ajustarán con un harness y hardware piloto, no con afirmaciones teóricas.
 
 
+## W1.5.H–J — Consolidación y gate
+
+Matriz de recursos Base/Pro, constraints agnósticos y decisión de diseño en [**08 — Resource Gate**](08-resource-gate.md). Evitamos duplicar cifras A–G en este archivo; 08 enlaza valores y hace explícitas las incertidumbres. **No hay hardware elegido, ni pruebas ejecutadas.**
+
 ## W1.5.C–J — Implementation roadmap / inputs y outputs
 
 | Task | Inputs de esta baseline | Entregable / gate |
@@ -408,9 +412,9 @@ Formato mínimo de trial: `run_id, scenario_id, profile, fault_type, t0_mono, de
 | **E Workload Resource Model** | manifest + C/D | **DOCUMENTED / UNVALIDATED**: schema JSON, admission, isolation and negative tests |
 | **F Power/Thermal** | C + perfiles Base/Pro | **DOCUMENTED / UNMEASURED**: power/UPS models, method, temperatures TBD |
 | **G Recovery Targets** | fallos W1.2 + B | **DOCUMENTED / UNMEASURED**: t0/t1 definitions, failover thresholds proposed, test protocol |
-| **H Base vs Pro Matrix** | B–G | min/target/stress consolidado y trade-offs |
+| **H Base vs Pro Matrix** | B–G | **DOCUMENTED / PROVISIONAL** en [08](08-resource-gate.md); trazabilidad por categoría |
 | **I Hardware-agnostic Constraints** | H | cpu/RAM/NIC/storage/power thresholds sin nombres de vendors |
-| **J Resource Gate** | I + benchmark plan | GO / REVISIT / BLOCKED con supuestos y prioridades explícitos |
+| **J Resource Gate** | I + benchmark plan | **CONDITIONAL DESIGN GO** W1.6/W1.7; NO-GO compra/producción, en [08](08-resource-gate.md) |
 
 ### Hipótesis de ingeniería aún no confirmadas
 

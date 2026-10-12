@@ -68,3 +68,4 @@ Los gates de fallos detallados están en [`04`](04-failure-offline-contract.md);
 | W1.5.E | Manifests, admission, Network Intent, isolation (sin enforcement) | REQ-WRK-01/02/03, REQ-STA-03 + [`05`](05-overlays-workload-contract.md), [`06`](06-resource-envelope.md) |
 | W1.5.F | Potencia, térmica, UPS modeladas (sin lecturas W) | REQ-LOC-01, REQ-REC-01, REQ-CON-03 + [`06`](06-resource-envelope.md) |
 | W1.5.G | Métricas reproducibles de recuperación y percentiles (sin ensayos) | REQ-CON-02, REQ-REC-01/02, REQ-STA-01, REQ-OBS-01 + [`06`](06-resource-envelope.md) |
+| W1.5.H–J | Matriz Base/Pro, constraints de hardware y design gate (sin mediciones) | REQ-CON/STA/WRK/REC/SEC/LOC/CLO/OBS + [`08`](08-resource-gate.md) |

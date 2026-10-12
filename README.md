@@ -17,7 +17,7 @@ PEF es una plataforma *local-first* para sitios pequeños: usa conectividad exis
 2. Leer [`docs/01-product-foundation.md`](docs/01-product-foundation.md) para el **porqué** y restricciones comerciales.
 3. Leer [`docs/02-core-requirements.md`](docs/02-core-requirements.md) para el **qué** (`REQ-*`).
 4. Leer sólo el documento necesario para la tarea: arquitectura [`03`](docs/03-logical-architecture.md), fallos [`04`](docs/04-failure-offline-contract.md), overlays [`05`](docs/05-overlays-workload-contract.md), recursos [`06`](docs/06-resource-envelope.md).
-5. Consultar [`docs/07-roadmap-decisions.md`](docs/07-roadmap-decisions.md) para estado real, decisiones y próximo trabajo; usar [subtasks W1.5](docs/tasks/w1.5-resource-execution.md) para ejecución.
+5. Consultar [`docs/07-roadmap-decisions.md`](docs/07-roadmap-decisions.md) para estado real, decisiones y próximo trabajo; usar [subtasks W1.5](docs/tasks/w1.5-resource-execution.md) para ejecución y [`docs/08-resource-gate.md`](docs/08-resource-gate.md) para matriz Base/Pro y gate de diseño.
 6. El informe conservado íntegro en [`source/deep-research-report-original.md`](source/deep-research-report-original.md) es **fuente de antecedentes**, no sustituto de requisitos ni validación independiente de cifras de mercado.
 
 ## Arquitectura reducida (baseline de W1.3)
@@ -63,8 +63,9 @@ flowchart TB
 | W1.5.E Workload Resource Model | DOCUMENTED; schema, admission design | PENDING |
 | W1.5.F Power & Thermal | DOCUMENTED; methodology, W TBD | PENDING |
 | W1.5.G Recovery Targets | DOCUMENTED; timing model | PENDING |
-| **W1.5.H–J Consolidation & Gate** | **NEXT** | PENDING |
-| W1.6–W1.8 | PLANNED | PENDING |
+| W1.5.H–J Consolidation & Gate | DOCUMENTED; **design GO conditional** | PENDING |
+| **W1.6 Software Runtime Contract** | **NEXT** | PENDING |
+| W1.7–W1.8 | PLANNED | PENDING |
 
 > **Integridad del import:** `SHA256SUMS` conserva los checksums de la **primera importación Foundation**; no es un manifiesto vivo del HEAD después de los commits documentales. Usar `git`/GitHub para verificar la versión vigente.
 
@@ -78,4 +79,4 @@ flowchart TB
 
 ## Entrega y próxima transición
 
-**Repositorio de trabajo:** [`krukmat/logistica`](https://github.com/krukmat/logistica), rama principal `main`. Esta baseline documenta trabajo de diseño; los commits de integración no constituyen validación empírica. Para avanzar: **W1.5.H–J** (matriz Base/Pro, criterios agnósticos de hardware y gate hacia W1.6–W1.8), siguiendo el [plan granular de W1.5](docs/tasks/w1.5-resource-execution.md). Los resultados de A–G están documentados como diseño y aún requieren validación en W1.7/W1.8.
+**Repositorio de trabajo:** [`krukmat/logistica`](https://github.com/krukmat/logistica), rama principal `main`. Esta baseline documenta trabajo de diseño; los commits de integración no constituyen validación empírica. Para avanzar: **W1.6 Software Runtime Contract** y **W1.7 Benchmark Harness**, con [Resource Gate](docs/08-resource-gate.md) **GO a diseño/benchmark, NO a compra/producción**. W1.5.A–J están documentadas como diseño y necesitan validación en W1.7/W1.8.
