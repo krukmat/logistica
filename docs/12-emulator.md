@@ -79,3 +79,11 @@ Ya existe el **punto de extensión `openBackend(kind, config)`** que sólo imple
 ## Diagramas de conectividad y siguiente laboratorio
 
 [13 — Conectividad PEF](13-connectivity-topology.md) incluye el wiring abstracto del gateway, estados WAN, failover/failback, separación de planos y recorrido `sim → loopback-lab → linux-lab → device`. El siguiente bloque desarrolla un laboratorio TCP/HTTP localhost de alcance explícito, sin root ni interfaces reales.
+
+## W1.9.F — Loopback connectivity lab (Node.js localhost)
+
+`npm run lab:loopback` inicia dos servicios HTTP en `127.0.0.1` con **puertos efímeros**, los sondea por TCP/HTTP y alimenta la máquina de estados del emulador. Inyecta 503, timeout sin respuesta y reset TCP, verifica selección primaria/respaldo, `LOCAL_ONLY`, evidencia y replay. No requiere Linux, Docker, root, NAT, rutas del host ni conexión Internet.
+
+**Fuente:** `src/emulator/lab/loopback.js`; tests `test/loopback-lab.test.js`. Estado `LAB_PASS/LAB_FAIL`, deliberadamente distinto de `SIM_PASS` y del `PASS` físico de W1.7. El laboratorio confirma que hay tráfico real hacia *servidores loopback*, pero el failover de las rutas y la WAN seleccionada **continúan siendo decisiones del modelo PEF**. No medir p95 WAN, DHCP, NAT, offload ni storage endurance con estos resultados.
+
+**Siguiente:** comparador de resultados del modelo versus loopback, y después `linux-lab` aislado (VM/container/namespaces) para pruebas de forwarding real, con preflight y rollback de red virtual.

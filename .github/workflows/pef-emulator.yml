@@ -27,3 +27,5 @@ jobs:
         run: npm test
       - name: Deterministic scenarios
         run: npm run emulate
+      - name: Loopback connectivity lab
+        run: npm run lab:loopback
