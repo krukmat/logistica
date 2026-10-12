@@ -66,3 +66,13 @@ Cada nuevo bloque o task de código debe actualizar **simultáneamente**:
 ## Evidencia
 
 [GitHub Actions #38272443257](https://github.com/krukmat/logistica/actions/runs/38272443257): **58 tests Node PASS, 7 escenarios SIM_PASS, localhost LAB_PASS y Linux namespace LAB_PASS CLEANUP=CLEAN.** El panel sirve tanto el simulador como el laboratorio integrado y la batería HTTP invoca el mismo `edge-runtime`, `file-journal` y `cloud-replay` usados en los tests de laboratorio. Sigue sin haber hardware PEF certificado ni pruebas de browser automatizado de píxeles.
+
+## W1.9.P1–P3 — Bootstrap y transporte (integrado)
+
+El panel **Laboratorio integrado** también ofrece bootstrap de identidad temporal con archivo 0600 y fsync, nueva sesión al reiniciar, y un protocolo ACK v1 de laboratorio con prueba HMAC efímera. El mock no tiene credenciales ni certificado de dispositivo.
+
+**Cómo verificar P2:** crear un evento con *Sondear + reconciliar*, pulsar *Timeout del próximo ingest*, ejecutar sincronización y comprobar `REMOTE_TIMEOUT` sin adelantar el cursor. Pulsar *Sincronizar · 2 intentos* y comprobar que el replay se deduplica. Repetir con *ACK sin prueba (mock)* y *Versión incompatible*: deben mostrar `INVALID_REMOTE_PROOF` manteniendo P1 pendiente hasta recibir un ACK válido.
+
+La prueba HMAC utiliza una clave aleatoria efímera que permanece en RAM del proceso local, **no es mTLS, PKI, confianza remota ni un dispositivo autenticado**. El framing determinista sólo se aplica a la tupla de ACK v1. La inyección de timeouts permanece acotada para que la UI no quede colgada; Linux veth y pruebas físicas siguen separadas.
+
+**CI:** [#38274368734](https://github.com/krukmat/logistica/actions/runs/38274368734): 65/65 pruebas Node, 7 SIM_PASS, loopback LAB_PASS y Linux namespaces LAB_PASS/CLEAN. La integración P1–P3 se verifica desde la API HTTP del propio dashboard, además de sus pruebas unitarias.
