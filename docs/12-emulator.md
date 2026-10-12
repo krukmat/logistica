@@ -109,3 +109,9 @@ The separate `src/emulator/lab/file-journal.js` stores events in an append-only 
 This **does not certify power-loss persistence**: a process crash does not exercise hardware cache, controller barriers or filesystem after sudden power loss. Also pending: single-writer locking, directory creation durability, P1 emergency reserve, compaction and durable retention policy; W1.9.J will cover lifecycle constraints before hardware adapters.
 
 **Current independent evidence:** [W1.9.H–I CI audit](audit/w1.9-h-i-2026-10-12.md), **22/22 Node tests**, simulation scenarios, loopback lab and namespace networking job PASS; PEF Core hardware acceptance remains NOT_RUN.
+
+## W1.9.J1 — Protected control reserve
+
+El emulador de journal en archivo admite ahora `controlReserveBytes`, un espacio finito que las escrituras normales `EVENT` no pueden consumir y que queda disponible para persistir un `CLOUD_ACK` mediante `fsync` del sistema operativo. En `status()` se exponen el total, el límite regular y la reserva. Las pruebas provocan saturación del backlog antes de confirmar en el cloud y comprueban reapertura del marcador de ACK.
+
+**Evidencia:** [CI #38260694016](https://github.com/krukmat/logistica/actions/runs/38260694016): 24/24 pruebas Node, 7 escenarios lógicos y laboratorio de rutas Linux aislado en verde. La reserva no garantiza capacidad ilimitada de cursores, ni reserva O0/O1 independiente. La **compactación segura (W1.9.J2)** aún no está implementada. No se probó corte eléctrico físico, endurance del SSD ni garantías del controlador de escritura.
