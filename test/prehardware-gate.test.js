@@ -7,7 +7,8 @@ const fixture=()=>({
     assertions:REQUIRED.map(id=>({id,ok:true}))},
   supervisedEvidence:{status:"LAB_PASS",hardwareValidated:false,
     offlineFsync:true,oomKill:1,
-    checks:["SUPERVISOR_START","CPU_THROTTLED","RESTART_AFTER_OOM","STOP_AND_RELEASE"]}
+    checks:["SUPERVISOR_START","CPU_THROTTLED","RESTART_AFTER_OOM","STOP_AND_RELEASE",
+      "STANDALONE_DAEMON_KERNEL_WORKER","STANDALONE_DAEMON_OFFLINE_FSYNC"]}
 });
 test("T5 handoff gate permits only starting physical integration, never claims device ready",()=>{
   const output=evaluatePreHardwareGate(fixture());
