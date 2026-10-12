@@ -90,6 +90,19 @@
           <button id="lab-reset" class="secondary" type="button">Restablecer laboratorio</button>
         </div>
         <div class="feedback" id="lab-feedback" role="status" aria-live="polite">Utiliza el control WAN, pulsa sondear y comprueba qué se ha persistido.</div>
+        <div class="lab-detail workload-panel" id="workload-panel">
+          <h4>S — Workload Runtime · proceso local (NO sandbox)</h4>
+          <p class="micro">Workload permitido: <code>pef-receiver</code>. El Core valida su manifest, recursos y política offline; el supervisor inicia un proceso Node aislado sólo por proceso. <strong>CPU/RAM, filesystem y red todavía no están aislados por Linux</strong>.</p>
+          <div class="lab-buttons">
+            <button id="workload-start" type="button" class="primary">Admitir e iniciar</button>
+            <button id="workload-stop" type="button" class="secondary">Detener y liberar cuota</button>
+            <button id="workload-crash" type="button" class="secondary warning">Simular crash de proceso</button>
+            <button id="workload-reconcile" type="button" class="secondary">Comprobar health / recovery</button>
+            <button id="workload-receipt" type="button" class="secondary">Registrar recepción por IPC</button>
+          </div>
+          <p id="workload-scope" class="micro">Driver de proceso local: SIN límites de cgroups, sin filesystem sandbox ni red aislada. Linux sandbox: NOT_RUN.</p>
+          <pre id="workload-status">[]</pre>
+        </div>
         <div class="lab-detail local-receipts-panel">
           <h4>Q — Recepción logística local · offline-first</h4>
           <p class="micro">API local: registra un paquete sin Cloud. Se acepta únicamente tras fsync en P1; el ACK remoto se obtiene al recuperar WAN.</p>
