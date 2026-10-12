@@ -3,7 +3,7 @@
 // synthetic WAN probes/routes and in-memory cloud mock, no physical networking.
 const fs=require("node:fs"),os=require("node:os"),path=require("node:path");
 const {randomUUID,randomBytes}=require("node:crypto");
-const {createEdgeRuntime}=require("./lab/edge-runtime.js");
+const {openEdgeService}=require("../runtime/edge-service.js");
 const {createLabCloudReplica}=require("./lab/cloud-replay.js");
 const {openLabBoot}=require("./lab/lab-bootstrap.js");
 const {runLoopbackSuite}=require("./lab/loopback.js");
@@ -33,9 +33,11 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
   }
   function openRuntime(){
     boot=openLabBoot({dir,identity:IDENTITY});
-    edge=createEdgeRuntime({dir,identity:boot.identity,sessionId:boot.sessionId,
-      probe:async id=>({...wan[id],reason:wan[id].upstream?"HEALTHY":"INJECTED_UNREACHABLE"}),
-      applyRoute:async selected=>{route=selected;},
+    edge=openEdgeService({dir,identity:boot.identity,sessionId:boot.sessionId,
+      ports:{
+        probe:async id=>({...wan[id],reason:wan[id].upstream?"HEALTHY":"INJECTED_UNREACHABLE"}),
+        applyRoute:async selected=>{route=selected;}
+      },
       journalOptions:profile==="pressure"?{capacityBytes:2400,controlReserveBytes:400}:{capacityBytes:65536,controlReserveBytes:8192},
       simulatorOptions:{failbackHoldSeconds:3}});
   }
@@ -57,6 +59,9 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
         hardwareProvisioned:false,credentialsProvisioned:false},network:status.network,storage:status.storage,
       runtimeHealth:status.runtimeHealth,volatilePending:status.volatilePending,
       droppedEvidence:status.droppedEvidence,lastError:status.lastError,
+      runtimeBackend:{kind:"virtual-lab",domainCore:"src/core/edge-runtime.js",
+        wanPolicy:"src/core/wan-policy.js",journalPort:"OS_FILE_JOURNAL",
+        kernelRouteApplied:false,physicalValidated:false},
       routeAppliedInMemory:route,wans:Object.entries(wan).map(([id,w])=>({id,...w})),
       transport:{schemaVersion:1,frame:"PEF-LAB-ACK-v1",timeoutMs:250,maxAttempts:1,
         proof:"EPHEMERAL_LAB_ONLY",authenticated:false,realNetwork:false},

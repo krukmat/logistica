@@ -5,12 +5,16 @@ const {randomBytes,timingSafeEqual}=require("node:crypto");
 const {createSession}=require("./session.js");
 const {createDashboardLab}=require("./dashboard-lab.js");
 const root=path.resolve(__dirname,"../../");
-function createDashboardServer({host="127.0.0.1",port=8787,scenarioDir=path.join(root,"scenarios")}={}){
+function createDashboardServer({host="127.0.0.1",port=8787,scenarioDir=path.join(root,"scenarios"),runtimeLab=null}={}){
   if(host!=="127.0.0.1"&&host!=="localhost")throw Error("LOCALHOST_ONLY");
   if(!Number.isSafeInteger(port)||port<0||port>65535)throw Error("INVALID_PORT");
   const secret=randomBytes(32).toString("hex");
   const session=createSession();
-  const lab=createDashboardLab();
+  // Inject an externally owned runtime for dashboard restarts without stopping PEF.
+  const ownsLab=runtimeLab===null;
+  const lab=runtimeLab||createDashboardLab();
+  if(!lab||["snapshot","command","listReceipts","close"].some(m=>typeof lab[m]!=="function"))
+    throw Error("INVALID_DASHBOARD_RUNTIME_PORT");
   let mode="sim";
   const view=()=>({mode,session:session.snapshot(),lab:lab.snapshot()});
   let boundPort=null;
@@ -128,7 +132,7 @@ function createDashboardServer({host="127.0.0.1",port=8787,scenarioDir=path.join
   }
   async function close(){
     try{if(instance.listening)await new Promise((resolve,reject)=>instance.close(e=>e?reject(e):resolve()));}
-    finally{lab.close();}
+    finally{if(ownsLab)lab.close();}
   }
   return {listen,close,server:instance,snapshot:view};
 }

@@ -94,6 +94,7 @@ function renderIntegrated(lab){
   setText("lab-health",lab.runtimeHealth+" · "+lab.volatilePending+" volátiles · "+lab.droppedEvidence+" descartados");
   setText("lab-boot",lab.boot.metadataFsync?"metadata fsync · LAB_ONLY":"missing");
   setText("lab-protocol",lab.transport.frame+" · "+lab.transport.timeoutMs+" ms · proof mock");
+  setText("lab-runtime-backend",lab.runtimeBackend.kind+" · shared PEF Core · route in memory");
   $("lab-profile").value=lab.profile;
   $("receipt-list").textContent=JSON.stringify(lab.receipts||[],null,2);
   const accepted=(lab.receipts||[]).length;
