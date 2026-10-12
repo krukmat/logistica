@@ -1,0 +1,77 @@
+"use strict";
+// Process supervisor with injected driver, bounded restart and monotonic retry policy.
+// No executable paths or arbitrary shell commands reach this product-domain module.
+function createWorkloadSupervisor({manager,driver,clock=()=>Date.now()}={}){
+  if(!manager||typeof manager.admit!=="function"||typeof manager.release!=="function"||
+     !driver||typeof driver.start!=="function"||typeof clock!=="function")
+    throw Error("INVALID_SUPERVISOR_PORT");
+  const entries=new Map();
+  let closed=false;
+  function ensure(){if(closed)throw Error("SUPERVISOR_CLOSED");}
+  const show=x=>({workloadId:x.manifest.workload_id,state:x.state,attempts:x.attempts,
+    nextRetryAt:x.nextRetryAt,lastError:x.lastError,manifestVersion:x.manifest.manifest_version,
+    isolation:x.isolation||"NONE",actualLimitsEnforced:x.actualLimitsEnforced===true});
+  function onExit(x,reason){
+    if(x.stopping||closed||!entries.has(x.manifest.workload_id))return;
+    x.handle=null;
+    x.attempts++;
+    x.lastError=typeof reason==="string"?reason:"PROCESS_EXITED";
+    const cfg=x.manifest.health.restart_policy,now=clock();
+    if(now-x.windowStart>cfg.window_seconds*1000){x.windowStart=now;x.attempts=1;}
+    if(x.attempts>cfg.max_attempts){x.state="ISOLATED";x.nextRetryAt=null;return;}
+    x.state="BACKOFF";
+    x.nextRetryAt=now+Math.min(30000,cfg.backoff_seconds*1000*Math.pow(2,x.attempts-1));
+  }
+  async function boot(x){
+    x.state="STARTING";x.nextRetryAt=null;
+    try{
+      const handle=await driver.start(x.manifest,{onExit:reason=>onExit(x,reason)});
+      if(!handle||typeof handle.stop!=="function"||typeof handle.health!=="function")
+        throw Error("INVALID_WORKLOAD_PROCESS_PORT");
+      if(x.state==="STARTING"){x.handle=handle;x.state="RUNNING";
+        x.isolation=handle.isolation||"PROCESS_ONLY";
+        x.actualLimitsEnforced=handle.actualLimitsEnforced===true;}
+      else await handle.stop();
+      return {ok:x.state==="RUNNING",...show(x)};
+    }catch(e){
+      onExit(x,String(e.message||e));
+      return {ok:false,...show(x)};
+    }
+  }
+  async function start(manifest,options={}){
+    ensure();if(entries.has(manifest?.workload_id))return {ok:false,error:"ALREADY_ADMITTED"};
+    const result=manager.admit(manifest,options);
+    if(!result.ok)return result;
+    const x={manifest:manager.get(manifest.workload_id),state:"ADMITTED",attempts:0,
+      windowStart:clock(),nextRetryAt:null,lastError:null,handle:null,stopping:false};
+    entries.set(manifest.workload_id,x);
+    return boot(x);
+  }
+  async function reconcile(){
+    ensure();const now=clock(),results=[];
+    for(const x of entries.values()){
+      if(x.state==="BACKOFF"&&x.nextRetryAt<=now)results.push(await boot(x));
+      else if(x.state==="RUNNING"){
+        try{const h=await x.handle.health();
+          if(h?.ok!==true)onExit(x,"HEALTH_CHECK_FAILED");
+        }catch{onExit(x,"HEALTH_CHECK_FAILED");}
+      }
+    }
+    return {ok:true,changes:results,status:list()};
+  }
+  async function stop(id){
+    ensure();const x=entries.get(id);if(!x)return {ok:false,error:"WORKLOAD_NOT_FOUND"};
+    x.stopping=true;x.state="STOPPING";
+    try{if(x.handle)await x.handle.stop();}
+    finally{entries.delete(id);manager.release(id);}
+    return {ok:true,workloadId:id,state:"STOPPED"};
+  }
+  function list(){return [...entries.values()].map(show);}
+  async function close(){
+    if(closed)return;const ids=[...entries.keys()];
+    for(const id of ids)await stop(id);
+    closed=true;
+  }
+  return {start,reconcile,stop,list,close,limits:manager.limits,usage:manager.usage};
+}
+module.exports={createWorkloadSupervisor};
