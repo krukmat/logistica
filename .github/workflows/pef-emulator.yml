@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'src/emulator/**'
+      - 'public/**'
       - 'bin/**'
       - 'test/**'
       - 'scenarios/**'
