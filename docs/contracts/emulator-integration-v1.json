@@ -129,6 +129,28 @@
       "implementation": "src/emulator/lab/cloud-replay.js",
       "test": "test/dashboard-integrated.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "W1.9.P",
+      "mode": "lab",
+      "title": "Ephemeral lab identity bootstrap, ACK proof, deadlines and bounded retries",
+      "controlIds": [
+        "lab-boot",
+        "lab-protocol",
+        "lab-timeout",
+        "lab-missing-proof",
+        "lab-bad-version",
+        "lab-retry-sync"
+      ],
+      "actions": [
+        "timeout",
+        "missingProof",
+        "badVersion",
+        "syncRetry"
+      ],
+      "implementation": "src/emulator/lab/cloud-replay.js",
+      "test": "test/dashboard-integrated.test.js",
+      "hardwareValidated": false
     }
   ]
 }
