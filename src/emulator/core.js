@@ -1,5 +1,6 @@
 "use strict";
 // Pure logical-time simulator; no OS network, real fsync, power or hardware measurements.
+const {evaluateWanPolicy}=require("../core/wan-policy.js");
 const createSimulator=function createSimulator(options={}){
   const defaults={profile:"BASE",p1CapacityBytes:65536,p2CapacityBytes:131072,workloadMemoryBudgetMiB:512,workloadCpuBudgetMillicores:1000,failbackHoldSeconds:5};
   const c=Object.assign({},defaults,options);
@@ -14,14 +15,14 @@ const createSimulator=function createSimulator(options={}){
   const usable=w=>w.link&&w.upstream;
   const status=()=>({clock:state.clock,profile:state.profile,wans:state.wans.map(w=>({id:w.id,priority:w.priority,link:w.link,upstream:w.upstream})),selectedWan:state.selectedWan,connectivity:state.connectivity,cloud:state.cloudStatus,cloudAvailable:state.cloudAvailable,security:state.security,health:state.health,configRevision:state.configRevision,knownGoodRevision:state.knownGoodRevision,p1Used:state.p1Used,p1CapacityBytes:c.p1CapacityBytes,p2Used:state.p2Used,p2Reserved:state.p2Reserved,p2CapacityBytes:c.p2CapacityBytes,pendingEvents:state.journal.length,cloudEvents:state.cloudEvents.length,cloudDuplicates:state.cloudDuplicates,workloads:Object.fromEntries(Object.entries(state.workloads).map(([k,w])=>[k,{status:w.status,memoryRequestMiB:w.resources.memory_request_mib,cpuRequestMillicores:w.resources.cpu_request_millicores,storageUsed:w.storageUsed,attempts:w.attempts}]))});
   const refresh=()=>{
-    const available=state.wans.filter(usable).sort((a,b)=>a.priority-b.priority||a.id.localeCompare(b.id));
-    for(const w of state.wans){if(usable(w)){if(w.healthySince===null)w.healthySince=state.clock;}else w.healthySince=null;}
-    const current=state.wans.find(w=>w.id===state.selectedWan),best=available[0];
-    let next=state.selectedWan;
-    if(!current||!usable(current))next=best?best.id:null;
-    else if(best&&best.priority<current.priority&&state.clock-best.healthySince>=c.failbackHoldSeconds)next=best.id;
-    if(next!==state.selectedWan){record("WAN_SELECTED",{from:state.selectedWan,to:next});state.selectedWan=next;}
-    state.connectivity=available.length===0?"LOCAL_ONLY":available.length>=2?"MULTI_WAN_HEALTHY":"CONNECTED";
+    const selection=evaluateWanPolicy({wans:state.wans,selectedWan:state.selectedWan,
+      clock:state.clock,failbackHoldSeconds:c.failbackHoldSeconds});
+    state.wans=selection.wans;
+    if(selection.selectedWan!==state.selectedWan)
+      record("WAN_SELECTED",{from:state.selectedWan,to:selection.selectedWan});
+    state.selectedWan=selection.selectedWan;
+    state.connectivity=selection.connectivity;
+    const available=selection.wans.filter(usable);
     state.cloudStatus=state.cloudAvailable&&available.length>0&&state.remoteTrusted?"ONLINE":"CLOUD_DISCONNECTED";
     state.security=state.remoteTrusted?"SECURE":"REMOTE_ISOLATED";
     if(state.health==="BOOTING")state.health="HEALTHY";
