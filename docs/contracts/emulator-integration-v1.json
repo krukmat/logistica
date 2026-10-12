@@ -185,6 +185,42 @@
       "implementation": "src/core/edge-runtime.js",
       "test": "test/hardware-portability.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "W1.9.S",
+      "mode": "lab",
+      "title": "Real allowlisted child process admission, IPC health/recovery, local offline receiving and UI",
+      "controlIds": [
+        "workload-panel",
+        "workload-start",
+        "workload-stop",
+        "workload-crash",
+        "workload-reconcile",
+        "workload-receipt",
+        "workload-status",
+        "workload-scope"
+      ],
+      "actions": [
+        "workloadStart",
+        "workloadStop",
+        "workloadCrash",
+        "workloadReconcile",
+        "workloadReceipt"
+      ],
+      "implementation": "src/core/workload-supervisor.js",
+      "test": "test/dashboard-workloads.test.js",
+      "hardwareValidated": false
+    },
+    {
+      "task": "W1.9.S3",
+      "mode": "ci-evidence",
+      "title": "GitHub-hosted CPU/memory/pids cgroup v2 and isolated network/chroot offline workload proof",
+      "controlIds": [],
+      "actions": [],
+      "implementation": "src/adapters/linux-workload-isolation.js",
+      "test": "test/linux-workload-isolation.test.js",
+      "hardwareValidated": false,
+      "uiEvidenceUrl": "https://github.com/krukmat/logistica/actions/workflows/pef-emulator.yml"
     }
   ]
 }

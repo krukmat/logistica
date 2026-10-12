@@ -100,7 +100,9 @@
             <button id="workload-reconcile" type="button" class="secondary">Comprobar health / recovery</button>
             <button id="workload-receipt" type="button" class="secondary">Registrar recepción por IPC</button>
           </div>
-          <p id="workload-scope" class="micro">Driver de proceso local: SIN límites de cgroups, sin filesystem sandbox ni red aislada. Linux sandbox: NOT_RUN.</p>
+          <p id="workload-scope" class="micro">Driver de proceso local: CPU/RAM/FS/red NO aislados. El proceso se ejecuta con los permisos del usuario local.</p>
+          <p class="micro"><strong>S3 Linux kernel lab: LAB_PASS (CI separado)</strong> — cgroup v2 (CPU 150 mCPU, memoria 64 MiB, pids 16), netns sin WAN, chroot y UID 65534. No son límites del proceso del Mac.
+            <a href="https://github.com/krukmat/logistica/actions/workflows/pef-emulator.yml" target="_blank" rel="noopener noreferrer">Ver evidencia S3 en Linux CI</a>.</p>
           <pre id="workload-status">[]</pre>
         </div>
         <div class="lab-detail local-receipts-panel">

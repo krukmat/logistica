@@ -215,3 +215,12 @@ async function start(){
   }catch(err){setText("connection","● OFFLINE");message(String(err.message||err),true);}
 }
 start();
+setInterval(async()=>{
+  if(!token||busy||currentMode!=="lab")return;
+  try{
+    const response=await fetch("/api/state",{cache:"no-store"});
+    if(!response.ok)return;
+    const data=await response.json();
+    if(!busy&&currentMode==="lab")render(data.session,data.lab,data.mode);
+  }catch{ /* browser/daemon may be disconnected; command path reports errors */ }
+},1200);
