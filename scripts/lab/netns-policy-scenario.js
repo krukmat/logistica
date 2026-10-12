@@ -6,7 +6,7 @@ const {execFileSync}=require("node:child_process");
 const fs=require("node:fs");
 const path=require("node:path");
 const os=require("node:os");
-const {createFileJournal}=require("../../src/emulator/lab/file-journal.js");
+const {createFileJournal}=require("../../src/adapters/os-file-journal.js");
 const {openRuntimeBackend}=require("../../src/runtime/backend-registry.js");
 function need(name){if(!process.env[name])throw Error("LAB_BLOCKED:"+name);return process.env[name];}
 function ip(...args){return execFileSync("ip",args,{encoding:"utf8",timeout:5000}).trim();}
