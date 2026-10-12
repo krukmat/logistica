@@ -37,6 +37,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup Node for policy driver
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - name: Preflight networking tools
         run: |
           if ! command -v ip >/dev/null || ! command -v ping >/dev/null; then
@@ -49,12 +53,14 @@ jobs:
         run: |
           sudo -n env CI="$CI" GITHUB_ACTIONS="$GITHUB_ACTIONS" RUNNER_ENVIRONMENT="$RUNNER_ENVIRONMENT" \
             PEF_NETNS_ACK="$PEF_NETNS_ACK" PEF_NETNS_REPO_ROOT="$GITHUB_WORKSPACE" \
+            PEF_NETNS_NODE="$(command -v node)" \
             PEF_NETNS_EVIDENCE="$RUNNER_TEMP/pef-netns-evidence.json" \
+            PEF_NETNS_POLICY_EVIDENCE="$RUNNER_TEMP/pef-netns-policy.json" \
             bash scripts/lab/netns-smoke.sh
       - name: Upload lab evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pef-netns-evidence
-          path: ${{ runner.temp }}/pef-netns-evidence.json
+          path: ${{ runner.temp }}/pef-netns-*.json
           if-no-files-found: warn

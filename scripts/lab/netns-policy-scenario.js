@@ -75,7 +75,7 @@ async function run(){
     ip("-n",ns.wb,"addr","del","10.250.30.1/24","dev","eth0");bLost=true;
     await phase("all-wan-unreachable",1,null,"DOWN");
     const ping=ip("netns","exec",ns.lan,"ping","-q","-c","1","-W","1","10.250.10.1");
-    assertLab("local-lan-remains-operational",ping.includes("0% packet loss"),ping);
+    assertLab("local-lan-remains-operational",/\b0% packet loss\b/.test(ping),ping);
     ip("-n",ns.wa,"addr","add","10.250.20.1/24","dev","eth0");aLost=false;
     await phase("restored",1,"primary","WAN_A");
   }catch(err){failures.push(String(err.stack||err));}

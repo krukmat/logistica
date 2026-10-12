@@ -73,9 +73,9 @@ ip -n "$wb" addr add 203.0.113.42/32 dev lo
 mkdir -p "$tmpdir/wa" "$tmpdir/wb"
 printf 'WAN_A\n' > "$tmpdir/wa/link.txt"
 printf 'WAN_B\n' > "$tmpdir/wb/link.txt"
-ip netns exec "$wa" python3 -u -m http.server 8765 --bind 203.0.113.42 --directory "$tmpdir/wa" >"$tmpdir/wa.log" 2>&1 &
+ip netns exec "$wa" python3 -u -m http.server 8765 --bind 0.0.0.0 --directory "$tmpdir/wa" >"$tmpdir/wa.log" 2>&1 &
 server_pids+=("$!")
-ip netns exec "$wb" python3 -u -m http.server 8765 --bind 203.0.113.42 --directory "$tmpdir/wb" >"$tmpdir/wb.log" 2>&1 &
+ip netns exec "$wb" python3 -u -m http.server 8765 --bind 0.0.0.0 --directory "$tmpdir/wb" >"$tmpdir/wb.log" 2>&1 &
 server_pids+=("$!")
 
 client() { ip netns exec "$lan" python3 "${PEF_NETNS_REPO_ROOT:-}/scripts/lab/netns-client.py" "$1"; }
@@ -107,3 +107,10 @@ ip -n "$wa" route del blackhole 203.0.113.42/32
 ip -n "$wa" addr add 203.0.113.42/32 dev lo
 ip -n "$edge" route replace default via 10.250.20.1 dev wa0
 client WAN_A
+
+# W1.9.H: measured namespace probes drive policy and real Edge-only routing.
+# Restore only the lab backup veth, which G intentionally left disabled.
+ip -n "$edge" link set wb0 up
+[[ -x "${PEF_NETNS_NODE:-}" ]] || block "Node binary required for H policy driver"
+export PEF_NETNS_EDGE="$edge" PEF_NETNS_LAN="$lan" PEF_NETNS_WA="$wa" PEF_NETNS_WB="$wb"
+"${PEF_NETNS_NODE}" "${PEF_NETNS_REPO_ROOT}/scripts/lab/netns-policy-scenario.js"
