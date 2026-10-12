@@ -90,6 +90,12 @@
           <button id="lab-reset" class="secondary" type="button">Restablecer laboratorio</button>
         </div>
         <div class="feedback" id="lab-feedback" role="status" aria-live="polite">Utiliza el control WAN, pulsa sondear y comprueba qué se ha persistido.</div>
+        <div class="lab-detail" id="standalone-edge-panel">
+          <h4>T — Edge Service autónomo · pre-hardware</h4>
+          <p class="micro">Ejecuta un servicio HTTP separado del Control Panel, con el Core compartido, proceso supervisado, journal con fsync y reinicio con recuperación. Es un test <strong>lab-only</strong>, no un appliance Linux instalado.</p>
+          <button id="edge-autonomous-smoke" type="button" class="secondary">Probar arranque autónomo y reapertura</button>
+          <pre id="edge-autonomous-evidence">Sin ejecución</pre>
+        </div>
         <div class="lab-detail workload-panel" id="workload-panel">
           <h4>S — Workload Runtime · proceso local (NO sandbox)</h4>
           <p class="micro">Workload permitido: <code>pef-receiver</code>. El Core valida su manifest, recursos y política offline; el supervisor inicia un proceso Node aislado sólo por proceso. <strong>CPU/RAM, filesystem y red todavía no están aislados por Linux</strong>.</p>

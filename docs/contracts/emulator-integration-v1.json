@@ -232,6 +232,22 @@
       "test": "test/linux-isolated-process-driver.test.js",
       "hardwareValidated": false,
       "uiEvidenceUrl": "https://github.com/krukmat/logistica/actions/workflows/pef-emulator.yml"
+    },
+    {
+      "task": "W1.9.T",
+      "mode": "lab",
+      "title": "Standalone autonomous Edge host HTTP startup, fsync and restart without dashboard",
+      "controlIds": [
+        "standalone-edge-panel",
+        "edge-autonomous-smoke",
+        "edge-autonomous-evidence"
+      ],
+      "actions": [
+        "autonomousSmoke"
+      ],
+      "implementation": "src/runtime/autonomous-edge.js",
+      "test": "test/dashboard-integrated.test.js",
+      "hardwareValidated": false
     }
   ]
 }

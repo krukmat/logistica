@@ -286,3 +286,17 @@ test("Q: lost remote ACK for accepted receipt is retried without duplicate Cloud
   assert.equal(replay.result.duplicates,1);
   assert.equal(replay.lab.receipts[0].cloudAcked,true);
 }));
+
+test("T emulator offers actual standalone daemon smoke via HTTP and displays its recovery evidence",()=>withPanel(async({url,call})=>{
+  const html=await (await fetch(url)).text(),js=await (await fetch(url+"dashboard.js")).text();
+  for(const id of ["standalone-edge-panel","edge-autonomous-smoke","edge-autonomous-evidence"])
+    assert.ok(html.includes('id="'+id+'"'),"Missing daemon UI "+id);
+  assert.ok(js.includes('labAction("autonomousSmoke")'));
+  await call({command:"mode",mode:"lab"});
+  const smoke=await call({command:"lab",action:"autonomousSmoke"});
+  assert.equal(smoke.result.ok,true,JSON.stringify(smoke.result));
+  assert.equal(smoke.result.retainedAfterRestart,true);
+  assert.equal(smoke.result.fsyncCompleted,true);
+  assert.equal(smoke.lab.standaloneEdge.lastEvidence.status,"LAB_PASS");
+  assert.equal(smoke.lab.standaloneEdge.physicalValidated,false);
+}));
