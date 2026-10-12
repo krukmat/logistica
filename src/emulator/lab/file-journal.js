@@ -16,7 +16,7 @@ function createFileJournal({dir,capacityBytes=1024*1024,controlReserveBytes}={})
   if(!fs.statSync(dir).isDirectory())throw Error("JOURNAL_DIR_NOT_DIRECTORY");
   const file=path.join(fs.realpathSync(dir),"pef-journal.ndjson");
   const flags=fs.constants.O_RDWR|fs.constants.O_CREAT|fs.constants.O_APPEND|(fs.constants.O_NOFOLLOW||0);
-  const fd=fs.openSync(file,flags,0o600);
+  let fd=fs.openSync(file,flags,0o600);
   const entries=new Map(),acked=new Set(),refs=new Map();
   let closed=false,unsafe=false,size=0;
   const signed=(kind,id,payload,category)=>({kind,id,payload,category,sha256:digest(kind,id,payload,category)});
@@ -111,7 +111,7 @@ function createFileJournal({dir,capacityBytes=1024*1024,controlReserveBytes}={})
       if(acked.has(entry.id))retained.push(signed("CLOUD_ACK",entry.id,null,"P1"));
     }
     for(const [id,ref] of refs)tombstones.push(signed("ACKED_REF",id,ref.digest,ref.category));
-    const staged=[...retained,...tombstones].map(record=>JSON.stringify(record)+"\\n").join("");
+    const staged=[...retained,...tombstones].map(record=>JSON.stringify(record)+"\n").join("");
     const bytes=Buffer.from(staged,"utf8");
     if(bytes.length>capacityBytes-controlReserveBytes)
       return {ok:false,error:"COMPACTION_NO_SPACE",requiredBytes:bytes.length,regularLimitBytes:capacityBytes-controlReserveBytes};
