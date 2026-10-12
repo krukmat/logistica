@@ -28,11 +28,16 @@ process.on("message",async m=>{
     let n=1;while(Date.now()<end){n=(n*1103515245+12345)|0;}
     reply(m,{ok:true,stressed:true});
   }else if(ci&&m.type==="MEMORY_PRESSURE"){
-    reply(m,{ok:true,pressureBytes:96*1048576});
+    reply(m,{ok:true,pressureBytes:128*1048576});
     setImmediate(()=>{
-      const buffer=Buffer.allocUnsafe(96*1048576);
-      for(let i=0;i<buffer.length;i+=4096)buffer[i]=1;
-      setInterval(()=>{if(!buffer.length)process.exit(1);},100).unref();
+      // Intentionally retain and dirty actual resident pages under an isolated CI-only cgroup.
+      globalThis.__pefIsolatedMemoryPressure=Buffer.allocUnsafe(128*1048576);
+      const page=globalThis.__pefIsolatedMemoryPressure;
+      for(let i=0;i<page.length;i+=4096)page[i]=1;
+      setInterval(()=>{
+        const active=globalThis.__pefIsolatedMemoryPressure;
+        if(active)for(let i=0;i<active.length;i+=4096)active[i]=(active[i]+1)&255;
+      },40);
     });
   }
 });
