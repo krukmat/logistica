@@ -54,12 +54,33 @@ function createDashboardServer({host="127.0.0.1",port=8787,scenarioDir=path.join
       denied(res,403,"HOST_DENIED");return;
     }
     const url=new URL(req.url,"http://127.0.0.1");
+    if(url.pathname==="/api/local/receipts"&&req.method==="GET"){
+      if(!auth(req)){denied(res,403,"SESSION_DENIED");return;}
+      if(mode!=="lab"){denied(res,409,"LAB_MODE_REQUIRED");return;}
+      send(res,200,{kind:"PEF_LOCAL_RECEIPTS_API",receipts:lab.listReceipts(),
+        physicalValidated:false,remoteAuthenticated:false});
+      return;
+    }
     if(req.method==="GET"){
       const asset=assets[url.pathname];
       if(asset){send(res,200,fs.readFileSync(asset.file,"utf8"),asset.type);return;}
       if(url.pathname==="/api/bootstrap"){send(res,200,{token:secret,scenarios:listScenarios(),...view()});return;}
       if(url.pathname==="/api/state"){send(res,200,view());return;}
       denied(res,404,"NOT_FOUND");return;
+    }
+    if(req.method==="POST"&&url.pathname==="/api/local/receipts"){
+      if(!auth(req)){denied(res,403,"SESSION_DENIED");return;}
+      if(mode!=="lab"){denied(res,409,"LAB_MODE_REQUIRED");return;}
+      let receipt;
+      try{receipt=await readBody(req);}catch(e){denied(res,400,String(e.message||e));return;}
+      try{
+        const result=await lab.command({action:"receipt",receiptId:receipt.receiptId,
+          packageId:receipt.packageId});
+        const status=result.ok?(result.duplicate?200:201):
+          result.error==="STORAGE_FULL_OR_UNSAFE"?507:
+          result.error==="EVENT_ID_CONFLICT"?409:400;
+        send(res,status,{ok:result.ok,result,...view()});return;
+      }catch(e){denied(res,400,String(e.message||e));return;}
     }
     if(req.method!=="POST"||url.pathname!=="/api/command"){denied(res,404,"NOT_FOUND");return;}
     if(!auth(req)){denied(res,403,"SESSION_DENIED");return;}
