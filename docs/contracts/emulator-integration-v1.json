@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "status": "IMPLEMENTED_LAB",
+  "policy": "Every new implemented PEF feature requires dashboard control, API handler, integration test and CI evidence; privileged Linux/physical capabilities remain read-only/CI-only in the Mac dashboard.",
+  "features": [
+    {
+      "task": "W1.9.F",
+      "mode": "lab",
+      "title": "Real localhost TCP/HTTP checks",
+      "controlIds": [
+        "lab-loopback"
+      ],
+      "actions": [
+        "loopback"
+      ],
+      "implementation": "src/emulator/lab/loopback.js",
+      "test": "test/dashboard-integrated.test.js",
+      "hardwareValidated": false
+    },
+    {
+      "task": "W1.9.I",
+      "mode": "lab",
+      "title": "Host filesystem fsync journal",
+      "controlIds": [
+        "lab-sample",
+        "lab-storage",
+        "lab-pending"
+      ],
+      "actions": [
+        "sample"
+      ],
+      "implementation": "src/emulator/lab/file-journal.js",
+      "test": "test/dashboard-integrated.test.js",
+      "hardwareValidated": false
+    },
+    {
+      "task": "W1.9.J",
+      "mode": "lab",
+      "title": "Journal compaction/retention",
+      "controlIds": [
+        "lab-compact"
+      ],
+      "actions": [
+        "compact"
+      ],
+      "implementation": "src/emulator/lab/file-journal.js",
+      "test": "test/dashboard-integrated.test.js",
+      "hardwareValidated": false
+    },
+    {
+      "task": "W1.9.K",
+      "mode": "sim",
+      "title": "Interactive statechart, scenario runner",
+      "controlIds": [
+        "mode-sim",
+        "scenario-select",
+        "next",
+        "run",
+        "back"
+      ],
+      "actions": [],
+      "implementation": "src/emulator/session.js",
+      "test": "test/dashboard.test.js",
+      "hardwareValidated": false
+    },
+    {
+      "task": "W1.9.L",
+      "mode": "lab",
+      "title": "Probe-driven WAN event fsync",
+      "controlIds": [
+        "mode-lab",
+        "lab-sample",
+        "lab-health"
+      ],
+      "actions": [
+        "sample",
+        "wan"
+      ],
+      "implementation": "src/emulator/lab/edge-runtime.js",
+      "test": "test/dashboard-integrated.test.js",
+      "hardwareValidated": false
+    },
+    {
+      "task": "W1.9.M",
+      "mode": "ci-evidence",
+      "title": "Linux namespace veth routing",
+      "controlIds": [],
+      "actions": [],
+      "implementation": "scripts/lab/netns-policy-scenario.js",
+      "test": "test/netns-policy.test.js",
+      "hardwareValidated": false,
+      "uiEvidenceUrl": "https://github.com/krukmat/logistica/actions/workflows/pef-emulator.yml"
+    },
+    {
+      "task": "W1.9.N",
+      "mode": "lab",
+      "title": "P1 pressure, crash/restart and retry",
+      "controlIds": [
+        "lab-profile",
+        "lab-restart",
+        "lab-health"
+      ],
+      "actions": [
+        "reset",
+        "restart"
+      ],
+      "implementation": "src/emulator/lab/edge-runtime.js",
+      "test": "test/dashboard-integrated.test.js",
+      "hardwareValidated": false
+    },
+    {
+      "task": "W1.9.O",
+      "mode": "lab",
+      "title": "Identity, revision, remote ACK ambiguity, bounded replay",
+      "controlIds": [
+        "lab-identity",
+        "lab-session",
+        "lab-revision",
+        "lab-lost-ack",
+        "lab-forged-ack",
+        "lab-cloud-state",
+        "lab-pending"
+      ],
+      "actions": [
+        "lostAck",
+        "forgedAck",
+        "sync"
+      ],
+      "implementation": "src/emulator/lab/cloud-replay.js",
+      "test": "test/dashboard-integrated.test.js",
+      "hardwareValidated": false
+    }
+  ]
+}
