@@ -43,8 +43,14 @@ async function probeWan(id){
   if(!["UP","DOWN"].includes(probeResult))throw Error("BAD_WAN_PROBE:"+probeResult);
   return {link:true,upstream:probeResult==="UP",reason:probeResult==="UP"?"HEALTHY":"UPSTREAM_UNREACHABLE"};
 }
-function client(expect){
-  return ip("netns","exec",ns.lan,"python3",clientScript,expect);
+async function client(expect){
+  let failure;
+  // Only new TCP flows; tolerate brief ARP/neighbour convergence after route migration.
+  for(let attempt=1;attempt<=5;attempt++){
+    try{return {response:ip("netns","exec",ns.lan,"python3",clientScript,expect),attempts:attempt};}
+    catch(err){failure=err;if(attempt<5)await new Promise(resolve=>setTimeout(resolve,350));}
+  }
+  throw Error("LAN_PROBE_FAILED_AFTER_RETRIES:"+String(failure?.message||failure));
 }
 const ctrl=createConnectivityController({probe:probeWan,applyRoute,simulatorOptions:{failbackHoldSeconds:5}});
 const assertions=[],failures=[];
@@ -57,8 +63,8 @@ async function phase(id,seconds,expectedWan,expectedResponse){
   assertLab(id,observed.selectedWan===expectedWan&&observed.routeApplied&&observed.health==="HEALTHY",{
     selected:observed.selectedWan,connectivity:observed.connectivity,clock:observed.logicalTime,probes:observed.probes,route:checkRoute(expectedWan)});
   if(expectedResponse){
-    const response=client(expectedResponse);
-    assertLab(id+"-client",response.includes("OBSERVED_"+expectedResponse),response);
+    const checked=await client(expectedResponse);
+    assertLab(id+"-client",checked.response.includes("OBSERVED_"+expectedResponse),checked);
   }
 }
 async function run(){
