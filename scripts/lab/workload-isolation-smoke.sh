@@ -44,7 +44,7 @@ on_exit(){
   local cleaned="CLEAN"
   cleanup || { state="FAILED"; cleaned="FAILED"; rc=1; }
   if [[ -n "${PEF_S3_EVIDENCE:-}" ]]; then
-    printf '{"kind":"PEF_S3_LINUX_ISOLATION_LAB","status":"LAB_%s","cleanup":"%s","cpu_max":"20000 100000","memory_max_bytes":134217728,"pids_max":16,"network_namespace":true,"chroot_dropped_uid":65534,"physicalValidated":false}\n' "$state" "$cleaned" >"$PEF_S3_EVIDENCE"
+    printf '{"kind":"PEF_S3_LINUX_ISOLATION_LAB","status":"LAB_%s","cleanup":"%s","cpu_max":"%s","memory_max_bytes":%s,"pids_max":%s,"network_namespace":true,"chroot_dropped_uid":65534,"physicalValidated":false}\n' "$state" "$cleaned" "${limits[0]}" "${limits[1]}" "${limits[2]}" >"$PEF_S3_EVIDENCE"
   fi
   echo "PEF_S3_ISOLATION=LAB_$state CLEANUP=$cleaned"
   exit "$rc"
@@ -52,12 +52,16 @@ on_exit(){
 trap on_exit EXIT
 mkdir "$cg"
 created_cg=1
-printf '20000 100000\n' > "$cg/cpu.max"
-printf '134217728\n' > "$cg/memory.max"
-printf '16\n' > "$cg/pids.max"
-[[ "$(cat "$cg/cpu.max")" == "20000 100000" &&
-   "$(cat "$cg/memory.max")" == "134217728" &&
-   "$(cat "$cg/pids.max")" == "16" ]] || blocked "kernel limits not applied"
+mapfile -t limits < <("$PEF_S3_NODE" "$PEF_S3_REPO_ROOT/scripts/lab/workload-sandbox-plan.js" --fields)
+[[ "${#limits[@]}" -eq 3 && "${limits[0]}" =~ ^[0-9]+\ [0-9]+$ &&
+   "${limits[1]}" =~ ^[0-9]+$ && "${limits[2]}" =~ ^[0-9]+$ ]] ||
+  blocked "invalid Core workload resource plan"
+printf '%s\n' "${limits[0]}" >"$cg/cpu.max"
+printf '%s\n' "${limits[1]}" >"$cg/memory.max"
+printf '%s\n' "${limits[2]}" >"$cg/pids.max"
+[[ "$(cat "$cg/cpu.max")" == "${limits[0]}" &&
+   "$(cat "$cg/memory.max")" == "${limits[1]}" &&
+   "$(cat "$cg/pids.max")" == "${limits[2]}" ]] || blocked "kernel limits not applied"
 ip netns add "$name"
 created_ns=1
 ip -n "$name" link set lo up
@@ -91,5 +95,5 @@ if ! wait "$pid"; then cat "$out" >&2; exit 1; fi
 cat "$out"
 grep -q 'PEF_S3_CHILD_PASS=' "$out" || { echo "missing child evidence" >&2; exit 1; }
 peak="$(cat "$cg/memory.peak")"
-[[ "$peak" -gt 0 && "$peak" -le 134217728 ]] || { echo "PEF_S3_MEMORY_INVALID=$peak" >&2; exit 1; }
-echo "PEF_S3_KERNEL_LIMITS=PASS cpu.max=20000/100000 memory.max=134217728 pids.max=16 memory.peak=$peak"
+[[ "$peak" -gt 0 && "$peak" -le "${limits[1]}" ]] || { echo "PEF_S3_MEMORY_INVALID=$peak" >&2; exit 1; }
+echo "PEF_S3_KERNEL_LIMITS=PASS cpu.max=${limits[0]} memory.max=${limits[1]} pids.max=${limits[2]} memory.peak=$peak"
