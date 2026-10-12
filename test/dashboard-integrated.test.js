@@ -267,3 +267,22 @@ test("Q: invalid/over-quota local receipt never falsely ACKed; API requires loca
     assert.ok(html.includes('id="'+id+'"'));
   assert.ok(js.includes('fetch("/api/local/receipts"'));
 }));
+
+test("Q: lost remote ACK for accepted receipt is retried without duplicate Cloud commit",()=>withPanel(async({url,boot,call})=>{
+  await call({command:"mode",mode:"lab"});
+  await call({command:"lab",action:"sample"});
+  assert.equal((await call({command:"lab",action:"sync"})).result.status,"SYNC_OK");
+  const response=await fetch(url+"api/local/receipts",{method:"POST",headers:{
+    "content-type":"application/json","x-pef-session":boot.token},
+    body:JSON.stringify({receiptId:"R-AMBIG",packageId:"PKG-AMBIG"})});
+  assert.equal(response.status,201);
+  await call({command:"lab",action:"lostAck"});
+  const uncertain=await call({command:"lab",action:"sync"});
+  assert.equal(uncertain.result.error,"REMOTE_ACK_LOST");
+  assert.equal(uncertain.lab.receipts.length,1);
+  assert.equal(uncertain.lab.receipts[0].cloudAcked,false);
+  const replay=await call({command:"lab",action:"sync"});
+  assert.equal(replay.result.status,"SYNC_OK");
+  assert.equal(replay.result.duplicates,1);
+  assert.equal(replay.lab.receipts[0].cloudAcked,true);
+}));
