@@ -28,8 +28,8 @@ function render(session){
     setText("wan-"+id+"-descr",online?"Upstream disponible":"Upstream inaccesible");
     setText("toggle-"+name,online?"Cortar upstream":"Restaurar");
   }
-  setText("cloud-descr",st.cloud==="ONLINE"?"Cloud virtual conectado":"Cloud virtual desconectado");
-  setText("toggle-cloud",st.cloud==="ONLINE"?"Desconectar":"Restaurar");
+  setText("cloud-descr",st.cloudAvailable?(st.cloud==="ONLINE"?"Cloud virtual conectado":"Cloud disponible, WAN o trust no operativo"):"Cloud virtual desconectado");
+  setText("toggle-cloud",st.cloudAvailable?"Desconectar":"Restaurar");
   $("next").disabled=busy||session.halted||session.cursor>=session.totalSteps;
   $("run").disabled=busy||session.halted||session.cursor>=session.totalSteps;
   $("back").disabled=busy||session.cursor===0;
@@ -70,10 +70,10 @@ function bind(){
   for(const id of ["primary","backup"]){
     $("toggle-"+id).addEventListener("click",()=>{
       const w=current.state.wans.find(x=>x.id===id);
-      inject({action:"set_wan",id,upstream:!(w.link&&w.upstream)});
+      inject({action:"set_wan",id,link:true,upstream:!(w.link&&w.upstream)});
     });
   }
-  $("toggle-cloud").addEventListener("click",()=>inject({action:"set_cloud",available:current.state.cloud!=="ONLINE"}));
+  $("toggle-cloud").addEventListener("click",()=>inject({action:"set_cloud",available:!current.state.cloudAvailable}));
   $("tick").addEventListener("click",()=>inject({action:"tick",seconds:1}));
   $("append-event").addEventListener("click",()=>inject({action:"append",eventId:"ui-"+(++eventSeq)+"-"+Date.now(),payload:{origin:"dashboard",clock:current.state.clock},category:"O1"}));
   $("sync-cloud").addEventListener("click",()=>inject({action:"sync"}));
