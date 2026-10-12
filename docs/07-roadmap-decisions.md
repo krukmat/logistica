@@ -30,7 +30,7 @@
 | W1.6 | Software Runtime Contract | **DOCUMENTED / DESIGN ONLY** | [`09`](09-runtime-contract.md): bootstrap, IPC/state, journal, sync, trust, workload; tests pending |
 | W1.7 | Benchmark & Failure Harness Specification | **DOCUMENTED / SPECIFIED** | [`10`](10-benchmark-harness.md) + scenario/evidence schemas; drivers/benchmarks pending |
 | W1.8 | Architecture Shootout | **A–D DOCUMENTED; E–G BLOCKED** | [`11`](11-architecture-shootout.md) / candidate architecture templates; no hardware result |
-| W1.9 | Virtual Edge Emulator | **IMPLEMENTED + CI PASS (logical only)**; physical UNVALIDATED | [`12`](12-emulator.md), [audit](audit/w1.9-emulator-smoke-2026-10-12.md), [tasks](tasks/w1.9-emulator-execution.md); seven scenarios + Node suite |
+| W1.9 | Virtual Edge Emulator | **IMPLEMENTED + CI PASS (sim & localhost)**; physical UNVALIDATED | [`12`](12-emulator.md), [audit](audit/w1.9-emulator-smoke-2026-10-12.md), [tasks](tasks/w1.9-emulator-execution.md); seven scenarios + Node suite |
 
 ## C. Execution contract / granular W1.5 subtasks
 
@@ -105,3 +105,5 @@ Repositorio de trabajo: `krukmat/logistica`, rama `main`. **W1.5.A–J, W1.6.A�
 ## H. Referencia de conectividad y simulación
 
 [13 — Conectividad PEF](13-connectivity-topology.md) es el documento principal de topología y secuencias editables. La evolución W1.9 prioriza `loopback-lab` seguro para pruebas reales localhost, antes del driver `linux-lab` con redes virtuales y finalmente W1.8 con interfaces físicas. Los resultados de localhost **no** certifican el throughput/failover de NICs reales.
+
+**W1.9.F evidence:** [loopback smoke audit](audit/w1.9-loopback-smoke-2026-10-12.md) — CI Node.js: 12 tests y 7 escenarios `SIM_PASS`; `LAB_PASS` para probes reales TCP/HTTP exclusivamente en localhost. W1.9.G NEXT; W1.8.E–G siguen bloqueadas para claims físicos.
