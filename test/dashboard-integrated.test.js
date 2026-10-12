@@ -154,3 +154,52 @@ test("dashboard boot metadata is persisted only in scoped lab directory and rota
   }finally{lab.close();assert.deepEqual(fs.readdirSync(root),[]);
     fs.rmSync(root,{recursive:true,force:true});}
 });
+
+test("P2 dashboard timeout leaves P1 pending; bounded retry accepts deduplicated remote commit",()=>withPanel(async({call})=>{
+  await call({command:"mode",mode:"lab"});
+  await call({command:"lab",action:"sample"});
+  const inject=await call({command:"lab",action:"timeout"});
+  assert.equal(inject.result.ok,true);
+  const result=await call({command:"lab",action:"sync"});
+  assert.equal(result.result.status,"SYNC_INCOMPLETE");
+  assert.equal(result.result.error,"REMOTE_TIMEOUT");
+  assert.equal(result.result.attempts,1);
+  assert.equal(result.lab.storage.pending,1);
+  assert.equal(result.lab.cloud.stored,1);
+  const retried=await call({command:"lab",action:"syncRetry"});
+  assert.equal(retried.result.status,"SYNC_OK");
+  assert.equal(retried.result.duplicates,1);
+  assert.equal(retried.lab.storage.pending,0);
+  assert.equal(retried.lab.transport.frame,"PEF-LAB-ACK-v1");
+  assert.equal(retried.lab.transport.authenticated,false);
+}));
+test("P2 dashboard bounded retry repeats the same event after timed-out mock transport",()=>withPanel(async({call})=>{
+  await call({command:"mode",mode:"lab"});
+  await call({command:"lab",action:"sample"});
+  await call({command:"lab",action:"timeout"});
+  const r=await call({command:"lab",action:"syncRetry"});
+  assert.equal(r.result.status,"SYNC_OK");
+  assert.equal(r.result.attempts,2);
+  assert.equal(r.result.duplicates,1);
+  assert.equal(r.lab.storage.pending,0);
+}));
+test("P2 dashboard missing proof and protocol mismatch never persist local cursor",()=>withPanel(async({call})=>{
+  await call({command:"mode",mode:"lab"});
+  await call({command:"lab",action:"sample"});
+  await call({command:"lab",action:"missingProof"});
+  let r=await call({command:"lab",action:"sync"});
+  assert.equal(r.result.error,"INVALID_REMOTE_PROOF");
+  assert.equal(r.lab.storage.pending,1);
+  r=await call({command:"lab",action:"sync"});
+  assert.equal(r.result.status,"SYNC_OK");
+  assert.equal(r.result.duplicates,1);
+  r=await call({command:"lab",action:"wan",id:"primary",upstream:false});
+  assert.equal(r.lab.storage.pending,1);
+  await call({command:"lab",action:"badVersion"});
+  r=await call({command:"lab",action:"sync"});
+  assert.equal(r.result.error,"INVALID_REMOTE_PROOF");
+  assert.equal(r.lab.storage.pending,1);
+  r=await call({command:"lab",action:"sync"});
+  assert.equal(r.result.status,"SYNC_OK");
+  assert.equal(r.lab.storage.pending,0);
+}));
