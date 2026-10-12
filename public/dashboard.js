@@ -100,6 +100,11 @@ function renderIntegrated(lab){
   const accepted=(lab.receipts||[]).length;
   const cloudAcked=(lab.receipts||[]).filter(r=>r.cloudAcked).length;
   setText("receipt-count",accepted+" recepciones locales · "+cloudAcked+" confirmadas en Cloud mock");
+  $("workload-status").textContent=JSON.stringify(lab.workloads,null,2);
+  setText("workload-scope",lab.workloads.entries.length+
+    " procesos supervisados · "+lab.workloads.reserved.memoryMiB+" MiB límite solicitado · "+
+    "cgroups: "+(lab.workloads.actualLimitsEnforced?"ENFORCED":"NO ENFORCED")+
+    " · aislamiento Linux: "+(lab.workloads.linuxIsolationValidated?"PASS":"NOT_RUN"));
   $("lab-pending").textContent=JSON.stringify(lab.pending,null,2);
   $("lab-history").textContent=JSON.stringify(lab.history.slice(-12),null,2);
   $("trace").textContent=JSON.stringify({mode:"integrated-lab",lastResult:lab.lastResult,
@@ -165,6 +170,12 @@ function bind(){
   $("lab-loopback").addEventListener("click",()=>labAction("loopback"));
   $("lab-reset").addEventListener("click",()=>labAction("reset",{profile:$("lab-profile").value}));
   $("receive-package").addEventListener("click",submitReceipt);
+  $("workload-start").addEventListener("click",()=>labAction("workloadStart"));
+  $("workload-stop").addEventListener("click",()=>labAction("workloadStop"));
+  $("workload-crash").addEventListener("click",()=>labAction("workloadCrash"));
+  $("workload-reconcile").addEventListener("click",()=>labAction("workloadReconcile"));
+  $("workload-receipt").addEventListener("click",()=>labAction("workloadReceipt",{
+    receiptId:$("receipt-id").value.trim(),packageId:$("package-id").value.trim()}));
   $("load").addEventListener("click",()=>dispatch({command:"load",scenario:$("scenario-select").value}));
   $("next").addEventListener("click",()=>dispatch({command:"next"}));
   $("run").addEventListener("click",()=>dispatch({command:"run"}));
