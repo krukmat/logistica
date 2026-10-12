@@ -1,0 +1,80 @@
+{
+  "scenario_id": "EMU-EVENT-COLLISION",
+  "config": {
+    "profile": "BASE"
+  },
+  "steps": [
+    {
+      "action": "append",
+      "eventId": "stable-id",
+      "payload": {
+        "a": 1
+      },
+      "expect": {
+        "ok": true,
+        "ack": true
+      }
+    },
+    {
+      "action": "append",
+      "eventId": "stable-id",
+      "payload": {
+        "a": 1
+      },
+      "expect": {
+        "ok": true,
+        "duplicate": true
+      }
+    },
+    {
+      "action": "append",
+      "eventId": "stable-id",
+      "payload": {
+        "a": 2
+      },
+      "expect": {
+        "ok": false,
+        "ack": false,
+        "error": "EVENT_ID_CONFLICT"
+      }
+    },
+    {
+      "action": "assert",
+      "path": "pendingEvents",
+      "equals": 1
+    },
+    {
+      "action": "sync",
+      "expect": {
+        "uploaded": 1
+      }
+    },
+    {
+      "action": "append",
+      "eventId": "stable-id",
+      "payload": {
+        "a": 2
+      },
+      "expect": {
+        "ok": false,
+        "error": "EVENT_ID_CONFLICT"
+      }
+    },
+    {
+      "action": "append",
+      "eventId": "stable-id",
+      "payload": {
+        "a": 1
+      },
+      "expect": {
+        "ok": true,
+        "duplicate": true
+      }
+    },
+    {
+      "action": "assert",
+      "path": "cloudEvents",
+      "equals": 1
+    }
+  ]
+}

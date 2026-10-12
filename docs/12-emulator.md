@@ -41,8 +41,9 @@ Modelo determinista `createSimulator(config)`, acciones `act(name,args)` y obser
 | EMU-TRUST-ROLLBACK | config unhealthy rechazada, aislamiento remoto sin perder local | revision + security |
 | EMU-FAILBACK | histéresis lógica antes de volver a la primaria | selected WAN + clock |
 | EMU-CLOUD-REPLAY | Cloud ACK persistido pero cursor local incierto | dedup + pending events |
+| EMU-EVENT-COLLISION | rechazo de mismo event_id con payload discordante antes/después de sync | no false ACK |
 
-La ejecución de comprobación aislada del mismo motor y runner publicados confirmó **6/6 escenarios `SIM_PASS`**. Este resultado se ejecutó en un entorno JavaScript aislado, **no equivale a haber corrido `npm test`/CLI en Node dentro del repositorio**. Para validar el paquete end-to-end se debe ejecutar `npm run smoke` en un entorno Node y registrar salida/exit code. No existen mediciones físicas ni benchmarks.
+Se verificaron **6/6 escenarios `SIM_PASS`** en un entorno JavaScript aislado. Además, **GitHub Actions Node 22 ejecutó satisfactoriamente `npm test` y `npm run emulate`** en la [primera ejecución](https://github.com/krukmat/logistica/actions/runs/38232683075). Estos son smoke tests lógicos del código; **no** son benchmarks físicos ni validación de PEF Core real. Nuevos escenarios deberán continuar pasando en CI.
 
 ## W1.9.D — Hardware adaptation seams
 
@@ -71,6 +72,6 @@ El siguiente corte técnico deberá introducir adaptadores explícitos (comenzan
 
 - Modelo de WAN no transporta paquetes: no valida 1 Gbps, conntrack, p95 real ni DNS/firewall.
 - Durability, powercut, cuotas y Cloud ACK son simulaciones: no acreditan P0/P1 ni zero-loss real.
-- No se evalúa compatibilidad SDK/API ni enforcement completo del schema JSON; W1.9.E debe introducir contract validator y rechazo de colisiones `event_id` con payload discordante.
+- El modelo ahora rechaza colisiones de `event_id` con payload discordante antes/después de sync (comparación serializada, **no hash criptográfico**). La validación total del JSON Schema del manifest y enforcement real aún quedan pendientes; W1.9.E debe introducir un validator completo.
 - Retención post-sync O0/O1, boot/OTA firmado, backoff temporal real y controles de estrés de I/O quedan por implementar.
 - El emulador debe **evolucionar con la implementación** y producir fixtures comparables, no convertirse en una segunda arquitectura independiente.

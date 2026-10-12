@@ -37,7 +37,8 @@
             "window_seconds": 300,
             "backoff_seconds": 15
           }
-        }
+        },
+        "manifest_version": 1
       },
       "expect": {
         "ok": true,
@@ -73,7 +74,8 @@
             "window_seconds": 300,
             "backoff_seconds": 15
           }
-        }
+        },
+        "manifest_version": 1
       },
       "expect": {
         "ok": false,

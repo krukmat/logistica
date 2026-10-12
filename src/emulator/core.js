@@ -7,7 +7,7 @@ const createSimulator=function createSimulator(options={}){
   if(!Number.isFinite(c.failbackHoldSeconds)||c.failbackHoldSeconds<0)throw Error("BAD_CONFIG:failbackHoldSeconds");
   const inputWans=c.wans||[{id:"primary",priority:1,link:true,upstream:true},{id:"backup",priority:2,link:true,upstream:true}];
   if(!Array.isArray(inputWans)||!inputWans.length||new Set(inputWans.map(w=>w.id)).size!==inputWans.length)throw Error("BAD_CONFIG:wans");
-  const state={clock:0,profile:c.profile,wans:inputWans.map(w=>({id:w.id,priority:w.priority,link:w.link!==false,upstream:w.upstream!==false,healthySince:null})),selectedWan:null,connectivity:"LOCAL_ONLY",cloudAvailable:true,cloudStatus:"CLOUD_DISCONNECTED",remoteTrusted:true,security:"SECURE",health:"BOOTING",knownGoodRevision:"r0",configRevision:"r0",journal:[],p1Used:0,prepared:[],nextEvent:1,p2Used:0,p2Reserved:0,workloads:{},cloudEvents:[],cloudDuplicates:0,trace:[],seq:0};
+  const state={clock:0,profile:c.profile,wans:inputWans.map(w=>({id:w.id,priority:w.priority,link:w.link!==false,upstream:w.upstream!==false,healthySince:null})),selectedWan:null,connectivity:"LOCAL_ONLY",cloudAvailable:true,cloudStatus:"CLOUD_DISCONNECTED",remoteTrusted:true,security:"SECURE",health:"BOOTING",knownGoodRevision:"r0",configRevision:"r0",journal:[],p1Used:0,prepared:[],nextEvent:1,p2Used:0,p2Reserved:0,workloads:{},cloudEvents:[],cloudEventDigests:{},cloudDuplicates:0,trace:[],seq:0};
   const bytesOf=(s)=>{let n=0;for(const cp of String(s)){const u=cp.codePointAt(0);n+=u<128?1:u<2048?2:u<65536?3:4;}return n;};
   const copy=x=>JSON.parse(JSON.stringify(x));
   const record=(kind,details={})=>{const e={seq:++state.seq,t:state.clock,kind,...details};state.trace.push(e);return e;};
@@ -29,9 +29,15 @@ const createSimulator=function createSimulator(options={}){
   };
   const append=(p={})=>{
     const id=p.eventId||"evt-"+state.nextEvent;
-    if(state.journal.some(e=>e.id===id)||state.cloudEvents.includes(id))return {ok:true,ack:true,eventId:id,duplicate:true};
-    const payload=p.payload===undefined?{}:p.payload;
-    const bytes=bytesOf(JSON.stringify({id,payload,category:p.category||"O1"}));
+    const payload=p.payload===undefined?{}:p.payload,category=p.category||"O1";
+    const fingerprint=JSON.stringify({payload,category});
+    const known=state.journal.find(e=>e.id===id);
+    const knownFingerprint=known?JSON.stringify({payload:known.payload,category:known.category}):state.cloudEventDigests[id];
+    if(knownFingerprint!==undefined){
+      if(knownFingerprint!==fingerprint){record("EVENT_ID_CONFLICT",{id});return {ok:false,ack:false,error:"EVENT_ID_CONFLICT",eventId:id};}
+      return {ok:true,ack:true,eventId:id,duplicate:true};
+    }
+    const bytes=bytesOf(JSON.stringify({id,payload,category}));
     if(bytes>c.p1CapacityBytes-state.p1Used){record("APPEND_REJECTED",{id,bytes,reason:"STORAGE_FULL_OR_UNSAFE"});return {ok:false,ack:false,error:"STORAGE_FULL_OR_UNSAFE",eventId:id};}
     state.journal.push({id,payload:copy(payload),bytes,category:p.category||"O1",committedAt:state.clock});
     state.p1Used+=bytes;state.nextEvent++;record("APPEND_COMMITTED",{id,bytes});
@@ -42,7 +48,7 @@ const createSimulator=function createSimulator(options={}){
     if(!m||typeof m!=="object"||typeof m.workload_id!=="string"||!m.workload_id||!m.resources)return {ok:false,error:"INVALID_MANIFEST"};
     if(p.trusted===false)return {ok:false,error:"UNTRUSTED_WORKLOAD"};
     if(state.workloads[m.workload_id])return {ok:false,error:"ALREADY_ADMITTED"};
-    if(m.compatibility!=="pef-core-v0.1"||!["LOCAL_ONLY_CAPABLE","INTERNET_OPTIONAL","INTERNET_REQUIRED"].includes(m.connectivity_mode))return {ok:false,error:"INVALID_MANIFEST"};
+    if(m.manifest_version!==1||m.compatibility!=="pef-core-v0.1"||!["essential","optional"].includes(m.priority)||!["LOCAL_ONLY_CAPABLE","INTERNET_OPTIONAL","INTERNET_REQUIRED"].includes(m.connectivity_mode))return {ok:false,error:"INVALID_MANIFEST"};
     const r=m.resources;
     for(const [a,b] of [["cpu_request_millicores","cpu_limit_millicores"],["memory_request_mib","memory_limit_mib"],["storage_request_mib","storage_limit_mib"]]){
       if(!Number.isSafeInteger(r[a])||r[a]<1||!Number.isSafeInteger(r[b])||r[b]<r[a])return {ok:false,error:"INVALID_MANIFEST"};
@@ -71,7 +77,13 @@ const createSimulator=function createSimulator(options={}){
       case "sync":{
         if(state.cloudStatus!=="ONLINE")return {ok:false,error:"CLOUD_UNAVAILABLE"};
         let uploaded=0,duplicates=0;
-        for(const e of state.journal){if(state.cloudEvents.includes(e.id)){duplicates++;state.cloudDuplicates++;}else{state.cloudEvents.push(e.id);uploaded++;}}
+        for(const e of state.journal){
+          const signature=JSON.stringify({payload:e.payload,category:e.category});
+          if(state.cloudEvents.includes(e.id)){
+            if(state.cloudEventDigests[e.id]!==signature){record("SYNC_CONFLICT",{id:e.id});return {ok:false,error:"EVENT_ID_CONFLICT",eventId:e.id};}
+            duplicates++;state.cloudDuplicates++;
+          }else{state.cloudEvents.push(e.id);state.cloudEventDigests[e.id]=signature;uploaded++;}
+        }
         if(!p.dropLocalAck){state.journal=[];state.p1Used=0;}
         record("SYNC",{uploaded,duplicates,localAckPersisted:!p.dropLocalAck});return {ok:true,uploaded,duplicates,localAckPersisted:!p.dropLocalAck};
       }

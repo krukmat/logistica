@@ -44,3 +44,18 @@ test("runner rejects unknown actions and failed assertions",()=>{
   assert.equal(runScenario({scenario_id:"EMU-INVALID",steps:[{action:"unknown"}]}).status,"SIM_FAIL");
   assert.equal(runScenario({scenario_id:"EMU-ASSERT",steps:[{action:"assert",path:"health",equals:"CRITICAL"}]}).status,"SIM_FAIL");
 });
+
+test("same event ID with different payload rejects conflicting ACK including after cloud sync",()=>{
+  const sim=createSimulator();
+  assert.equal(sim.act("append",{eventId:"key",payload:{a:1}}).ack,true);
+  assert.equal(sim.act("append",{eventId:"key",payload:{a:2}}).error,"EVENT_ID_CONFLICT");
+  assert.equal(sim.act("sync").uploaded,1);
+  assert.equal(sim.act("append",{eventId:"key",payload:{a:2}}).ack,false);
+  assert.equal(sim.act("append",{eventId:"key",payload:{a:1}}).duplicate,true);
+});
+test("missing manifest version cannot be admitted",()=>{
+  const fixture=JSON.parse(fs.readFileSync(path.join(folder,"workload-isolation.json"),"utf8"));
+  const m=fixture.steps[0].manifest,{manifest_version,...withoutVersion}=m;
+  const sim=createSimulator({p2CapacityBytes:4*1048576});
+  assert.equal(sim.act("admit",{manifest:withoutVersion}).error,"INVALID_MANIFEST");
+});
