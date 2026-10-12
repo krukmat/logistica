@@ -13,11 +13,12 @@ function createWorkloadSupervisor({manager,driver,clock=()=>Date.now(),autoRecon
   function ensure(){if(closed)throw Error("SUPERVISOR_CLOSED");}
   const show=x=>({workloadId:x.manifest.workload_id,state:x.state,attempts:x.attempts,
     nextRetryAt:x.nextRetryAt,lastError:x.lastError,manifestVersion:x.manifest.manifest_version,
-    isolation:x.isolation||"NONE",actualLimitsEnforced:x.actualLimitsEnforced===true});
+    isolation:x.isolation||"NONE",actualLimitsEnforced:x.actualLimitsEnforced===true,
+    kernelLimits:x.kernelLimits||null});
   function onExit(x,reason){
     if(x.stopping||closed||!entries.has(x.manifest.workload_id)||
        x.state==="BACKOFF"||x.state==="ISOLATED")return;
-    x.handle=null;
+    x.handle=null;x.actualLimitsEnforced=false;
     x.attempts++;
     x.lastError=typeof reason==="string"?reason:"PROCESS_EXITED";
     const cfg=x.manifest.health.restart_policy,now=clock();
@@ -34,7 +35,8 @@ function createWorkloadSupervisor({manager,driver,clock=()=>Date.now(),autoRecon
         throw Error("INVALID_WORKLOAD_PROCESS_PORT");
       if(x.state==="STARTING"){x.handle=handle;x.state="RUNNING";
         x.isolation=handle.isolation||"PROCESS_ONLY";
-        x.actualLimitsEnforced=handle.actualLimitsEnforced===true;}
+        x.actualLimitsEnforced=handle.actualLimitsEnforced===true;
+        x.kernelLimits=handle.kernelLimits||null;}
       else await handle.stop();
       return {ok:x.state==="RUNNING",...show(x)};
     }catch(e){
@@ -87,6 +89,15 @@ function createWorkloadSupervisor({manager,driver,clock=()=>Date.now(),autoRecon
       return {ok:false,error:"WORKLOAD_NOT_RUNNING"};
     return await x.handle.injectCrash();
   }
+  async function injectFault(id,type){
+    ensure();
+    if(!["CPU_BURN","MEMORY_PRESSURE"].includes(type))return {ok:false,error:"FAULT_NOT_ALLOWLISTED"};
+    const x=entries.get(id);
+    if(!x||x.state!=="RUNNING"||!x.handle||typeof x.handle.fault!=="function")
+      return {ok:false,error:"ISOLATED_LINUX_DRIVER_REQUIRED"};
+    try{return await x.handle.fault(type);}
+    catch{return {ok:false,error:"WORKLOAD_IPC_FAILURE"};}
+  }
   function list(){return [...entries.values()].map(show);}
   const interval=autoReconcileMs?setInterval(()=>{
     if(!closed)void reconcile().catch(()=>{});
@@ -99,6 +110,6 @@ function createWorkloadSupervisor({manager,driver,clock=()=>Date.now(),autoRecon
     for(const id of ids)await stop(id);
     closed=true;
   }
-  return {start,reconcile,stop,list,close,processReceipt,crash,limits:manager.limits,usage:manager.usage};
+  return {start,reconcile,stop,list,close,processReceipt,crash,injectFault,limits:manager.limits,usage:manager.usage};
 }
 module.exports={createWorkloadSupervisor};
