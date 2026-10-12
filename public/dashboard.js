@@ -92,6 +92,8 @@ function renderIntegrated(lab){
   setText("lab-storage",store.bytesUsed+" bytes · "+store.pending+" pendientes · "+store.cloudAcked+" ACK remotos");
   setText("lab-cloud-state",(online?"ONLINE":"OFFLINE")+" · "+lab.cloud.stored+" eventos mock");
   setText("lab-health",lab.runtimeHealth+" · "+lab.volatilePending+" volátiles · "+lab.droppedEvidence+" descartados");
+  setText("lab-boot",lab.boot.metadataFsync?"metadata fsync · LAB_ONLY":"missing");
+  setText("lab-protocol",lab.transport.frame+" · "+lab.transport.timeoutMs+" ms · proof mock");
   $("lab-profile").value=lab.profile;
   $("lab-pending").textContent=JSON.stringify(lab.pending,null,2);
   $("lab-history").textContent=JSON.stringify(lab.history.slice(-12),null,2);
