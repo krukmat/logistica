@@ -43,7 +43,7 @@ Modelo determinista `createSimulator(config)`, acciones `act(name,args)` y obser
 | EMU-CLOUD-REPLAY | Cloud ACK persistido pero cursor local incierto | dedup + pending events |
 | EMU-EVENT-COLLISION | rechazo de mismo event_id con payload discordante antes/después de sync | no false ACK |
 
-El motor y los escenarios iniciales se contrastaron en JS aislado. **GitHub Actions Node 22 verificó 8/8 tests y 7/7 escenarios `SIM_PASS`**, sin fallos, en la [ejecución 38232898592](https://github.com/krukmat/logistica/actions/runs/38232898592). Son comprobaciones lógicas del código, **no benchmarks físicos ni validación del PEF Core real**. Los cambios posteriores deben mantener estos gates en verde.
+El motor y los escenarios iniciales se contrastaron en JS aislado. **GitHub Actions Node 22 verificó 8/8 tests y 7/7 escenarios `SIM_PASS`**, sin fallos, en la [ejecución 38232898592](https://github.com/krukmat/logistica/actions/runs/38232898592). Son comprobaciones lógicas del código, **no benchmarks físicos ni validación del PEF Core real**. El [CI posterior con selección de backends](https://github.com/krukmat/logistica/actions/runs/38233315161) también pasó ambos pasos. [Evidencia y alcance](audit/w1.9-emulator-smoke-2026-10-12.md). Los cambios posteriores deben mantener estos gates en verde.
 
 ## W1.9.D — Hardware adaptation seams
 

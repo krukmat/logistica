@@ -30,7 +30,7 @@
 | W1.6 | Software Runtime Contract | **DOCUMENTED / DESIGN ONLY** | [`09`](09-runtime-contract.md): bootstrap, IPC/state, journal, sync, trust, workload; tests pending |
 | W1.7 | Benchmark & Failure Harness Specification | **DOCUMENTED / SPECIFIED** | [`10`](10-benchmark-harness.md) + scenario/evidence schemas; drivers/benchmarks pending |
 | W1.8 | Architecture Shootout | **A–D DOCUMENTED; E–G BLOCKED** | [`11`](11-architecture-shootout.md) / candidate architecture templates; no hardware result |
-| W1.9 | Virtual Edge Emulator | **IMPLEMENTED (logical model), HW UNVALIDATED** | [`12`](12-emulator.md) + [granular tasks](tasks/w1.9-emulator-execution.md) + src/emulator/scenarios/test |
+| W1.9 | Virtual Edge Emulator | **IMPLEMENTED + CI PASS (logical only)**; physical UNVALIDATED | [`12`](12-emulator.md), [audit](audit/w1.9-emulator-smoke-2026-10-12.md), [tasks](tasks/w1.9-emulator-execution.md); seven scenarios + Node suite |
 
 ## C. Execution contract / granular W1.5 subtasks
 
