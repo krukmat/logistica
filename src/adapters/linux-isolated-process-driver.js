@@ -70,10 +70,10 @@ function createLinuxIsolatedProcessDriver({namespace,cgroup,rootfs,nodeInside,ho
       child.on("exit",(code,signal)=>fail("EXIT_"+(signal||code)));
       child.on("error",err=>fail("ERROR_"+(err.code||err.message)));
       const killGroup=signal=>{try{process.kill(-child.pid,signal);}catch(e){if(e.code!=="ESRCH")throw e;}};
-      const request=(type,body={})=>new Promise((resolve,reject)=>{
+      const request=(type,body={},deadlineMs=1500)=>new Promise((resolve,reject)=>{
         if(closed||!child.connected)return reject(Error("WORKER_UNAVAILABLE"));
         const id=String(++nextId);
-        const timer=setTimeout(()=>{pending.delete(id);reject(Error("WORKER_IPC_TIMEOUT"));},1500);
+        const timer=setTimeout(()=>{pending.delete(id);reject(Error("WORKER_IPC_TIMEOUT"));},deadlineMs);
         pending.set(id,{resolve,reject,timer});
         try{child.send({type,id,...body},err=>{
           if(err&&pending.has(id)){clearTimeout(timer);pending.delete(id);reject(err);}
@@ -107,7 +107,7 @@ function createLinuxIsolatedProcessDriver({namespace,cgroup,rootfs,nodeInside,ho
           storageQuotaEnforced:false},pid:child.pid,
         async health(){
           if(closed||!member(child.pid))return {ok:false,error:"NOT_IN_CGROUP"};
-          return await request("HEALTH");
+          return await request("HEALTH",{},15000);
         },
         processReceipt:body=>request("RECEIPT",body),
         injectCrash:async()=>{const res=await request("CRASH");
