@@ -4,6 +4,10 @@ on:
     branches: [main]
     paths:
       - 'src/emulator/**'
+      - 'src/core/**'
+      - 'src/runtime/**'
+      - 'src/adapters/**'
+      - 'src/workloads/**'
       - 'public/**'
       - 'bin/**'
       - 'test/**'
@@ -51,6 +55,14 @@ jobs:
             sudo apt-get update -qq
             sudo apt-get install -y iproute2 iputils-ping
           fi
+      - name: Inspect Linux workload isolation prerequisites (read-only)
+        run: |
+          echo "PEF_S3_CGROUP_FS=$(stat -f -c %T /sys/fs/cgroup 2>/dev/null || echo missing)"
+          echo "PEF_S3_CONTROLLERS=$(cat /sys/fs/cgroup/cgroup.controllers 2>/dev/null || echo unavailable)"
+          echo "PEF_S3_SUBTREE=$(cat /sys/fs/cgroup/cgroup.subtree_control 2>/dev/null || echo unavailable)"
+          echo "PEF_S3_MOUNT=$(findmnt -n -o OPTIONS /sys/fs/cgroup 2>/dev/null || echo unavailable)"
+          echo "PEF_S3_UNSHARE=$(command -v unshare || echo unavailable)"
+          echo "PEF_S3_PRLIMIT=$(command -v prlimit || echo unavailable)"
       - name: Isolated Linux namespace network routing
         env:
           PEF_NETNS_ACK: GITHUB_HOSTED_EPHEMERAL_ONLY
