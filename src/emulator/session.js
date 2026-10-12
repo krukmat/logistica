@@ -15,7 +15,7 @@ function validateStep(step){
     throw Error("INVALID_ASSERTION");
   return clone(step);
 }
-function createSession({scenario_id="INTERACTIVE",config={},steps=[]}={}){
+function createSession({scenario_id="INTERACTIVE",config={},steps=[],backend="sim"}={}){
   let id,settings,plan,position,engine,timeline,halted;
   function load(spec){
     if(!spec||typeof spec.scenario_id!=="string"||!spec.scenario_id||!Array.isArray(spec.steps)||
@@ -91,7 +91,7 @@ function createSession({scenario_id="INTERACTIVE",config={},steps=[]}={}){
       state:engine.status(),chart:statechart(engine.status()),trace:engine.trace(),
       physicalValidated:false});
   }
-  load({scenario_id,config,steps});
+  load({scenario_id,config,steps,backend});
   return {load,enqueue,next,run,rewind,reset,snapshot};
 }
 module.exports={createSession,ACTIONS,validateStep};
