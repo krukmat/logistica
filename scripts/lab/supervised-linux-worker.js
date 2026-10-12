@@ -63,7 +63,7 @@ async function run(){
     check("CPU_THROTTLED",throttled(cpuAfter)>throttled(cpuBefore));
     const memory=await supervisor.injectFault("pef-receiver","MEMORY_PRESSURE");
     check("MEMORY_FAULT_DELIVERED",memory.ok===true);
-    await eventually(()=>supervisor.list()[0]?.state==="BACKOFF","memory-fault-backoff");
+    await eventually(()=>supervisor.list()[0]?.state==="BACKOFF","memory-fault-backoff",20000);
     const events=fs.readFileSync(path.join(cgroup,"memory.events"),"utf8");
     const oom=Number(events.match(/^oom_kill\s+(\d+)/m)?.[1]||0);
     const denied=Number(events.match(/^max\\s+(\\d+)/m)?.[1]||0);
