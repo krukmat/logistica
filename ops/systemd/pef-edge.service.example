@@ -1,0 +1,32 @@
+# REFERENCE TEMPLATE ONLY — NOT INSTALLED / NOT VERIFIED ON DEVICE.
+# Ensure /etc/pef/edge.env (mode 0600, privileged) contains PEF_EDGE_TOKEN;
+# /etc/pef/edge.json must be a validated v1 config with storageDir=/var/lib/pef.
+# NIC/routing/device adapter and physical security are explicitly NOT IMPLEMENTED.
+[Unit]
+Description=PEF autonomous Edge runtime (pre-hardware reference)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=pef-edge
+Group=pef-edge
+WorkingDirectory=/opt/pef
+EnvironmentFile=/etc/pef/edge.env
+ExecStart=/usr/bin/node /opt/pef/bin/pef-edge.js --config /etc/pef/edge.json
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=10
+KillMode=control-group
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/pef
+StateDirectory=pef
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

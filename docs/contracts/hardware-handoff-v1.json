@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "kind": "PEF_HARDWARE_HANDOFF_CONTRACT",
+  "softwareGate": "W1.9.T_EDGE_AUTONOMOUS_LAB",
+  "scope": "SOFTWARE_LAB_ONLY",
+  "requiredCi": [
+    "emulator-node-regression-and-dashboard",
+    "deterministic-scenarios",
+    "loopback-network-lab",
+    "linux-netns-runtime-fsync-offline-restart",
+    "linux-supervised-workload-cgroup-oom"
+  ],
+  "approval": "GO_FOR_DEVICE_INTEGRATION_ONLY",
+  "physicalStatus": "NOT_RUN",
+  "deviceBackend": "BACKEND_NOT_IMPLEMENTED",
+  "unvalidated": [
+    "DEVICE_NIC_ROUTING_NAT_DHCP_FIREWALL",
+    "DEVICE_PKI_PROVISIONING_MTLS",
+    "DEVICE_SERVICE_INSTALL_BOOT_WATCHDOG_OTA",
+    "PHYSICAL_STORAGE_POWER_CUT_AND_P2_P3_QUOTAS",
+    "PRODUCTION_WORKLOAD_HARDENING_SECCOMP",
+    "PHYSICAL_PERFORMANCE_RECOVERY_AND_THERMAL_TESTS"
+  ]
+}
