@@ -69,6 +69,8 @@
           <div class="lab-stat"><span>Persistencia y presión P1</span><strong id="lab-storage">—</strong></div>
           <div class="lab-stat"><span>Cloud mock / cursores</span><strong id="lab-cloud-state">—</strong></div>
           <div class="lab-stat"><span>Estado del Core integrado</span><strong id="lab-health">—</strong></div>
+          <div class="lab-stat"><span>Bootstrap local</span><strong id="lab-boot">—</strong></div>
+          <div class="lab-stat"><span>Protocolo / timeout</span><strong id="lab-protocol">—</strong></div>
         </div>
         <div class="lab-buttons">
           <button id="lab-sample" class="primary" type="button">Sondear + reconciliar</button>
@@ -76,6 +78,10 @@
           <button id="lab-compact" class="secondary" type="button">Compactar journal</button>
           <button id="lab-lost-ack" class="secondary warning" type="button">Perder próximo ACK remoto</button>
           <button id="lab-forged-ack" class="secondary warning" type="button">Falsificar próximo ACK</button>
+          <button id="lab-timeout" class="secondary warning" type="button">Timeout del próximo ingest</button>
+          <button id="lab-missing-proof" class="secondary warning" type="button">ACK sin prueba (mock)</button>
+          <button id="lab-bad-version" class="secondary warning" type="button">Versión incompatible</button>
+          <button id="lab-retry-sync" class="secondary" type="button">Sincronizar · 2 intentos</button>
           <button id="lab-loopback" class="secondary" type="button">Test TCP/HTTP loopback</button>
           <label class="select-label" for="lab-profile">Cuota P1
             <select id="lab-profile"><option value="normal">Normal (64 KiB)</option><option value="pressure">Presión (2.4 KiB)</option></select>
@@ -87,7 +93,7 @@
         <div class="lab-detail"><h4>Evidencia y resultados</h4><pre id="lab-history">[]</pre></div>
         <p class="micro">Linux veth / network namespaces: <strong>CI-only</strong> (no se ejecuta localmente).
           <a href="https://github.com/krukmat/logistica/actions/workflows/pef-emulator.yml" target="_blank" rel="noopener noreferrer">Ver ejecuciones y evidencia de laboratorio Linux</a>.
-          Identidad, ACK remoto y Cloud son mocks. El fsync del host no prueba supervivencia ante corte eléctrico físico.</p>
+          Identidad y pruebas HMAC exclusivamente de laboratorio; no hay certificados ni confianza remota real. Los timeouts son del proceso, no de una WAN física. Fsync no certifica corte eléctrico.</p>
       </section>
       <section class="panel scenarios" id="sim-runner">
         <div class="panel-heading"><div><h3>Scenario Runner</h3><p>Ejecutar · pausar · retroceder · reproducir</p></div><span id="progress" class="chip">0 / 0 steps</span></div>
