@@ -21,7 +21,8 @@ function createLocalReceipts({journal,identity}={}){
       eventId,correlationId:eventId,receiptId,packageId,
       packageStatus:"RECEIVED",localOnlyCapable:true};
     const result=journal.append({eventId,category:"O1",payload});
-    if(!result.ack)return {ok:false,accepted:false,error:result.error,eventId,
+    if(!(result.ack===true&&(result.fsyncCompleted===true||result.duplicate===true)))
+      return {ok:false,accepted:false,error:result.error||"JOURNAL_DURABILITY_UNCONFIRMED",eventId,
       localOnlyCapable:true,fsyncCompleted:false,physicalPowerCutValidated:false};
     return {ok:true,accepted:true,duplicate:Boolean(result.duplicate),eventId,
       receiptId,packageId,status:"RECEIVED",fsyncCompleted:Boolean(result.fsyncCompleted),

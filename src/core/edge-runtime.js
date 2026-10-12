@@ -21,10 +21,10 @@ function createEdgeRuntime({journal,probe,applyRoute,simulatorOptions={},
   function check(){if(closed)throw Error("EDGE_RUNTIME_CLOSED");}
   function appendOrDefer(event){
     const result=journal.append(event);
-    if(result.ack)return {eventId:event.eventId,ack:true,fsyncCompleted:Boolean(result.fsyncCompleted),error:null};
+    if(result.ack===true&&(result.fsyncCompleted===true||result.duplicate===true))return {eventId:event.eventId,ack:true,fsyncCompleted:Boolean(result.fsyncCompleted),error:null};
     if(deferred.length<maxVolatileEvents)deferred.push(event);
     else droppedEvidence++;
-    lastError=result.error||"STORAGE_UNSAFE";
+    lastError=result.error||(result.ack?"JOURNAL_DURABILITY_UNCONFIRMED":"STORAGE_UNSAFE");
     return {eventId:event.eventId,ack:false,error:lastError,volatileOnly:true,
       volatilePending:deferred.length,droppedEvidence};
   }
@@ -32,7 +32,9 @@ function createEdgeRuntime({journal,probe,applyRoute,simulatorOptions={},
     while(deferred.length){
       const item=deferred[0];
       const result=journal.append(item);
-      if(!result.ack){lastError=result.error||"STORAGE_UNSAFE";return false;}
+      if(!(result.ack===true&&(result.fsyncCompleted===true||result.duplicate===true))){
+        lastError=result.error||"JOURNAL_DURABILITY_UNCONFIRMED";return false;
+      }
       deferred.shift();
     }
     lastError=null;

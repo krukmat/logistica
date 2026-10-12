@@ -42,7 +42,9 @@ async function syncJournal({journal,transport,maxEvents=16,timeoutMs=250,maxAtte
       error="INVALID_REMOTE_PROOF";break;
     }
     const cursor=journal.cloudAck(event.eventId);
-    if(cursor.ack!==true){error=cursor.error||"LOCAL_CURSOR_NOT_DURABLE";break;}
+    if(!(cursor.ack===true&&(cursor.fsyncCompleted===true||cursor.duplicate===true))){
+      error=cursor.error||"LOCAL_CURSOR_NOT_DURABLE";break;
+    }
     acked++;if(response.duplicate)duplicates++;else uploaded++;
   }
   return {kind:"PEF_CLOUD_REPLAY",status:error?"SYNC_INCOMPLETE":"SYNC_OK",
