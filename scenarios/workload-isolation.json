@@ -1,0 +1,148 @@
+{
+  "scenario_id": "EMU-WORKLOAD-ISOLATION",
+  "config": {
+    "profile": "BASE",
+    "p2CapacityBytes": 4194304,
+    "workloadMemoryBudgetMiB": 128
+  },
+  "steps": [
+    {
+      "action": "admit",
+      "manifest": {
+        "workload_id": "automation",
+        "compatibility": "pef-core-v0.1",
+        "connectivity_mode": "LOCAL_ONLY_CAPABLE",
+        "priority": "optional",
+        "resources": {
+          "cpu_request_millicores": 100,
+          "cpu_limit_millicores": 300,
+          "memory_request_mib": 64,
+          "memory_limit_mib": 128,
+          "storage_request_mib": 1,
+          "storage_limit_mib": 1,
+          "storage_class": "P2"
+        },
+        "network_intents": [
+          {
+            "kind": "local_service_discovery",
+            "scope": "site",
+            "destination_class": "local_site",
+            "justification": "Discover site devices"
+          }
+        ],
+        "health": {
+          "restart_policy": {
+            "strategy": "bounded",
+            "max_attempts": 3,
+            "window_seconds": 300,
+            "backoff_seconds": 15
+          }
+        }
+      },
+      "expect": {
+        "ok": true,
+        "status": "RUNNING"
+      }
+    },
+    {
+      "action": "admit",
+      "manifest": {
+        "workload_id": "privileged",
+        "compatibility": "pef-core-v0.1",
+        "connectivity_mode": "LOCAL_ONLY_CAPABLE",
+        "priority": "optional",
+        "resources": {
+          "cpu_request_millicores": 100,
+          "cpu_limit_millicores": 300,
+          "memory_request_mib": 64,
+          "memory_limit_mib": 128,
+          "storage_request_mib": 1,
+          "storage_limit_mib": 1,
+          "storage_class": "P2"
+        },
+        "network_intents": [
+          {
+            "kind": "raw_firewall",
+            "scope": "site"
+          }
+        ],
+        "health": {
+          "restart_policy": {
+            "strategy": "bounded",
+            "max_attempts": 3,
+            "window_seconds": 300,
+            "backoff_seconds": 15
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "error": "NETWORK_INTENT_DENIED"
+      }
+    },
+    {
+      "action": "write_workload",
+      "id": "automation",
+      "bytes": 1048576,
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "action": "write_workload",
+      "id": "automation",
+      "bytes": 1,
+      "expect": {
+        "ok": false,
+        "error": "P2_QUOTA_EXCEEDED"
+      }
+    },
+    {
+      "action": "crash_workload",
+      "id": "automation",
+      "expect": {
+        "status": "RUNNING"
+      }
+    },
+    {
+      "action": "crash_workload",
+      "id": "automation",
+      "expect": {
+        "status": "RUNNING"
+      }
+    },
+    {
+      "action": "crash_workload",
+      "id": "automation",
+      "expect": {
+        "status": "RUNNING"
+      }
+    },
+    {
+      "action": "crash_workload",
+      "id": "automation",
+      "expect": {
+        "status": "ISOLATED"
+      }
+    },
+    {
+      "action": "assert",
+      "path": "workloads.automation.status",
+      "equals": "ISOLATED"
+    },
+    {
+      "action": "write_workload",
+      "id": "automation",
+      "bytes": 1,
+      "expect": {
+        "ok": false,
+        "error": "WORKLOAD_NOT_RUNNING"
+      }
+    },
+    {
+      "action": "assert",
+      "path": "health",
+      "equals": "HEALTHY"
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "scenario_id": "EMU-WAN-OFFLINE",
+  "config": {
+    "profile": "BASE"
+  },
+  "steps": [
+    {
+      "action": "assert",
+      "path": "selectedWan",
+      "equals": "primary"
+    },
+    {
+      "action": "set_wan",
+      "id": "primary",
+      "upstream": false
+    },
+    {
+      "action": "tick",
+      "seconds": 1
+    },
+    {
+      "action": "assert",
+      "path": "selectedWan",
+      "equals": "backup"
+    },
+    {
+      "action": "set_wan",
+      "id": "backup",
+      "link": false
+    },
+    {
+      "action": "tick",
+      "seconds": 1
+    },
+    {
+      "action": "assert",
+      "path": "connectivity",
+      "equals": "LOCAL_ONLY"
+    },
+    {
+      "action": "assert",
+      "path": "health",
+      "equals": "HEALTHY"
+    },
+    {
+      "action": "append",
+      "eventId": "offline-1",
+      "payload": {
+        "fault": "all_wan_lost"
+      },
+      "expect": {
+        "ok": true,
+        "ack": true
+      }
+    },
+    {
+      "action": "sync",
+      "expect": {
+        "ok": false,
+        "error": "CLOUD_UNAVAILABLE"
+      }
+    },
+    {
+      "action": "set_wan",
+      "id": "primary",
+      "upstream": true
+    },
+    {
+      "action": "tick",
+      "seconds": 6
+    },
+    {
+      "action": "assert",
+      "path": "cloud",
+      "equals": "ONLINE"
+    },
+    {
+      "action": "sync",
+      "expect": {
+        "uploaded": 1
+      }
+    },
+    {
+      "action": "assert",
+      "path": "cloudEvents",
+      "equals": 1
+    },
+    {
+      "action": "assert",
+      "path": "pendingEvents",
+      "equals": 0
+    }
+  ]
+}

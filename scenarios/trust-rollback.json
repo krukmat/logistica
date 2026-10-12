@@ -1,0 +1,65 @@
+{
+  "scenario_id": "EMU-TRUST-ROLLBACK",
+  "config": {
+    "profile": "BASE"
+  },
+  "steps": [
+    {
+      "action": "apply_config",
+      "revision": "r-bad",
+      "healthPass": false,
+      "expect": {
+        "ok": false,
+        "error": "HEALTH_CHECK_FAILED",
+        "effectiveRevision": "r0"
+      }
+    },
+    {
+      "action": "assert",
+      "path": "configRevision",
+      "equals": "r0"
+    },
+    {
+      "action": "apply_config",
+      "revision": "r-good",
+      "healthPass": true,
+      "expect": {
+        "ok": true,
+        "revision": "r-good"
+      }
+    },
+    {
+      "action": "set_remote_trust",
+      "trusted": false
+    },
+    {
+      "action": "assert",
+      "path": "security",
+      "equals": "REMOTE_ISOLATED"
+    },
+    {
+      "action": "assert",
+      "path": "health",
+      "equals": "HEALTHY"
+    },
+    {
+      "action": "assert",
+      "path": "cloud",
+      "equals": "CLOUD_DISCONNECTED"
+    },
+    {
+      "action": "set_remote_trust",
+      "trusted": true
+    },
+    {
+      "action": "assert",
+      "path": "cloud",
+      "equals": "ONLINE"
+    },
+    {
+      "action": "assert",
+      "path": "configRevision",
+      "equals": "r-good"
+    }
+  ]
+}

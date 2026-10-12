@@ -1,0 +1,70 @@
+{
+  "scenario_id": "EMU-JOURNAL-POWER",
+  "config": {
+    "profile": "BASE",
+    "p1CapacityBytes": 180
+  },
+  "steps": [
+    {
+      "action": "append",
+      "eventId": "committed-1",
+      "payload": {
+        "ok": 1
+      },
+      "expect": {
+        "ok": true,
+        "ack": true
+      }
+    },
+    {
+      "action": "prepare_append",
+      "eventId": "unacked-2",
+      "payload": {
+        "ok": 2
+      },
+      "expect": {
+        "ack": false
+      }
+    },
+    {
+      "action": "power_cut",
+      "expect": {
+        "committedRetained": 1,
+        "discardedUnacked": 1,
+        "simulatedOnly": true
+      }
+    },
+    {
+      "action": "assert",
+      "path": "pendingEvents",
+      "equals": 1
+    },
+    {
+      "action": "append",
+      "eventId": "too-large",
+      "payload": {
+        "message": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      },
+      "expect": {
+        "ack": false,
+        "error": "STORAGE_FULL_OR_UNSAFE"
+      }
+    },
+    {
+      "action": "assert",
+      "path": "pendingEvents",
+      "equals": 1
+    },
+    {
+      "action": "sync",
+      "expect": {
+        "uploaded": 1
+      }
+    },
+    {
+      "action": "assert",
+      "path": "p1Used",
+      "equals": 0
+    }
+  ]
+}

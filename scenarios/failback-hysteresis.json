@@ -1,0 +1,46 @@
+{
+  "scenario_id": "EMU-FAILBACK",
+  "config": {
+    "profile": "BASE",
+    "failbackHoldSeconds": 5
+  },
+  "steps": [
+    {
+      "action": "set_wan",
+      "id": "primary",
+      "link": false
+    },
+    {
+      "action": "tick",
+      "seconds": 1
+    },
+    {
+      "action": "assert",
+      "path": "selectedWan",
+      "equals": "backup"
+    },
+    {
+      "action": "set_wan",
+      "id": "primary",
+      "link": true
+    },
+    {
+      "action": "tick",
+      "seconds": 1
+    },
+    {
+      "action": "assert",
+      "path": "selectedWan",
+      "equals": "backup"
+    },
+    {
+      "action": "tick",
+      "seconds": 5
+    },
+    {
+      "action": "assert",
+      "path": "selectedWan",
+      "equals": "primary"
+    }
+  ]
+}

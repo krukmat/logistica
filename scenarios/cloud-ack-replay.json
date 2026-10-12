@@ -1,0 +1,49 @@
+{
+  "scenario_id": "EMU-CLOUD-REPLAY",
+  "config": {
+    "profile": "HOST"
+  },
+  "steps": [
+    {
+      "action": "append",
+      "eventId": "event-a",
+      "payload": {
+        "index": 1
+      },
+      "expect": {
+        "ok": true,
+        "ack": true
+      }
+    },
+    {
+      "action": "sync",
+      "dropLocalAck": true,
+      "expect": {
+        "uploaded": 1,
+        "localAckPersisted": false
+      }
+    },
+    {
+      "action": "assert",
+      "path": "pendingEvents",
+      "equals": 1
+    },
+    {
+      "action": "sync",
+      "expect": {
+        "uploaded": 0,
+        "duplicates": 1
+      }
+    },
+    {
+      "action": "assert",
+      "path": "pendingEvents",
+      "equals": 0
+    },
+    {
+      "action": "assert",
+      "path": "cloudEvents",
+      "equals": 1
+    }
+  ]
+}
