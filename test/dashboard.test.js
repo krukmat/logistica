@@ -19,8 +19,14 @@ test("dashboard is bound to loopback and blocks host rewriting",async()=>{
   assert.throws(()=>createDashboardServer({host:"0.0.0.0"}),/LOCALHOST_ONLY/);
   const app=createDashboardServer({port:0});const url=await app.listen();
   try{
-    const res=await fetch(url,{headers:{"Host":"malicious.invalid"}});
-    assert.equal(res.status,403);
+    // fetch/undici may normalize the Host header; exercise raw HTTP explicitly.
+    const http=require("node:http");
+    const status=await new Promise((resolve,reject)=>{
+      const req=http.request(url,{headers:{Host:"malicious.invalid"}},res=>{
+        res.resume();res.on("end",()=>resolve(res.statusCode));
+      });req.on("error",reject);req.end();
+    });
+    assert.equal(status,403);
   }finally{await app.close();}
 });
 test("dashboard mutations require secret + correct origin + JSON",async()=>{
