@@ -6,6 +6,7 @@ test("S3 Linux cgroup v2 plan honors same workload manifest CPU/RAM limit, no ha
  const m=demoManifest(),p=makeLinuxIsolationPlan(m);
  assert.equal(p.cpuMax,"15000 100000");
  assert.equal(p.memoryMax,String(64*1048576));
+ assert.equal(p.memorySwapMax,"0");
  assert.equal(p.networkNamespaceRequired,true);
  assert.equal(p.chrootRequired,true);
  assert.equal(p.storageQuotaEnforced,false);
