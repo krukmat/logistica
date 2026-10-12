@@ -4,6 +4,7 @@
 const {randomUUID}=require("node:crypto");
 const {createConnectivityController}=require("./netns-policy.js");
 const {createFileJournal}=require("./file-journal.js");
+const {syncJournal}=require("./cloud-replay.js");
 const {validateIdentity,EPOCH}=require("./event-envelope.js");
 function createEdgeRuntime({dir,probe,applyRoute,simulatorOptions={},journalOptions={},
                            sessionId=randomUUID(),identity,maxVolatileEvents=8}={}){
@@ -70,10 +71,16 @@ function createEdgeRuntime({dir,probe,applyRoute,simulatorOptions={},journalOpti
       return {kind:"PEF_INTEGRATED_LOCAL_LAB_STEP",observed,event,...status()};
     }finally{busy=false;}
   }
+  function pending(max=20){check();if(!Number.isSafeInteger(max)||max<1||max>256)throw Error("INVALID_PENDING_BOUND");
+    return journal.pending().slice(0,max);}
+  async function sync(transport,maxEvents=16){
+    check();if(busy)throw Error("EDGE_RUNTIME_BUSY");busy=true;
+    try{return await syncJournal({journal,transport,maxEvents});}finally{busy=false;}
+  }
   function cloudAck(eventId){check();return journal.cloudAck(eventId);}
   function compact(options){check();return journal.compact(options);}
   function close(){if(closed)return;closed=true;journal.close();}
-  return {sample,status,cloudAck,compact,close,controllerTrace:()=>controller.trace(),
+  return {sample,status,cloudAck,compact,pending,sync,close,controllerTrace:()=>controller.trace(),
     journalPath:journal.file,observations:()=>controller.observations()};
 }
 module.exports={createEdgeRuntime};

@@ -68,3 +68,16 @@ El resumen es un **preámbulo de ejecución**, no una solicitud de autorización
 ## Entrega de cada task
 
 Resumen de decisión → cambios en `.md` → requisitos afectados → tests/acceptance → riesgos y preguntas abiertas → estado real. Si no hay código ni benchmark, decirlo literalmente.
+
+## Puerta obligatoria de integración del emulador (W1.9.P1)
+
+**Mandato permanente del responsable (2026-10-12):** una funcionalidad de PEF no puede marcarse como `IMPLEMENTED` o `CLOSED` sin estar **alcanzable, visible y verificable desde el emulador/control panel**, además de tener pruebas automatizadas del camino implementado. Esto aplica a las nuevas tasks, incluidos cambios de seguridad, journal, conectividad, cloud mock y protocolos.
+
+1. Cada task de código debe indicar su **punto de entrada en el dashboard** (botón, selector o flujo), adapter reutilizado y estado/trace observable. No basta con documentar un escenario o escribir tests en un módulo que la UI no invoque.
+2. Añadir/actualizar test de integración `dashboard HTTP → action → módulo real → estado/evidencia → UI` (o prueba de cliente cuando sea factible) y conservar el gate `npm test` / GitHub Actions en verde.
+3. Si la función requiere Linux CAP_NET_ADMIN, interfaces físicas, root, PKI o hardware no presente, exponer en la UI su **estado de no disponibilidad, motivo y evidencia del laboratorio aislado**, sin ejecutarla en el Mac o elevar resultados simulados a hardware `VALIDATED`.
+4. Distinguir en todas las visualizaciones `SIM_PASS`, `LAB_PASS`, `BLOCKED`, `NOT_RUN` y datos reales vs mock. No mostrar `fsync` de un fichero de laboratorio como power-loss probado.
+5. Orden de ejecución obligatorio: **Core/adapter → API/UI del emulador → pruebas de extremo a extremo → documentación/CI**. El DoD requiere las cuatro partes; sin ellas la task queda `PARTIAL`.
+6. Cuando se alteren contratos, identidad, estados o eventos, revisar dashboard, scenarios, tests, `docs/12-emulator.md`, `README.md` y tasks. Evitar bifurcar la semántica entre dashboard y Core.
+
+El dashboard de laboratorio opera sin privilegios sobre ficheros temporales creados por el servidor y probes sintéticos; el escenario `linux-lab` sigue ejecutándose únicamente en un runner efímero autorizado.
