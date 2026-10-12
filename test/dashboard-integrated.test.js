@@ -128,3 +128,29 @@ test("private journal directory is deleted on integrated lab close",async()=>{
     fs.rmSync(base,{recursive:true,force:true});
   }
 });
+
+test("dashboard boot metadata is persisted only in scoped lab directory and rotates epoch on restart",async()=>{
+  const fs=require("node:fs"),os=require("node:os"),path=require("node:path");
+  const {createDashboardLab}=require("../src/emulator/dashboard-lab.js");
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),"pef-provisioning-test-"));
+  const lab=createDashboardLab({tmpParent:root});
+  try{
+    const start=lab.snapshot();
+    assert.equal(start.boot.metadataFsync,true);
+    assert.equal(start.boot.hardwareProvisioned,false);
+    assert.equal(start.boot.credentialsProvisioned,false);
+    const dir=path.join(root,fs.readdirSync(root)[0]);
+    const meta=JSON.parse(fs.readFileSync(path.join(dir,"pef-lab-identity.json"),"utf8"));
+    assert.equal(meta.deviceId,"demo-edge");
+    assert.equal(meta.provisioning,"LAB_ONLY_NOT_TRUSTED");
+    assert.equal(fs.statSync(path.join(dir,"pef-lab-identity.json")).mode&0o077,0);
+    const firstId=start.identity.sessionId;
+    await lab.command({action:"sample"});
+    await lab.command({action:"restart"});
+    const next=lab.snapshot();
+    assert.notEqual(next.identity.sessionId,firstId);
+    assert.equal(next.identity.deviceId,meta.deviceId);
+    assert.equal(next.storage.pending,1);
+  }finally{lab.close();assert.deepEqual(fs.readdirSync(root),[]);
+    fs.rmSync(root,{recursive:true,force:true});}
+});

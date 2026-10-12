@@ -5,6 +5,7 @@ const fs=require("node:fs"),os=require("node:os"),path=require("node:path");
 const {randomUUID}=require("node:crypto");
 const {createEdgeRuntime}=require("./lab/edge-runtime.js");
 const {createLabCloudReplica}=require("./lab/cloud-replay.js");
+const {openLabBoot}=require("./lab/lab-bootstrap.js");
 const {runLoopbackSuite}=require("./lab/loopback.js");
 const CAPABILITIES=Object.freeze([
   "wan-probes","local-routing-model","os-file-fsync","journal-pressure",
@@ -14,7 +15,7 @@ const CAPABILITIES=Object.freeze([
 const IDENTITY=Object.freeze({siteId:"demo-site",deviceId:"demo-edge",configRevision:"cfg-demo-1"});
 function createDashboardLab({tmpParent=os.tmpdir()}={}){
   let dir=null,edge=null,cloud=null,history=[],route=null,revision=0,closed=false,busy=false;
-  let cloudAvailable=true,profile="normal",lastResult=null,wan=null;
+  let cloudAvailable=true,profile="normal",lastResult=null,wan=null,boot=null;
   function guard(){if(closed)throw Error("LAB_CLOSED");}
   function start(next="normal"){
     if(!["normal","pressure"].includes(next))throw Error("UNSUPPORTED_LAB_PROFILE");
@@ -28,7 +29,8 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
     openRuntime();
   }
   function openRuntime(){
-    edge=createEdgeRuntime({dir,identity:IDENTITY,sessionId:randomUUID(),
+    boot=openLabBoot({dir,identity:IDENTITY});
+    edge=createEdgeRuntime({dir,identity:boot.identity,sessionId:boot.sessionId,
       probe:async id=>({...wan[id],reason:wan[id].upstream?"HEALTHY":"INJECTED_UNREACHABLE"}),
       applyRoute:async selected=>{route=selected;},
       journalOptions:profile==="pressure"?{capacityBytes:2400,controlReserveBytes:400}:{capacityBytes:65536,controlReserveBytes:8192},
@@ -48,7 +50,8 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
     guard();
     const status=edge.status();
     return {kind:"PEF_DASHBOARD_INTEGRATED_LAB",profile,capabilities:[...CAPABILITIES],
-      identity:status.identity,network:status.network,storage:status.storage,
+      identity:status.identity,boot:{bootScope:boot.bootScope,metadataFsync:boot.metadataFsync,
+        hardwareProvisioned:false,credentialsProvisioned:false},network:status.network,storage:status.storage,
       runtimeHealth:status.runtimeHealth,volatilePending:status.volatilePending,
       droppedEvidence:status.droppedEvidence,lastError:status.lastError,
       routeAppliedInMemory:route,wans:Object.entries(wan).map(([id,w])=>({id,...w})),
