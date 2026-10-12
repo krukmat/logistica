@@ -115,3 +115,7 @@ Se exige autoridad local para operación mientras el cloud está desconectado y 
 ## Decisiones deliberadamente abiertas
 
 `OPEN-BOOT-01` trusted bootstrap; `OPEN-SYNC-01` conflict/idempotency; `OPEN-RUNTIME-01` native vs containers, system service manager, IPC; `OPEN-NET-01` network stack y ubicación de DHCP/DNS/firewall; `OPEN-STORE-01` durable store, partitions/quota, fsync; `OPEN-SEC-01` trust root/secure element; `OPEN-OTA-01` dual image/update/rollback. Resolverlas con criterios de [`06`](06-resource-envelope.md), [`07`](07-roadmap-decisions.md) y tests W1.7, no por intuición tecnológica.
+
+## W1.6 — Refinamiento de ejecución
+
+El contrato concreto de las fronteras lógicas y los estados está en [09-runtime-contract](09-runtime-contract.md). **Health**, **Connectivity**, **Cloud** y **Security** son dimensiones ortogonales (ej.: `HEALTHY + LOCAL_ONLY`), y el bootstrap mínimo no exige cloud, full Supervisor ni Workload Runtime. Esto resuelve semántica de diseño `OPEN-STATE-01` y `OPEN-BOOT-01`; su implementación sigue pendiente. Los demás puntos abiertos requieren W1.7/W1.8.
