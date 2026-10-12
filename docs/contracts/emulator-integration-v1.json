@@ -151,6 +151,24 @@
       "implementation": "src/emulator/lab/cloud-replay.js",
       "test": "test/dashboard-integrated.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "W1.9.Q",
+      "mode": "lab",
+      "title": "Local logistics receipt via localhost API, offline P1 acceptance and Cloud replay",
+      "controlIds": [
+        "receipt-id",
+        "package-id",
+        "receive-package",
+        "receipt-count",
+        "receipt-list"
+      ],
+      "actions": [
+        "receipt"
+      ],
+      "implementation": "src/emulator/lab/local-receipts.js",
+      "test": "test/dashboard-integrated.test.js",
+      "hardwareValidated": false
     }
   ]
 }
