@@ -95,6 +95,10 @@ function renderIntegrated(lab){
   setText("lab-boot",lab.boot.metadataFsync?"metadata fsync · LAB_ONLY":"missing");
   setText("lab-protocol",lab.transport.frame+" · "+lab.transport.timeoutMs+" ms · proof mock");
   $("lab-profile").value=lab.profile;
+  $("receipt-list").textContent=JSON.stringify(lab.receipts||[],null,2);
+  const accepted=(lab.receipts||[]).length;
+  const cloudAcked=(lab.receipts||[]).filter(r=>r.cloudAcked).length;
+  setText("receipt-count",accepted+" recepciones locales · "+cloudAcked+" confirmadas en Cloud mock");
   $("lab-pending").textContent=JSON.stringify(lab.pending,null,2);
   $("lab-history").textContent=JSON.stringify(lab.history.slice(-12),null,2);
   $("trace").textContent=JSON.stringify({mode:"integrated-lab",lastResult:lab.lastResult,
@@ -126,6 +130,25 @@ async function dispatch(command){
 }
 function inject(step){return dispatch({command:"enqueue",step});}
 function labAction(action,options={}){return dispatch({command:"lab",action,...options});}
+async function submitReceipt(){
+  if(busy||!token||currentMode!=="lab")return;
+  const receiptId=$("receipt-id").value.trim();
+  const packageId=$("package-id").value.trim();
+  busy=true;
+  try{
+    const res=await fetch("/api/local/receipts",{method:"POST",headers:{
+      "content-type":"application/json","x-pef-session":token},
+      body:JSON.stringify({receiptId,packageId})});
+    const data=await res.json();
+    if(data.session&&data.lab)render(data.session,data.lab,data.mode);
+    if(!res.ok||!data.ok){
+      message("Recepción no aceptada: "+(data.result?.error||data.error||res.status),true);
+    }else message(data.result.duplicate?
+      "Recepción duplicada (mismo evento): sin doble registro.":
+      "Recepción guardada: ACK local tras fsync, sincronización Cloud pendiente.");
+  }catch(err){message(String(err.message||err),true);}
+  finally{busy=false;if(current)render(current,currentLab,currentMode);}
+}
 function bind(){
   $("mode-sim").addEventListener("click",()=>dispatch({command:"mode",mode:"sim"}));
   $("mode-lab").addEventListener("click",()=>dispatch({command:"mode",mode:"lab"}));
@@ -140,6 +163,7 @@ function bind(){
   $("lab-retry-sync").addEventListener("click",()=>labAction("syncRetry"));
   $("lab-loopback").addEventListener("click",()=>labAction("loopback"));
   $("lab-reset").addEventListener("click",()=>labAction("reset",{profile:$("lab-profile").value}));
+  $("receive-package").addEventListener("click",submitReceipt);
   $("load").addEventListener("click",()=>dispatch({command:"load",scenario:$("scenario-select").value}));
   $("next").addEventListener("click",()=>dispatch({command:"next"}));
   $("run").addEventListener("click",()=>dispatch({command:"run"}));
