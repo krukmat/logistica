@@ -64,3 +64,7 @@ Status: `NOT_RUN`, `BLOCKED`, `ERROR`, `FAIL`, `PASS`. `BLOCKED` if driver/physi
 **W1.7 design DoD = SPECIFIED**: repeatable scenario vocabulary and acceptance oracles, test registry, evidence schema, driver capability needs, restoration and statistical sampling. **Runtime implementation tests: NONE; drivers: NONE; hardware: NONE; evaluated outcomes: NONE.** W1.8 cannot claim a shootout result until physical or properly scoped virtual implementations exist; preliminary comparisons must be marked **HYPOTHESIS**.
 
 **Next:** W1.8 decision methodology; build executable runner/adapters and lab infrastructure only once runtime implementation and test hardware or simulation harness exist.
+
+## Integración del emulador W1.9 (no validación de DUT)
+
+La primera ejecución de un [emulador lógico](12-emulator.md) conserva sus propios escenarios `EMU-*`, salidas `SIM_PASS`/`SIM_FAIL` y pruebas Node. Esto **no** modifica el estado `NOT_RUN` de los escenarios físicos `SC-G-*` de W1.7. La meta de W1.9.D/E es reutilizar los mismos *oráculos* con ports `sim` → `linux-lab` → `device`; un `SIM_PASS` nunca produce un `PASS` en el evidence schema físico. La primera comprobación aislada de 6 escenarios del código exacto publicó sólo evidencia de máquina de estados, sin tráfico real ni fsync.

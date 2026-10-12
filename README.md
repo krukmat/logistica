@@ -2,6 +2,10 @@
 
 > **Estado (2026-10-12): BASELINE DOCUMENTAL INICIAL.** Diseño conceptual analizado y consolidado, **sin implementación, benchmarks, validación de clientes ni selección de hardware**. No confundir tareas de diseño «cerradas en conversación» con pruebas superadas.
 
+## Emulator software-first (W1.9)
+
+`npm test` ejecuta la suite Node built-in y `npm run emulate` los escenarios declarativos de WAN/cloud/journal/workloads. Ver [Emulator](docs/12-emulator.md) y [Tasks W1.9](docs/tasks/w1.9-emulator-execution.md). `SIM_PASS` **no certifica hardware** ni la durabilidad física.
+
 ## Propósito
 
 PEF es una plataforma *local-first* para sitios pequeños: usa conectividad existente, sostiene servicios locales cuando fallan WAN/cloud, conserva estado y evidencia, se recupera de fallos y puede gestionarse remotamente cuando existe conectividad. **No es otro router, una red 5G privada ni un operador de Internet.**
@@ -80,4 +84,4 @@ flowchart TB
 
 ## Entrega y próxima transición
 
-**Repositorio de trabajo:** [`krukmat/logistica`](https://github.com/krukmat/logistica), rama principal `main`. Esta baseline documenta trabajo de diseño; los commits de integración no constituyen validación empírica. Para avanzar: desbloquear **W1.8.E–G** mediante implementación mínima del Core y drivers de laboratorio, y después mediciones físicas. [W1.8 Shootout](docs/11-architecture-shootout.md) y [subtasks](docs/tasks/w1.8-shootout-execution.md). No hay hardware certificado, y compra/producción sigue NO-GO.
+**Repositorio de trabajo:** [`krukmat/logistica`](https://github.com/krukmat/logistica), rama principal `main`. Esta baseline documenta trabajo de diseño; los commits de integración no constituyen validación empírica. Para avanzar: usar **W1.9 Virtual Emulator** como ejecución determinista para preparar los adapters de laboratorio y refinar el Core, antes de desbloquear pruebas físicas W1.8.E–G. [W1.8 Shootout](docs/11-architecture-shootout.md) y [subtasks](docs/tasks/w1.8-shootout-execution.md). No hay hardware certificado, y compra/producción sigue NO-GO. `node bin/pef-emulator.js --all` ofrece pruebas **lógicas** reproducibles, no benchmarks.

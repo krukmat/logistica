@@ -1,6 +1,6 @@
 # 07 — Wave 1 Plan, ADR register y riesgos
 
-**Última actualización:** 2026-10-12. **Entrega:** baseline arquitectónica W1.1–W1.8.D (design/spec only) documentada para `krukmat/logistica` (`main`); **sin código de producto PEF ni tests de producto**.
+**Última actualización:** 2026-10-12. **Entrega:** baseline arquitectónica W1.1–W1.8.D (design/spec only) más emulador lógico W1.9 (software implementado) para `krukmat/logistica` (`main`); **sin código de producto PEF ni tests de producto**.
 
 ## A. Definición de completitud
 
@@ -30,6 +30,7 @@
 | W1.6 | Software Runtime Contract | **DOCUMENTED / DESIGN ONLY** | [`09`](09-runtime-contract.md): bootstrap, IPC/state, journal, sync, trust, workload; tests pending |
 | W1.7 | Benchmark & Failure Harness Specification | **DOCUMENTED / SPECIFIED** | [`10`](10-benchmark-harness.md) + scenario/evidence schemas; drivers/benchmarks pending |
 | W1.8 | Architecture Shootout | **A–D DOCUMENTED; E–G BLOCKED** | [`11`](11-architecture-shootout.md) / candidate architecture templates; no hardware result |
+| W1.9 | Virtual Edge Emulator | **IMPLEMENTED (logical model), HW UNVALIDATED** | [`12`](12-emulator.md) + [granular tasks](tasks/w1.9-emulator-execution.md) + src/emulator/scenarios/test |
 
 ## C. Execution contract / granular W1.5 subtasks
 
@@ -87,6 +88,8 @@ The working decomposition is [**W1.5 execution breakdown**](tasks/w1.5-resource-
 | RISK-22 | Fault injection peligroso fuera de laboratorio aislado o cleanup incompleto | W1.7 preflight lab ID, dry-run, capability check y restore audit |
 | RISK-23 | Virtual-only PEF PoC cannot verify hardware power/flash/offload/UPS | W1.8 requires instrumented physical evidence and declared gaps |
 | RISK-24 | Scoring without measured hard gates could select a false winner | W1.8 HARD GATES first; all candidates BLOCKED until tested |
+| RISK-25 | Un `SIM_PASS` puede interpretarse como prueba física de durable ACK/failover | [W1.9](12-emulator.md) tags and Linux/device evidence separado |
+| RISK-26 | Divergencia del emulador ante restricciones de SO/kernel/NIC/storage reales | W1.9.D/E adapter ports y shadow comparison físico posterior |
 
 ## F. Experimentos y estrategia de evidencia futura
 
@@ -97,4 +100,4 @@ The working decomposition is [**W1.5 execution breakdown**](tasks/w1.5-resource-
 
 ## G. Próxima acción en repositorio
 
-Repositorio de trabajo: `krukmat/logistica`, rama `main`. **W1.5.A–J, W1.6.A–I, W1.7.A–I, W1.8.A–D DOCUMENTED/SPECIFIED (DESIGN ONLY); no benchmarks executed.** [W1.8](11-architecture-shootout.md) is design-ready; **W1.8.E–G are BLOCKED** pending a working PEF DUT, harness drivers, instrumented physical candidates. Next unblocker: software-first Core PoC in isolated lab, then comparison. No purchase, production or SKU freeze approved.
+Repositorio de trabajo: `krukmat/logistica`, rama `main`. **W1.5.A–J, W1.6.A–I, W1.7.A–I, W1.8.A–D DOCUMENTED/SPECIFIED (DESIGN ONLY); no benchmarks executed.** [W1.8](11-architecture-shootout.md) is design-ready; **W1.8.E–G are BLOCKED** pending a working PEF DUT, harness drivers, instrumented physical candidates. Next unblocker: software-first [Virtual Edge Emulator](12-emulator.md) → schema/ports refinement → Linux-lab driver → real PEF Core + physical comparison. No purchase, production or SKU freeze approved.

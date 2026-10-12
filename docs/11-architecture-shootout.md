@@ -61,3 +61,7 @@ First compare hard gates as `PASS/FAIL/BLOCKED`; no winner if any critical gate 
 **Current conclusion:** `DESIGN_READY / EXECUTION_BLOCKED`. No measured winner and no SKU freeze. Next technical dependency is a **software-first PEF Core minimal implementation in an isolated lab**, followed by driver implementation and measured candidates. No third-party platform purchase, infrastructure mutation or deployment authorized by this documentation.
 
 **W1.8 completion evidence needed:** hardware/software revision, raw runs/hashes, PASS of every hard gate, cost/power sources, documented exceptions, and explicit GO/REVISIT/REJECT decision. 
+
+## Dependencia W1.9 — Virtual Edge Emulator
+
+El emulador [W1.9](12-emulator.md) proporciona comportamiento determinista y escenarios para madurar interfaces, pero **no desbloquea por sí solo** W1.8.E–G: hacen falta Core real, puertos Linux con fault injection aislado y hardware instrumentado. Conservar por candidato columnas separadas `sim`, `linux-lab`, `device`; la última es la única que permite certificar NIC/flash/UPS/thermal.
