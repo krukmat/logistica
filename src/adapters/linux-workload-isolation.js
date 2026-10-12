@@ -11,7 +11,7 @@ function makeLinuxIsolationPlan(manifest){
   const cpuQuota=Math.max(1000,Math.ceil(mc*100)); // 100000 us × millicores / 1000
   return Object.freeze({kind:"PEF_LINUX_CGROUP_V2_PLAN",workloadId:manifest.workload_id,
     cpuMax:cpuQuota+" 100000",memoryMax:String(mib*1048576),
-    pidsMax:"16",storageQuotaEnforced:false,
+    pidsMax:"16",memorySwapMax:"0",storageQuotaEnforced:false,
     networkNamespaceRequired:true,chrootRequired:true,dropUid:65534,
     hardwareValidated:false,scope:"GitHub-hosted ephemeral Linux lab only"});
 }
