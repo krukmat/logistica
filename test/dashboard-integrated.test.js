@@ -79,3 +79,52 @@ test("pressure profile displays unacknowledged P1 events without interrupting WA
   assert.equal(result.lab.runtimeHealth,"DEGRADED");
   assert.ok(result.lab.volatilePending>0);
 }));
+
+test("integrated UI client exposes each operation and Linux-only lab remains labeled CI-only",()=>withPanel(async({url,call})=>{
+  const html=await (await fetch(url)).text();
+  const client=await (await fetch(url+"dashboard.js")).text();
+  for(const id of ["lab-sample","lab-restart","lab-compact","lab-lost-ack",
+    "lab-forged-ack","lab-loopback","lab-reset","lab-profile","lab-history","lab-health"]){
+    assert.ok(html.includes('id="'+id+'"'),"Missing control "+id);
+  }
+  for(const action of ["sample","restart","compact","lostAck","forgedAck","loopback","reset"]){
+    assert.ok(client.includes('labAction("'+action+'"'),"Control not wired: "+action);
+  }
+  assert.match(html,/CI-only/);
+  assert.match(html,/sin privilegios|sin hardware|sin root|NO ROOT/i);
+  assert.equal((await call({command:"lab",action:"sample"})).httpStatus,400);
+  assert.equal((await call({command:"mode",mode:"invalid"})).httpStatus,400);
+  const enabled=await call({command:"mode",mode:"lab"});
+  assert.equal(enabled.lab.capabilities.includes("journal-compaction"),true);
+  assert.equal((await call({command:"run"})).httpStatus,400);
+  assert.equal((await call({command:"lab",action:"invalid"})).httpStatus,400);
+  const back=await call({command:"mode",mode:"sim"});
+  assert.equal(back.mode,"sim");
+  assert.equal((await call({command:"enqueue",step:{action:"tick",seconds:1}})).httpStatus,200);
+}));
+test("dashboard loopback button executes real localhost TCP/HTTP lab, no privileged port or NIC",()=>withPanel(async({call})=>{
+  await call({command:"mode",mode:"lab"});
+  const result=await call({command:"lab",action:"loopback"});
+  assert.equal(result.httpStatus,200);
+  assert.equal(result.result.status,"LAB_PASS",JSON.stringify(result.result.failures));
+  assert.equal(result.lab.physicalValidated,false);
+  assert.ok(result.lab.history.some(h=>h.action==="loopback"));
+}));
+test("private journal directory is deleted on integrated lab close",async()=>{
+  const fs=require("node:fs"),os=require("node:os"),path=require("node:path");
+  const {createDashboardLab}=require("../src/emulator/dashboard-lab.js");
+  const base=fs.mkdtempSync(path.join(os.tmpdir(),"pef-ui-lab-fixture-"));
+  const lab=createDashboardLab({tmpParent:base});
+  try{
+    assert.equal(fs.readdirSync(base).length,1);
+    await lab.command({action:"sample"});
+    assert.equal(lab.snapshot().storage.pending,1);
+    await lab.command({action:"reset",profile:"pressure"});
+    assert.equal(fs.readdirSync(base).length,1);
+    assert.equal(lab.snapshot().storage.capacityBytes,2400);
+  }finally{
+    lab.close();
+    assert.deepEqual(fs.readdirSync(base),[]);
+    fs.rmSync(base,{recursive:true,force:true});
+  }
+});
