@@ -10,6 +10,7 @@ on:
       - 'scenarios/**'
       - 'package.json'
       - 'scripts/lab/**'
+      - 'docs/contracts/**'
       - '.github/workflows/pef-emulator.yml'
   workflow_dispatch:
 permissions:
