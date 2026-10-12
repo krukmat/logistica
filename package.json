@@ -1,0 +1,15 @@
+{
+  "name": "pef-virtual-edge",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Deterministic logical PEF hardware-independent emulator",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "emulate": "node bin/pef-emulator.js --all",
+    "smoke": "node --test test/*.test.js && node bin/pef-emulator.js --all"
+  },
+  "license": "UNLICENSED"
+}

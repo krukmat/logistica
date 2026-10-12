@@ -78,6 +78,7 @@ const createSimulator=function createSimulator(options={}){
       case "admit":return admit(p);
       case "write_workload":{
         w=state.workloads[p.id];if(!w)return {ok:false,error:"WORKLOAD_NOT_FOUND"};
+        if(w.status!=="RUNNING")return {ok:false,error:"WORKLOAD_NOT_RUNNING"};
         const bytes=p.bytes;if(!Number.isSafeInteger(bytes)||bytes<0)return {ok:false,error:"BAD_SIZE"};
         if(w.storageUsed+bytes>w.resources.storage_limit_mib*1048576||state.p2Used+bytes>c.p2CapacityBytes)return {ok:false,error:"P2_QUOTA_EXCEEDED"};
         w.storageUsed+=bytes;state.p2Used+=bytes;record("WORKLOAD_STORAGE_WRITE",{id:p.id,bytes});return {ok:true};
