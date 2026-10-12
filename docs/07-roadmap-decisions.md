@@ -1,6 +1,6 @@
 # 07 — Wave 1 Plan, ADR register y riesgos
 
-**Última actualización:** 2026-10-12. **Entrega:** baseline arquitectónica W1.1–W1.7 (design/spec only) documentada para `krukmat/logistica` (`main`); **sin código de producto PEF ni tests de producto**.
+**Última actualización:** 2026-10-12. **Entrega:** baseline arquitectónica W1.1–W1.8.D (design/spec only) documentada para `krukmat/logistica` (`main`); **sin código de producto PEF ni tests de producto**.
 
 ## A. Definición de completitud
 
@@ -29,7 +29,7 @@
 | W1.5.J | Resource Gate | **DOCUMENTED / PROVISIONAL** | GO/revisit y riesgos |
 | W1.6 | Software Runtime Contract | **DOCUMENTED / DESIGN ONLY** | [`09`](09-runtime-contract.md): bootstrap, IPC/state, journal, sync, trust, workload; tests pending |
 | W1.7 | Benchmark & Failure Harness Specification | **DOCUMENTED / SPECIFIED** | [`10`](10-benchmark-harness.md) + scenario/evidence schemas; drivers/benchmarks pending |
-| **W1.8** | Architecture Shootout | **NEXT — DESIGN ONLY** | comparativa ARM router vs ARM edge vs x86 vs split bajo el mismo harness |
+| W1.8 | Architecture Shootout | **A–D DOCUMENTED; E–G BLOCKED** | [`11`](11-architecture-shootout.md) / candidate architecture templates; no hardware result |
 
 ## C. Execution contract / granular W1.5 subtasks
 
@@ -85,6 +85,8 @@ The working decomposition is [**W1.5 execution breakdown**](tasks/w1.5-resource-
 | RISK-20 | Cloud ACK ambiguo y réplica sin dedup producen doble acción o pérdida de cursor | W1.6.E + W1.7 D-SYN-01, G-CLOUD-02 |
 | RISK-21 | Registry de escenarios o JSON Schema interpretado como evidencia ejecutada | W1.7 no PASS sin trace raw+hash; W1.8 gate bloqueado sin DUT |
 | RISK-22 | Fault injection peligroso fuera de laboratorio aislado o cleanup incompleto | W1.7 preflight lab ID, dry-run, capability check y restore audit |
+| RISK-23 | Virtual-only PEF PoC cannot verify hardware power/flash/offload/UPS | W1.8 requires instrumented physical evidence and declared gaps |
+| RISK-24 | Scoring without measured hard gates could select a false winner | W1.8 HARD GATES first; all candidates BLOCKED until tested |
 
 ## F. Experimentos y estrategia de evidencia futura
 
@@ -95,4 +97,4 @@ The working decomposition is [**W1.5 execution breakdown**](tasks/w1.5-resource-
 
 ## G. Próxima acción en repositorio
 
-Repositorio de trabajo: `krukmat/logistica`, rama `main`. **W1.5.A–J, W1.6.A–I, W1.7.A–I DOCUMENTED/SPECIFIED (DESIGN ONLY), benchmark evidence NONE.** [Runtime](09-runtime-contract.md) y [Harness Specification](10-benchmark-harness.md) permiten diseñar **W1.8 Architecture Shootout**. **No** existen drivers, DUT ni resultados medidos; hardware purchase/production/SKU freeze siguen NO-GO.
+Repositorio de trabajo: `krukmat/logistica`, rama `main`. **W1.5.A–J, W1.6.A–I, W1.7.A–I, W1.8.A–D DOCUMENTED/SPECIFIED (DESIGN ONLY); no benchmarks executed.** [W1.8](11-architecture-shootout.md) is design-ready; **W1.8.E–G are BLOCKED** pending a working PEF DUT, harness drivers, instrumented physical candidates. Next unblocker: software-first Core PoC in isolated lab, then comparison. No purchase, production or SKU freeze approved.

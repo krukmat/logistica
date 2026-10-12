@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "note": "Only architecture classes. All results unknown. No platform selected.",
+  "candidates": [
+    {
+      "type": "ARM_ROUTER_CLASS",
+      "hardware_model": null,
+      "measured": false,
+      "offline_local": null,
+      "p1_powercut": null,
+      "trust": null,
+      "isolation": null,
+      "throughput_gbps": null,
+      "power_w": null,
+      "first_year_cost_eur": null,
+      "gate_status": "BLOCKED"
+    },
+    {
+      "type": "ARM_EDGE_SBC",
+      "hardware_model": null,
+      "measured": false,
+      "offline_local": null,
+      "p1_powercut": null,
+      "trust": null,
+      "isolation": null,
+      "throughput_gbps": null,
+      "power_w": null,
+      "first_year_cost_eur": null,
+      "gate_status": "BLOCKED"
+    },
+    {
+      "type": "X86_LOW_POWER",
+      "hardware_model": null,
+      "measured": false,
+      "offline_local": null,
+      "p1_powercut": null,
+      "trust": null,
+      "isolation": null,
+      "throughput_gbps": null,
+      "power_w": null,
+      "first_year_cost_eur": null,
+      "gate_status": "BLOCKED"
+    },
+    {
+      "type": "SPLIT_ROUTER_COMPUTE",
+      "hardware_model": null,
+      "measured": false,
+      "offline_local": null,
+      "p1_powercut": null,
+      "trust": null,
+      "isolation": null,
+      "throughput_gbps": null,
+      "power_w": null,
+      "first_year_cost_eur": null,
+      "gate_status": "BLOCKED"
+    }
+  ]
+}
