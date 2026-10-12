@@ -222,3 +222,9 @@ Linux CI prueba por separado un child workload con **límites reales kernel** de
 ## W1.9.S3.4–S3.8 — Linux driver supervisado, visible pero no ejecutable en macOS
 
 El laboratorio Linux ahora inicia el **mismo Workload Supervisor del Core** con el adaptador de procesos realmente aislados y comparte las reglas de manifests/health/backoff con el driver local macOS. La UI distingue el `NodeProcessDriver` local (`actualLimitsEnforced=false`, sin red/FS/cgroup aisladas) del `LinuxIsolatedProcessDriver` **CI-only** (cgroup/netns/chroot/UID, CPU throttling, OOM kill, limpieza). El panel enlaza la [CI verificada](https://github.com/krukmat/logistica/actions/runs/38299928948); nunca ejecuta Linux root en el Mac. [Contrato S3.4–S3.8](20-supervised-linux-driver.md).
+
+## W1.9.T — Estado pre-hardware del emulador: READY sólo para integración física
+
+El producto compartido `src/core/` ya se ejecuta desde `src/runtime/autonomous-edge.js` sin el Control Panel. La CLI `bin/pef-edge.js` exige manifiesto v1 y token operador; arranca la política WAN y un receiver opcional, reabre journal tras SIGKILL y devuelve `/health`, `/ready`, `/state`, `/receipts`. El dashboard en modo Laboratorio integrado incluye la prueba **T — Edge Service autónomo**, que inicia el host real vía HTTP y valida fsync/reboot sin backend ficticio separado. Linux solo: namespace routing real y proceso supervisado con cgroups medidos en CI, NO privilegios en Mac.
+
+La puerta antes de hardware es el tercer job `prehardware-gate` que exige éxito de pruebas Node/emulador y Linux, más artefactos JSON reales; emitió `SOFTWARE_LAB_READY` con **94 tests Node PASS** en [run #38314630311](https://github.com/krukmat/logistica/actions/runs/38314630311). Limitación: software listo para empezar la integración a un device, no dispositivo productivo listo. [Guía y Mermaid](21-autonomous-edge-handoff.md).

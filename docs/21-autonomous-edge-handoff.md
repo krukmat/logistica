@@ -1,7 +1,7 @@
 # 21 — Autonomous Edge Service & Pre-Hardware Gate (W1.9.T)
 
 **Status: SOFTWARE/LAB IMPLEMENTED / CI VERIFIED (2026-10-12). Physical device and production GO: BLOCKED/NOT_RUN.** 
-[Integrated Linux CI](https://github.com/krukmat/logistica/actions/runs/38314494647) · [Tasks T](tasks/w1.9-t-autonomous-edge.md) · [Handoff contract](contracts/hardware-handoff-v1.json).
+[Integrated Linux CI](https://github.com/krukmat/logistica/actions/runs/38314630311) · [Tasks T](tasks/w1.9-t-autonomous-edge.md) · [Handoff contract](contracts/hardware-handoff-v1.json).
 
 ## Goal
 
@@ -87,7 +87,7 @@ The [CI pipeline](https://github.com/krukmat/logistica/actions/workflows/pef-emu
 2. `netns-lab` — guarded Linux routes, real standalone Edge host with WAN outage and P1 reopen, and cgroup-isolated supervisor + autonomous host with IPC/fault/recovery.
 3. `prehardware-gate` — reads actual status and downloaded JSON evidence, requires `STANDALONE_DAEMON_KERNEL_WORKER` and `STANDALONE_DAEMON_OFFLINE_FSYNC`, emits `SOFTWARE_LAB_READY` / `GO_FOR_DEVICE_INTEGRATION_ONLY`, or `NO_GO`.
 
-[CI run #38314494647](https://github.com/krukmat/logistica/actions/runs/38314494647) showed all three jobs PASS before final mandatory daemon assertion was added; subsequent runs must also meet that stricter gate.
+[CI run #38314630311](https://github.com/krukmat/logistica/actions/runs/38314630311) showed all three jobs PASS before final mandatory daemon assertion was added; subsequent runs must also meet that stricter gate.
 
 ## What this does NOT close
 
