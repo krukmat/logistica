@@ -74,21 +74,24 @@ async function run(){
     ip("-n",ns.wa,"addr","del","10.250.20.1/24","dev","eth0");aLost=true;
     assertLab("carrier-up-while-upstream-unreachable",/\bstate UP\b/.test(ip("-o","-n",ns.edge,"link","show","dev","wa0")),null);
     await phase("primary-unreachable",1,"backup","WAN_B");
-    ip("-n",ns.wa,"addr","add","10.250.20.1/24","dev","eth0");aLost=false;
+    ip("-n",ns.wa,"addr","add","10.250.20.1/24","dev","eth0");
+    ip("-n",ns.wa,"route","replace","10.250.10.0/24","via","10.250.20.2","dev","eth0");aLost=false;
     await phase("failback-hold",1,"backup","WAN_B");
+    assertLab("primary-return-path-restored",ip("-n",ns.wa,"route","show","10.250.10.0/24").includes("via 10.250.20.2"),null);
     await phase("failback-stable",5,"primary","WAN_A");
     ip("-n",ns.wa,"addr","del","10.250.20.1/24","dev","eth0");aLost=true;
     ip("-n",ns.wb,"addr","del","10.250.30.1/24","dev","eth0");bLost=true;
     await phase("all-wan-unreachable",1,null,"DOWN");
     const ping=ip("netns","exec",ns.lan,"ping","-q","-c","1","-W","1","10.250.10.1");
     assertLab("local-lan-remains-operational",/\b0% packet loss\b/.test(ping),ping);
-    ip("-n",ns.wa,"addr","add","10.250.20.1/24","dev","eth0");aLost=false;
+    ip("-n",ns.wa,"addr","add","10.250.20.1/24","dev","eth0");
+    ip("-n",ns.wa,"route","replace","10.250.10.0/24","via","10.250.20.2","dev","eth0");aLost=false;
     await phase("restored",1,"primary","WAN_A");
   }catch(err){failures.push(String(err.stack||err));}
   finally{
     try{
-      if(aLost)ip("-n",ns.wa,"addr","add","10.250.20.1/24","dev","eth0");
-      if(bLost)ip("-n",ns.wb,"addr","add","10.250.30.1/24","dev","eth0");
+      if(aLost){ip("-n",ns.wa,"addr","add","10.250.20.1/24","dev","eth0");ip("-n",ns.wa,"route","replace","10.250.10.0/24","via","10.250.20.2","dev","eth0");}
+      if(bLost){ip("-n",ns.wb,"addr","add","10.250.30.1/24","dev","eth0");ip("-n",ns.wb,"route","replace","10.250.10.0/24","via","10.250.30.2","dev","eth0");}
       await applyRoute("primary");
     }catch(err){failures.push("RESTORE_FAILED:"+String(err.stack||err));}
   }
