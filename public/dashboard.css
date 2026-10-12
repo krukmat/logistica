@@ -15,3 +15,8 @@
 .lab-detail pre{max-height:240px;overflow:auto;background:#091420;border:1px solid #26384b;border-radius:9px;padding:12px;color:#afd0e4;font:11px/1.6 ui-monospace,Menlo,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
 .lab-panel .micro a{color:#8ccef2}
 @media(max-width:750px){.lab-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.mode-switch .micro{margin-left:0}}
+
+.local-receipts-panel{border-top:1px solid #30445a;padding-top:16px}
+.local-receipts-panel input{display:block;width:100%;box-sizing:border-box;min-width:150px;margin-top:6px;padding:9px 10px;background:#0b1b29;color:#d9f3fa;border:1px solid #355167;border-radius:7px;font:inherit}
+.local-receipts-panel input:focus{outline:2px solid #63bed9;outline-offset:1px}
+.local-receipts-panel .lab-buttons{margin:12px 0}
