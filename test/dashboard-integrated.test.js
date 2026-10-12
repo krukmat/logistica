@@ -203,3 +203,67 @@ test("P2 dashboard missing proof and protocol mismatch never persist local curso
   assert.equal(r.result.status,"SYNC_OK");
   assert.equal(r.lab.storage.pending,0);
 }));
+
+test("Q: local HTTP receipt accepted offline, idempotent across restart, replayed and retained",()=>withPanel(async({url,boot,call})=>{
+  const api=async body=>{
+    const res=await fetch(url+"api/local/receipts",{method:"POST",headers:{
+      "content-type":"application/json","x-pef-session":boot.token},body:JSON.stringify(body)});
+    return {code:res.status,...await res.json()};
+  };
+  const list=async()=>fetch(url+"api/local/receipts",{headers:{"x-pef-session":boot.token}}).then(x=>x.json());
+  assert.equal((await api({receiptId:"R001",packageId:"PKG001"})).code,409);
+  await call({command:"mode",mode:"lab"});
+  await call({command:"lab",action:"wan",id:"primary",upstream:false});
+  const offline=await call({command:"lab",action:"wan",id:"backup",upstream:false});
+  assert.equal(offline.lab.network.connectivity,"LOCAL_ONLY");
+  const first=await api({receiptId:"R001",packageId:"PKG001"});
+  assert.equal(first.code,201);
+  assert.equal(first.result.accepted,true);
+  assert.equal(first.result.fsyncCompleted,true);
+  assert.equal(first.lab.receipts.length,1);
+  assert.equal(first.lab.receipts[0].cloudAcked,false);
+  assert.equal((await api({receiptId:"R001",packageId:"PKG001"})).code,200);
+  const conflict=await api({receiptId:"R001",packageId:"PKG002"});
+  assert.equal(conflict.code,409);
+  assert.equal(conflict.result.error,"EVENT_ID_CONFLICT");
+  assert.equal((await list()).receipts.length,1);
+  assert.equal((await call({command:"lab",action:"sync"})).result.error,"CLOUD_UNAVAILABLE");
+  await call({command:"lab",action:"restart"});
+  assert.equal((await list()).receipts[0].receiptId,"R001");
+  await call({command:"lab",action:"wan",id:"primary",upstream:true});
+  const sync=await call({command:"lab",action:"sync"});
+  assert.equal(sync.result.status,"SYNC_OK");
+  assert.equal(sync.lab.receipts[0].cloudAcked,true);
+  assert.equal(sync.lab.storage.pending,0);
+  assert.equal((await call({command:"lab",action:"compact"})).result.ok,true);
+  assert.equal((await list()).receipts[0].cloudAcked,true);
+  assert.equal((await api({receiptId:"R001",packageId:"PKG001"})).result.duplicate,true);
+}));
+test("Q: invalid/over-quota local receipt never falsely ACKed; API requires local session",()=>withPanel(async({url,boot,call})=>{
+  const path=url+"api/local/receipts";
+  assert.equal((await fetch(path)).status,403);
+  assert.equal((await fetch(path,{method:"POST",headers:{"content-type":"application/json"},
+    body:'{"receiptId":"R","packageId":"P"}'})).status,403);
+  await call({command:"mode",mode:"lab"});
+  const post=async id=>{
+    const res=await fetch(path,{method:"POST",headers:{"content-type":"application/json",
+      "x-pef-session":boot.token},body:JSON.stringify({receiptId:id,packageId:"PKG-"+id})});
+    return {code:res.status,...await res.json()};
+  };
+  assert.equal((await post("../invalid")).code,400);
+  await call({command:"lab",action:"reset",profile:"pressure"});
+  let failed=null,accepted=0;
+  for(let i=0;i<20;i++){
+    const r=await post("R"+i);
+    if(r.code===507){failed=r;break;}
+    assert.equal(r.code,201);accepted++;
+  }
+  assert.ok(failed);
+  assert.equal(failed.result.accepted,false);
+  assert.equal(failed.result.fsyncCompleted,false);
+  assert.equal(failed.lab.receipts.length,accepted);
+  const html=await (await fetch(url)).text(),js=await (await fetch(url+"dashboard.js")).text();
+  for(const id of ["receipt-id","package-id","receive-package","receipt-count","receipt-list"])
+    assert.ok(html.includes('id="'+id+'"'));
+  assert.ok(js.includes('fetch("/api/local/receipts"'));
+}));
