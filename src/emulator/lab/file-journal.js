@@ -92,6 +92,10 @@ function createFileJournal({dir,capacityBytes=1024*1024,controlReserveBytes}={})
     return {...res,eventId};
   }
   const pending=()=>{checkOpen();return [...entries.values()].filter(e=>!acked.has(e.id)).map(e=>({eventId:e.id,payload:e.payload,category:e.category,sha256:e.sha256}));};
+  const retained=()=>{checkOpen();return [...entries.values()].map(e=>({
+    eventId:e.id,payload:e.payload,category:e.category,sha256:e.sha256,
+    cloudAcked:acked.has(e.id)
+  }));};
   const status=()=>{checkOpen();return {kind:"PEF_OS_FILE_JOURNAL",bytesUsed:size,capacityBytes,controlReserveBytes,regularWriteLimitBytes:capacityBytes-controlReserveBytes,events:entries.size+refs.size,retainedEvents:entries.size,compactedRefs:refs.size,cloudAcked:acked.size+refs.size,pending:entries.size-acked.size,unsafe,hardwareValidated:false,powerCutValidated:false};};
   // Rewrites are atomic on the current filesystem: stage/fsync/rename/fsync directory.
   // Single-writer laboratory contract: no cross-process lock or hardware power-loss guarantee.
@@ -144,6 +148,6 @@ function createFileJournal({dir,capacityBytes=1024*1024,controlReserveBytes}={})
     }
   }
   function close(){if(closed)return;closed=true;fs.closeSync(fd);}
-  return {append,cloudAck,pending,status,compact,close,file};
+  return {append,cloudAck,pending,retained,status,compact,close,file};
 }
 module.exports={createFileJournal};
