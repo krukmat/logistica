@@ -46,6 +46,7 @@ function createLinuxIsolatedProcessDriver({namespace,cgroup,rootfs,nodeInside,ho
       const plan=makeLinuxIsolationPlan(manifest);
       verifyLimit("cpu.max",plan.cpuMax);
       verifyLimit("memory.max",plan.memoryMax);
+      verifyLimit("memory.swap.max",plan.memorySwapMax);
       verifyLimit("pids.max",plan.pidsMax);
       const argv=["-c",'kill -STOP "$$"; exec "$@"',"pef-worker",
         "ip","netns","exec",namespace,"chroot","--userspec=65534:65534",
