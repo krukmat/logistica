@@ -169,6 +169,22 @@
       "implementation": "src/emulator/lab/local-receipts.js",
       "test": "test/dashboard-integrated.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "W1.9.R",
+      "mode": "lab",
+      "title": "Shared portable PEF Core, isolated Linux route adapter, injected journal and dashboard-independent host",
+      "controlIds": [
+        "mode-lab",
+        "lab-runtime-backend"
+      ],
+      "actions": [
+        "sample",
+        "wan"
+      ],
+      "implementation": "src/core/edge-runtime.js",
+      "test": "test/hardware-portability.test.js",
+      "hardwareValidated": false
     }
   ]
 }
