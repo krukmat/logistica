@@ -43,11 +43,11 @@ Modelo determinista `createSimulator(config)`, acciones `act(name,args)` y obser
 | EMU-CLOUD-REPLAY | Cloud ACK persistido pero cursor local incierto | dedup + pending events |
 | EMU-EVENT-COLLISION | rechazo de mismo event_id con payload discordante antes/después de sync | no false ACK |
 
-Se verificaron **6/6 escenarios `SIM_PASS`** en un entorno JavaScript aislado. Además, **GitHub Actions Node 22 ejecutó satisfactoriamente `npm test` y `npm run emulate`** en la [primera ejecución](https://github.com/krukmat/logistica/actions/runs/38232683075). Estos son smoke tests lógicos del código; **no** son benchmarks físicos ni validación de PEF Core real. Nuevos escenarios deberán continuar pasando en CI.
+El motor y los escenarios iniciales se contrastaron en JS aislado. **GitHub Actions Node 22 verificó 8/8 tests y 7/7 escenarios `SIM_PASS`**, sin fallos, en la [ejecución 38232898592](https://github.com/krukmat/logistica/actions/runs/38232898592). Son comprobaciones lógicas del código, **no benchmarks físicos ni validación del PEF Core real**. Los cambios posteriores deben mantener estos gates en verde.
 
 ## W1.9.D — Hardware adaptation seams
 
-El siguiente corte técnico deberá introducir adaptadores explícitos (comenzando por `sim`, después `linux-lab`, finalmente `device`). El aislamiento Linux requerirá Linux VM/container en macOS; **las network namespaces de Linux no existen nativamente en macOS**. El target Mac puede orquestar una VM Linux/runner, pero no asumimos aún software de virtualización.
+Ya existe el **punto de extensión `openBackend(kind, config)`** que sólo implementa `sim`; las variantes `linux-lab` y `device` están declaradas pero son `SIM_BLOCKED` hasta contar con drivers y preflight seguros. El próximo corte deberá implementar los puertos físicos/lab sin introducir bifurcaciones en los contratos de escenario. El aislamiento Linux requerirá Linux VM/container en macOS; **las network namespaces de Linux no existen nativamente en macOS**. El target Mac puede orquestar una VM Linux/runner, pero no asumimos aún software de virtualización.
 
 | Port futuro | Driver sim v0.1 | Linux lab posterior | Hardware posterior |
 |---|---|---|---|
@@ -72,6 +72,6 @@ El siguiente corte técnico deberá introducir adaptadores explícitos (comenzan
 
 - Modelo de WAN no transporta paquetes: no valida 1 Gbps, conntrack, p95 real ni DNS/firewall.
 - Durability, powercut, cuotas y Cloud ACK son simulaciones: no acreditan P0/P1 ni zero-loss real.
-- El modelo ahora rechaza colisiones de `event_id` con payload discordante antes/después de sync (comparación serializada, **no hash criptográfico**). La validación total del JSON Schema del manifest y enforcement real aún quedan pendientes; W1.9.E debe introducir un validator completo.
+- El modelo rechaza colisiones de `event_id` con payload discordante antes/después de sync (comparación serializada, **no hash criptográfico**). La validación total del JSON Schema y enforcement real siguen pendientes; W1.9.E debe incorporar un validator completo.
 - Retención post-sync O0/O1, boot/OTA firmado, backoff temporal real y controles de estrés de I/O quedan por implementar.
 - El emulador debe **evolucionar con la implementación** y producir fixtures comparables, no convertirse en una segunda arquitectura independiente.

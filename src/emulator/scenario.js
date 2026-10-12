@@ -1,10 +1,15 @@
 "use strict";
-const {createSimulator}=require("./core.js");
+const {openBackend}=require("./backends.js");
 function getPath(value,path){return String(path).split(".").reduce((v,k)=>v==null?undefined:v[k],value);}
 function equal(a,b){return JSON.stringify(a)===JSON.stringify(b);}
 function runScenario(spec){
   if(!spec||typeof spec.scenario_id!=="string"||!Array.isArray(spec.steps))throw Error("INVALID_SCENARIO");
-  const simulator=createSimulator(spec.config||{});
+  const selected=openBackend(spec.backend||"sim",spec.config||{});
+  if(!selected.ok)return {kind:"PEF_LOGICAL_EMULATION",schema_version:1,scenario_id:spec.scenario_id,
+    backend:selected.kind,status:selected.error==="BACKEND_NOT_IMPLEMENTED"?"SIM_BLOCKED":"SIM_FAIL",
+    hardware_validated:false,physical_network_validated:false,physical_storage_validated:false,
+    steps:[],issues:[{error:selected.error}],trace:[],final_state:null};
+  const simulator=selected.engine;
   const steps=[],issues=[];
   const allowed=new Set(["tick","set_wan","set_cloud","set_remote_trust","append","prepare_append","sync","admit","write_workload","crash_workload","apply_config","power_cut","status","assert"]);
   for(let i=0;i<spec.steps.length;i++){
@@ -28,7 +33,7 @@ function runScenario(spec){
     }catch(e){issues.push({index:i,action,error:String(e.message||e)});steps.push({index:i,action,ok:false});break;}
   }
   return {kind:"PEF_LOGICAL_EMULATION",schema_version:1,scenario_id:spec.scenario_id,
-    profile:spec.config?.profile||"BASE",status:issues.length?"SIM_FAIL":"SIM_PASS",
+    profile:spec.config?.profile||"BASE",backend:selected.kind,status:issues.length?"SIM_FAIL":"SIM_PASS",
     hardware_validated:false,physical_network_validated:false,physical_storage_validated:false,
     steps,issues,final_state:simulator.status(),trace:simulator.trace(),
     limitations:["No real WAN/NIC/dataplane traffic","No physical fsync or actual power-cut guarantee",

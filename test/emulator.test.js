@@ -59,3 +59,16 @@ test("missing manifest version cannot be admitted",()=>{
   const sim=createSimulator({p2CapacityBytes:4*1048576});
   assert.equal(sim.act("admit",{manifest:withoutVersion}).error,"INVALID_MANIFEST");
 });
+
+test("backend negotiation rejects unimplemented lab/device drivers without touching host",()=>{
+  const unknown=runScenario({scenario_id:"EMU-BACKEND-UNKNOWN",backend:"other",steps:[]});
+  assert.equal(unknown.status,"SIM_FAIL");
+  assert.equal(unknown.issues[0].error,"UNKNOWN_BACKEND");
+  const lab=runScenario({scenario_id:"EMU-BACKEND-LINUX",backend:"linux-lab",steps:[{action:"tick",seconds:1}]});
+  assert.equal(lab.status,"SIM_BLOCKED");
+  assert.equal(lab.issues[0].error,"BACKEND_NOT_IMPLEMENTED");
+  assert.equal(lab.steps.length,0);
+  assert.equal(lab.hardware_validated,false);
+  const physical=runScenario({scenario_id:"EMU-BACKEND-DEVICE",backend:"device",steps:[]});
+  assert.equal(physical.status,"SIM_BLOCKED");
+});
