@@ -75,3 +75,7 @@ Ya existe el **punto de extensión `openBackend(kind, config)`** que sólo imple
 - El modelo rechaza colisiones de `event_id` con payload discordante antes/después de sync (comparación serializada, **no hash criptográfico**). La validación total del JSON Schema y enforcement real siguen pendientes; W1.9.E debe incorporar un validator completo.
 - Retención post-sync O0/O1, boot/OTA firmado, backoff temporal real y controles de estrés de I/O quedan por implementar.
 - El emulador debe **evolucionar con la implementación** y producir fixtures comparables, no convertirse en una segunda arquitectura independiente.
+
+## Diagramas de conectividad y siguiente laboratorio
+
+[13 — Conectividad PEF](13-connectivity-topology.md) incluye el wiring abstracto del gateway, estados WAN, failover/failback, separación de planos y recorrido `sim → loopback-lab → linux-lab → device`. El siguiente bloque desarrolla un laboratorio TCP/HTTP localhost de alcance explícito, sin root ni interfaces reales.

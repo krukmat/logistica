@@ -101,3 +101,7 @@ The working decomposition is [**W1.5 execution breakdown**](tasks/w1.5-resource-
 ## G. Próxima acción en repositorio
 
 Repositorio de trabajo: `krukmat/logistica`, rama `main`. **W1.5.A–J, W1.6.A–I, W1.7.A–I, W1.8.A–D DOCUMENTED/SPECIFIED (DESIGN ONLY); no benchmarks executed.** [W1.8](11-architecture-shootout.md) is design-ready; **W1.8.E–G are BLOCKED** pending a working PEF DUT, harness drivers, instrumented physical candidates. Next unblocker: software-first [Virtual Edge Emulator](12-emulator.md) → schema/ports refinement → Linux-lab driver → real PEF Core + physical comparison. No purchase, production or SKU freeze approved.
+
+## H. Referencia de conectividad y simulación
+
+[13 — Conectividad PEF](13-connectivity-topology.md) es el documento principal de topología y secuencias editables. La evolución W1.9 prioriza `loopback-lab` seguro para pruebas reales localhost, antes del driver `linux-lab` con redes virtuales y finalmente W1.8 con interfaces físicas. Los resultados de localhost **no** certifican el throughput/failover de NICs reales.

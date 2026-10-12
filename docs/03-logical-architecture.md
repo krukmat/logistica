@@ -119,3 +119,7 @@ Se exige autoridad local para operación mientras el cloud está desconectado y 
 ## W1.6 — Refinamiento de ejecución
 
 El contrato concreto de las fronteras lógicas y los estados está en [09-runtime-contract](09-runtime-contract.md). **Health**, **Connectivity**, **Cloud** y **Security** son dimensiones ortogonales (ej.: `HEALTHY + LOCAL_ONLY`), y el bootstrap mínimo no exige cloud, full Supervisor ni Workload Runtime. Esto resuelve semántica de diseño `OPEN-STATE-01` y `OPEN-BOOT-01`; su implementación sigue pendiente. Los demás puntos abiertos requieren W1.7/W1.8.
+
+## Referencia de conectividad de sitio
+
+Para topología WAN↔PEF↔LAN, roles de AP/switch, separación de data/control plane, secuencia de failover, escenarios de emulación y evolución hacia hardware ver [13 — Conectividad PEF](13-connectivity-topology.md). La ubicación de Cloud en estos diagramas es lógica: no es parte del dataplane ni una dependencia de LAN.
