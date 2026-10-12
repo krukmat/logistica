@@ -1,6 +1,6 @@
 # 12 — PEF Virtual Edge Emulator (W1.9)
 
-**Estado:** IMPLEMENTED — emulator lógico Node.js con escenarios reproducibles; **no Core real, ni validación de hardware**. Fuente: `src/emulator/core.js`, `src/emulator/scenario.js`, `bin/pef-emulator.js`, `scenarios/*.json`, `test/emulator.test.js`. [Plan granular](tasks/w1.9-emulator-execution.md). Contratos antecedentes: [W1.6 runtime](09-runtime-contract.md), [W1.7 harness](10-benchmark-harness.md), [W1.8 shootout](11-architecture-shootout.md).
+**Estado:** IMPLEMENTED — emulador lógico y Product Core de referencia (WAN, journal/replay, recepción) con adaptadores inyectados, CI VERIFIED; **no dispositivo productivo ni validación de hardware**. Fuente: `src/emulator/core.js`, `src/emulator/scenario.js`, `bin/pef-emulator.js`, `scenarios/*.json`, `test/emulator.test.js`. [Plan granular](tasks/w1.9-emulator-execution.md). Contratos antecedentes: [W1.6 runtime](09-runtime-contract.md), [W1.7 harness](10-benchmark-harness.md), [W1.8 shootout](11-architecture-shootout.md).
 
 ## Por qué ahora
 
@@ -198,3 +198,15 @@ Un workload real de ejemplo, **recepción de paquetes**, funciona a través de `
 Con ambas WAN sintéticas desactivadas, registrar `R001/PKG001` sigue devolviendo recepción local 201. Una vez vuelve WAN, el mock Cloud utiliza el pipeline real de replay/ACK del laboratorio, sin duplicar el evento ante ACK remoto perdido. Cuota P1 insuficiente se rechaza explícitamente con HTTP 507. La API está restringida a localhost, token del panel y modo laboratorio; no proporciona aún un endpoint de red LAN productiva.
 
 **Evidencia:** [CI #38281997428](https://github.com/krukmat/logistica/actions/runs/38281997428): 68/68 tests Node PASS, siete escenarios `SIM_PASS`, loopback `LAB_PASS`, Linux namespaces `LAB_PASS CLEAN`. [Guía con Mermaid](17-virtual-site-e2e.md) y [tasks Q](tasks/w1.9-emulator-execution.md). No valida cortes de energía físicos, servicios de transportistas, Cloud persistente ni NICs reales.
+
+## W1.9.R — Puente de portabilidad de Core a Linux (CI VERIFIED)
+
+**Shared Core:** `src/core/{wan-policy,connectivity-controller,edge-runtime,cloud-sync,event-envelope,local-receipts}.js` contiene ahora lógica reutilizable **sin importar el emulador, el dashboard ni comandos de sistema**. `src/emulator/core.js` utiliza el mismo `wan-policy`; el controlador de red Linux consume dicha política sin pasar por el simulador. Sus ports se inyectan desde `src/runtime/edge-service.js`: `probe`, `applyRoute`, `journal`; en `src/adapters/` residen el journal OS/fdatasync y los puertos de rutas Linux namespaces.
+
+**Ejecución:** `virtual-lab` usa WAN sintéticas y P1 temporal; `linux-lab` utiliza rutas Linux reales **solo en el namespace de un runner GitHub-hosted efímero**; `device` todavía retorna `BACKEND_NOT_IMPLEMENTED`. El selector de escenarios síncrono `src/emulator/backends.js` sigue en modo `sim`; el backend Linux asíncrono real está en `src/runtime/backend-registry.js`. No son equivalentes.
+
+**UI desacoplada:** `createDashboardServer({runtimeLab})` acepta runtime controlado externamente: cerrar o reiniciar solo el servidor HTTP no destruye la instancia persistente. El dashboard por defecto sigue creando un runtime de laboratorio y muestra `virtual-lab / shared PEF Core`, sin rutas físicas.
+
+**Durabilidad:** la capa Core ahora rechaza explícitamente un port de almacenamiento que devuelva `ack=true` sin `fsyncCompleted=true` (salvo confirmación duplicada ya durable). Se comprueba en tres fronteras: recepción local, evento WAN y cursor de Cloud. No certifica power-cut físico.
+
+[Diagrama, port matrix y alcance físico](18-hardware-portability-bridge.md) · [R tasks](tasks/w1.9-hardware-portability.md) · [CI #38284356529](https://github.com/krukmat/logistica/actions/runs/38284356529): **76 Node PASS**, siete escenarios SIM_PASS, loopback LAB_PASS y namespaces/veth LAB_PASS CLEAN. Los 128 vectores de políticas WAN demuestran equivalencia funcional en laboratorio, **no rendimiento físico**.
