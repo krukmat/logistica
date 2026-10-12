@@ -116,3 +116,7 @@ Load versioned [Workload Manifest](contracts/workload-manifest-v0.1.schema.json)
 **W1.6 design gate: GO_TO_W1.7_SPEC (conditional)**; implementation is *NOT started* and runtime choice remains contingent on W1.8. **Unresolved hardware/protocol:** `OPEN-RUNTIME-01` init/containers/IPC, `OPEN-NET-01` Linux stack/offload, `OPEN-STORE-01` FS/DB/partitions, `OPEN-SEC-01` trust root, `OPEN-OTA-01` update method; `OPEN-SYNC-01` merge policy needs negative tests. `OPEN-BOOT-01` and `OPEN-STATE-01` have **resolved logical models** but no executable implementation.
 
 **No new PEF Core block or vendor lock-in introduced.**
+
+## Refinamiento de referencia W1.9.O (lab, no producto)
+
+[14 — Identity/Replay Contract](14-identity-replay-contract.md) aporta IDs estables de sitio/dispositivo **proporcionados como fixtures**, sesión por arranque, revisiones, eventos de WAN correlacionados y manejo de ACK remoto ambiguo con mock Cloud. Se probó en CI Node/Linux, pero no constituye identidad protegida, transporte autenticado, persistencia Cloud productiva ni durabilidad física. `OPEN-SEC-01` y `OPEN-SYNC-01` siguen abiertos para implementación real.

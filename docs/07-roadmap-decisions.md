@@ -5,8 +5,8 @@
 ## A. Definición de completitud
 
 - `DOCUMENTED`: artefacto de diseño escrito. **Sí** aplica a W1.1–W1.5.J como diseño (sin validación técnica).
-- `VALIDATED`: test o evidencia externa reproducible revisada. **Ningún test ejecutado en esta entrega.**
-- `IMPLEMENTED`: código/config/servicio operativo. **Ninguno creado.**
+- `VALIDATED`: test o evidencia externa reproducible revisada. **Hay pruebas verificadas del emulador y laboratorios Node/Linux; no tests físicos del producto.**
+- `IMPLEMENTED`: código/config/servicio operativo. **Emulador y lab integrados implementados y probados en CI; no producto desplegado.**
 - `CLOSED (design task)` sólo cuando documento, decisiones, open questions y trazabilidad están registrados. No confundir con `VALIDATED`.
 
 ## B. Wave 1 task map
@@ -30,7 +30,7 @@
 | W1.6 | Software Runtime Contract | **DOCUMENTED / DESIGN ONLY** | [`09`](09-runtime-contract.md): bootstrap, IPC/state, journal, sync, trust, workload; tests pending |
 | W1.7 | Benchmark & Failure Harness Specification | **DOCUMENTED / SPECIFIED** | [`10`](10-benchmark-harness.md) + scenario/evidence schemas; drivers/benchmarks pending |
 | W1.8 | Architecture Shootout | **A–D DOCUMENTED; E–G BLOCKED** | [`11`](11-architecture-shootout.md) / candidate architecture templates; no hardware result |
-| W1.9 | Virtual Edge Emulator | **A–I, J1, K1–K4 IMPLEMENTED / CI PASS**; physical UNVALIDATED | [`12`](12-emulator.md), [K tasks](tasks/w1.9-k-statechart-dashboard.md), [smoke](https://github.com/krukmat/logistica/actions/runs/38263883556); 34 Node tests + 7 SIM scenarios |
+| W1.9 | Virtual Edge Emulator | **A–O IMPLEMENTED / CI VERIFIED (lab only)**; physical UNVALIDATED | [`12`](12-emulator.md), [O contract](14-identity-replay-contract.md), [CI](https://github.com/krukmat/logistica/actions/runs/38268776321): 51 Node tests, 7 SIM_PASS, two lab jobs PASS |
 
 ## C. Execution contract / granular W1.5 subtasks
 
@@ -116,3 +116,5 @@ Repositorio de trabajo: `krukmat/logistica`, rama `main`. **W1.5.A–J, W1.6.A�
 **W1.9.L CI:** [run #38264957781](https://github.com/krukmat/logistica/actions/runs/38264957781), 42 Node tests PASS, seven SIM_PASS, localhost and namespace job PASS. **W1.9.M CI VERIFIED:** [run #38265355221](https://github.com/krukmat/logistica/actions/runs/38265355221), six fsync-ACKed network transitions and six matching records on journal reopen, 42/42 Node tests PASS. [Audit](audit/w1.9-l-m-2026-10-12.md). **Next W1.9.N** pressure/restart regressions; hardware W1.8 still blocked.
 
 **W1.9.N CI VERIFIED:** [run #38266099521](https://github.com/krukmat/logistica/actions/runs/38266099521), 45/45 Node PASS, 7 SIM_PASS, both lab jobs success. Controlled storage pressure produced explicit `ack=false` without halting the local route; `CLOUD_ACK` + compaction + retry restored a durable OS journal ACK. Process restart used a distinct session epoch without losing earlier events. [Audit](audit/w1.9-n-2026-10-12.md). **Next W1.9.O:** stable device/revision envelope; no physical product evidence.
+
+**W1.9.O completed (lab):** [audit O](audit/w1.9-o-2026-10-12.md) / [CI #38268776321](https://github.com/krukmat/logistica/actions/runs/38268776321). Versioned edge envelope + explicit site/device/session/config identifiers, mocked remote durable-ACK ambiguity, idempotent replay, negative cross-device/payload/revision cases. **51/51 tests PASS**, 7 SIM_PASS, loopback and Linux sandbox PASS. **Next W1.9.P** trust/transport lab hardening. W1.8.E–G physical still NOT_RUN / BLOCKED.
