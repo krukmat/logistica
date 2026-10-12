@@ -2,7 +2,7 @@
 // W1.9.P1 lab metadata, NOT a hardware identity, credential store or PKI.
 const fs=require("node:fs"),path=require("node:path");
 const {randomUUID}=require("node:crypto");
-const {validateIdentity}=require("./event-envelope.js");
+const {validateIdentity}=require("../core/event-envelope.js");
 function openLabBoot({dir,identity}={}){
   const expected=validateIdentity(identity);
   if(typeof dir!=="string"||!fs.statSync(dir).isDirectory())throw Error("INVALID_BOOT_DIR");
