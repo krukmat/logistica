@@ -1,7 +1,7 @@
 "use strict";
 // Standalone host, NOT the dashboard. Exact shared Core and OS-journal backend.
 const http=require("node:http");
-const {randomUUID,timingSafeEqual}=require("node:crypto");
+const {timingSafeEqual}=require("node:crypto");
 const {validateEdgeConfig}=require("./edge-config.js");
 const {acquireEdgeLock}=require("./single-writer.js");
 const {createVirtualWanPorts}=require("../adapters/virtual-wan-ports.js");
@@ -10,6 +10,7 @@ const {createWorkloadManager}=require("../core/workload-manager.js");
 const {createWorkloadSupervisor}=require("../core/workload-supervisor.js");
 const {createNodeProcessDriver}=require("../adapters/node-process-driver.js");
 const {demoManifest}=require("./demo-workload.js");
+const {openLabBoot}=require("./lab-boot-metadata.js");
 function createAutonomousEdgeHost({config,token}={}){
   const cfg=validateEdgeConfig(config);
   if(typeof token!=="string"||token.length<24||token.length>256||/\s/.test(token))
@@ -121,8 +122,9 @@ function createAutonomousEdgeHost({config,token}={}){
     if(started)throw Error("ALREADY_LISTENING");
     try{
       ports=cfg.backend==="virtual-lab"?createVirtualWanPorts(cfg.wan):null;
-      const opening=openRuntimeBackend(cfg.backend,{dir:cfg.storageDir,identity:cfg.identity,
-        sessionId:randomUUID(),journalOptions:cfg.journal,
+      const boot=openLabBoot({dir:cfg.storageDir,identity:cfg.identity});
+      const opening=openRuntimeBackend(cfg.backend,{dir:cfg.storageDir,identity:boot.identity,
+        sessionId:boot.sessionId,journalOptions:cfg.journal,
         ...(ports?{ports}:{ns:cfg.linuxLab.ns,repoRoot:cfg.linuxLab.repoRoot})});
       if(!opening.ok)throw Error(opening.error);
       engine=opening.engine;
