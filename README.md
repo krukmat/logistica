@@ -17,7 +17,7 @@ PEF es una plataforma *local-first* para sitios pequeños: usa conectividad exis
 2. Leer [`docs/01-product-foundation.md`](docs/01-product-foundation.md) para el **porqué** y restricciones comerciales.
 3. Leer [`docs/02-core-requirements.md`](docs/02-core-requirements.md) para el **qué** (`REQ-*`).
 4. Leer sólo el documento necesario para la tarea: arquitectura [`03`](docs/03-logical-architecture.md), fallos [`04`](docs/04-failure-offline-contract.md), overlays [`05`](docs/05-overlays-workload-contract.md), recursos [`06`](docs/06-resource-envelope.md).
-5. Consultar [`docs/07-roadmap-decisions.md`](docs/07-roadmap-decisions.md) para estado real, decisiones y próximo trabajo.
+5. Consultar [`docs/07-roadmap-decisions.md`](docs/07-roadmap-decisions.md) para estado real, decisiones y próximo trabajo; usar [subtasks W1.5](docs/tasks/w1.5-resource-execution.md) para ejecución.
 6. El informe conservado íntegro en [`source/deep-research-report-original.md`](source/deep-research-report-original.md) es **fuente de antecedentes**, no sustituto de requisitos ni validación independiente de cifras de mercado.
 
 ## Arquitectura reducida (baseline de W1.3)
@@ -58,8 +58,9 @@ flowchart TB
 | W1.4 Property/Host overlays, stress conceptual, SKU | DOCUMENTED | PENDING |
 | W1.5.A Perfiles de carga | DOCUMENTED; **provisionales** | PENDING |
 | W1.5.B Networking envelope | DOCUMENTED; **targets propuestos** | PENDING |
-| **W1.5.C Compute & Memory** | **NEXT** | PENDING |
-| W1.5.D–J / W1.6–W1.8 | PLANNED | PENDING |
+| W1.5.C Compute & Memory | DOCUMENTED; **presupuesto provisional** | PENDING |
+| **W1.5.D Storage** | **NEXT** | PENDING |
+| W1.5.E–J / W1.6–W1.8 | PLANNED | PENDING |
 
 ## Alcance y regla de cambio
 
@@ -71,4 +72,4 @@ flowchart TB
 
 ## Entrega y próxima transición
 
-**Repositorio de trabajo:** [`krukmat/logistica`](https://github.com/krukmat/logistica), rama principal `main`. Esta baseline documenta trabajo de diseño; los commits de integración no constituyen validación empírica. Para avanzar: completar W1.5.C/D, validar modelos de carga con W1.7 y comparar plataformas en W1.8.
+**Repositorio de trabajo:** [`krukmat/logistica`](https://github.com/krukmat/logistica), rama principal `main`. Esta baseline documenta trabajo de diseño; los commits de integración no constituyen validación empírica. Para avanzar: ejecutar **W1.5.D** siguiendo el [plan granular de W1.5](docs/tasks/w1.5-resource-execution.md), validar modelos de carga con W1.7 y comparar plataformas en W1.8.

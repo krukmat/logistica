@@ -50,6 +50,10 @@ Open decision: ...
 - Documentación nueva en Markdown UTF-8 con tablas pequeñas, Mermaid para arquitectura, identificadores estables y enlaces relativos. Evitar duplicar tablas entre documentos; enlazar.
 - No lanzar investigaciones profundas, comprar hardware, modificar infraestructura ni publicar repositorios sin indicación del responsable.
 
+## Granularidad obligatoria por task
+
+Cada task tiene uno o dos niveles internos, no más: `W1.5.C → W1.5.C1 → W1.5.C1.a`. El segundo nivel es opcional y sólo existe si genera evidencia separada. No descomponer en tareas triviales de lectura/edición que dupliquen entregables. Registrar ID, dependencias, input, output, DoD, estado y test pendiente; marcar claramente DOCUMENTED frente a VALIDATED. [W1.5](docs/tasks/w1.5-resource-execution.md) es el ejemplo vivo. Trabajar secuencialmente en la task activa y publicar cambios con commit verificable.
+
 ## Entrega de cada task
 
 Resumen de decisión → cambios en `.md` → requisitos afectados → tests/acceptance → riesgos y preguntas abiertas → estado real. Si no hay código ni benchmark, decirlo literalmente.

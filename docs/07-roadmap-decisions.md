@@ -19,8 +19,8 @@
 | W1.4.A–F | Property/Host overlays, commonality, stress, SKU hypothesis, architecture gate | **DOCUMENTED (conceptual)** | [`05-overlays-workload-contract`](05-overlays-workload-contract.md); empírico pendiente |
 | W1.5.A | Workload profiles | **DOCUMENTED / PROVISIONAL** | [`06-resource-envelope`](06-resource-envelope.md) |
 | W1.5.B | Networking envelope | **DOCUMENTED / PROVISIONAL** | [`06-resource-envelope`](06-resource-envelope.md) |
-| **W1.5.C** | **Compute/Memory Envelope** | **NEXT** | presupuesto CPU/RAM/OS/Core/workloads, headroom |
-| W1.5.D | Storage Envelope | PLANNED | cuotas y durabilidad, IOPS, endurance, persistence test plan |
+| **W1.5.C** | **Compute/Memory Envelope** | **DOCUMENTED / PROVISIONAL** | [`06-resource-envelope`](06-resource-envelope.md): presupuesto CPU/RAM hipotético; validación pendiente |
+| **W1.5.D** | **Storage Envelope** | **NEXT** | cuotas y durabilidad, IOPS, endurance, persistence test plan |
 | W1.5.E | Workload Resource Model | PLANNED | manifests, admission, isolation, network intents |
 | W1.5.F | Power/Thermal Envelope | PLANNED | idle/load/peak, UPS/thermal budget |
 | W1.5.G | Recovery Performance Targets | PLANNED | umbrales medibles p50/p95/p99 + metodología |
@@ -31,18 +31,13 @@
 | W1.7 | Benchmark & Failure Harness Specification | PLANNED | fixtures, reproducible failure tests, measurements + evidence schema |
 | W1.8 | Architecture Shootout | PLANNED | comparativa ARM router vs ARM edge vs x86 vs split bajo el mismo harness |
 
-## C. Backlog W1.5.C — siguiente bloque ejecutable
+## C. Execution contract / granular W1.5 subtasks
 
-**Input requerido:** perfiles y números [`06`](06-resource-envelope.md); arquitectura [`03`](03-logical-architecture.md); invariantes P0/P1 y recuperación [`04`](04-failure-offline-contract.md).
+The working decomposition is [**W1.5 execution breakdown**](tasks/w1.5-resource-execution.md), with exactly one level of subtasks (`C1`, `D1`) and an **optional** second level (`C1.a`) where evidence genuinely differs. Each task must produce an output, linked requirements, acceptance conditions and honest state. No third level.
 
-1. **C1** Desglosar cargas CPU por OS, Connectivity, Supervisor, State, Runtime, Trust + health/probes/remote sync.
-2. **C2** Clasificar perfiles idle/steady/burst y rutas: routing+firewall 1Gbps; overlay 100/250Mbps; journal eventos sostenidos/burst; LAN dns/dhcp.
-3. **C3** Presupuestar RAM: kernel, conntrack buffers, Core services, reserved P0/P1 caches, workload allocations, thermal/recovery headroom.
-4. **C4** Proponer `Base`/`Pro` `min/target/stress`, expresado en unidades independientes de vendor/SoC y enlazado a escenarios.
-5. **C5** Identificar fallos de assumptions, benchmarks necesarios, indicadores que obligarán a relajar targets.
-6. **C6** Registrar decisión con incertidumbre y handoff a W1.5.D/E; **no** declarar CPU/RAM reales hasta medir en W1.7.
+**Completed as design:** C1–C5, each DOCUMENTED / UNMEASURED. See [06 § W1.5.C](06-resource-envelope.md). Proposed memory fixtures Base 4 GiB / Pro 8 GiB are **experiment resources**, not selected device specifications. Packet-rate formulas and RAM arithmetic remain subject to benchmark.
 
-**DoD W1.5.C:** matriz trazable por perfil y escenario, cálculos o supuestos explícitos, margen para supervivencia/recovery, manejo de aislamiento, benchmarks falsables, ninguna selección definitiva de SOC/OS.
+**Next W1.5.D:** D1 measured event sizes + backlog arithmetic; D2 protected P0/P1 capacity; D3 power-cut/ACK durability; D4 endurance; D5 sizing gate. No fixed storage GB without payload observations.
 
 ## D. Decisiones y ADRs (acuerdo conceptual; no evidencia de campo)
 
@@ -86,4 +81,4 @@
 
 ## G. Próxima acción en repositorio
 
-Repositorio designado: `krukmat/logistica`; rama `main`. Mantener los archivos Markdown y su historial versionado, verificar integridad tras cada importación. El siguiente cambio de producto será **W1.5.C**, no la implementación sin resource envelope.
+Repositorio de trabajo: `krukmat/logistica`, rama `main`. Mantener docs versionados; ejecutar **W1.5.D** con la estructura de [subtasks](tasks/w1.5-resource-execution.md), actualizar [06](06-resource-envelope.md) y registrar hipótesis/riesgos. W1.5.C está documentado, **sin benchmarks**. W1.6–W1.8 siguen pendientes.

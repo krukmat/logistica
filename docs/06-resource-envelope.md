@@ -1,6 +1,6 @@
 # 06 — Resource envelope v0.1 (W1.5)
 
-**Status:** W1.5.A/B DOCUMENTED, **PROVISIONAL / UNMEASURED**; W1.5.C–J TODO. Este es un **contrato de benchmarks por evaluar**, NO una lista certificada de prestaciones o especificaciones físicas ya aprobadas.
+**Status:** W1.5.A/B and W1.5.C DOCUMENTED, **PROVISIONAL / UNMEASURED**; W1.5.D–J TODO. Este es un **contrato de benchmarks por evaluar**, NO una lista certificada de prestaciones o especificaciones físicas ya aprobadas.
 
 ## Convención de etiquetas
 
@@ -73,11 +73,71 @@ Repetir cuando aplique: WAN principal caída; WAN link-up pero degradada; WAN fl
 - VPN/overlay: cifrado y protocolo concreto (WireGuard es candidato, no selección), clientes concurrentes, CPU/latencia a caudal.
 - Al menos una prueba con fallo upstream **sin link-down** y otra con recuperación/flapping.
 
-## W1.5.C–J — Pendiente / inputs y outputs
+## W1.5.C — Compute & Memory Envelope (design budget, unmeasured)
+
+**Status:** DOCUMENTED-PROVISIONAL; **NOT VALIDATED**. Execution breakdown: [tasks/W1.5](tasks/w1.5-resource-execution.md). No CPU type, RAM SKU, kernel, accelerator or OS selected. This section supplies **test-fixture assumptions**, not claimed production hardware requirements.
+
+### C1 — CPU load accounting
+
+- Distinguish the **dataplane** (NIC/driver, IRQ/softirq, NAT/firewall, optional offload) from Core control (Supervisor, journal, WAN health, Trust/Recovery) and workloads. Cloud sync is bursty and *not* required during `LOCAL_ONLY`.
+- For Ethernet line-rate approximation: `pps = link_bit_rate / (8 × (L2_frame_bytes + 20))`, where 20 B accounts for preamble/SFD + inter-frame gap. At **1 Gbps**, illustrative packet rates are **~1.488 Mpps at 64 B**, **~235 kpps at 512 B**, **~82 kpps at 1500 B**; at 2.5 Gbps multiply by 2.5. These are theoretical link-load cases, **not** CPU performance requirements or achieved throughput.
+- Measured CPU demand will be `total_cpu_core_equivalents = CPU_nanoseconds_consumed_per_second / 1e9`. Collect overall CPU as well as user/system/softirq, per-core utilization, packet drops and interrupt concentration. `core-equivalents` describe *measured demand*, not interchangeable hardware cores across ISAs.
+- Measure at least `idle`, `normal steady`, `WAN routing+firewall`, `overlay`, `journal burst`, `cloud replay`, `workload pressure` and `fault/recovery` modes, with combinations (not just isolated maxima).
+- **Headroom hypothesis (not acceptance result):** normal sustained total CPU ≤70% of provisioned capacity; a ≥30% margin should remain available for recovery, telemetry burst and service continuity. Failing this is a sizing signal, **not** licence to silently weaken P0/P1 durability or failover.
+- The 1 Gbps Base MUST-proposed from B may be infeasible under small CPU/power budgets without acceleration; compare offload-on/off, packet sizes and VPN separately. **No vCPU/core count is asserted as final hardware specification.**
+
+### C2/C3 — Candidate RAM accounting (MiB)
+
+Each number below is a **planning allowance**, not a measured RSS or guaranteed quota. It includes likely overlap risk (e.g. kernel networking versus userspace daemons), which W1.7 must resolve. **1 GiB = 1024 MiB.**
+
+| Allocation class | Base planning MiB | Pro planning MiB | Need to measure |
+|---|---:|---:|---|
+| OS/kernel/common services | 384 | 512 | slab, page cache reclaimability, daemons |
+| Connectivity / networking incremental | 192 | 384 | conntrack, socket buffers, DNS/DHCP, NIC rings |
+| Edge Supervisor | 96 | 128 | config transactions/reconcile buffers |
+| Local State + Journal runtime | 96 | 192 | queues, DB cache, replay buffers (not disk) |
+| Workload Runtime overhead | 128 | 192 | supervisor/container overhead, if any |
+| Trust + Recovery | 96 | 128 | crypto, health, local API/recovery helpers |
+| Admitted light/mixed workloads | 512 | 2048 | varies by profile; **NVR heavy excluded** |
+| Reserved for recovery/survival | 256 | 512 | **must not be consumed by optional workloads** |
+| **Subtotal planning** | **1760 MiB** | **4096 MiB** | arithmetic budget, no benchmark |
+| **Capacity if ≥25% left unallocated** | **≥2347 MiB** | **≥5462 MiB** | subtotal / 0.75, rounded up |
+| **Initial PoC memory fixture** | **4 GiB** | **8 GiB** | convenience test envelope, not SKU |
+| **Negative pressure fixture** | **2 GiB** | **4 GiB** | intentionally constrained; may fail |
+| **Heavy NVR exploration** | not Base | 16 GiB fixture candidate | separate resource profile, no video promise |
+
+**Memory distinctions:** `MemAvailable` is diagnostic, not sole admission signal; measure cgroup/current/high/max where available, slab, pinned buffers, reclaim pressure, swap activity and OOM events. Do **not** double count reclaimable cache. Only promote hardware RAM minima after measuring real image/kernel/network workloads and deterministic recovery headroom.
+
+For B's conntrack TARGET values (Base 16k, Pro 64k), **do not extrapolate RAM with a constant per-flow byte count**: kernel version, NAT extensions, timeout mix and slab overhead can change it significantly. Record `bytes_per_flow_observed = (memory_after - memory_before) / added_live_flows` alongside error bars.
+
+### C4 — Survival and admission requirements
+
+1. Memory and CPU protection priority is **P0 identity/known-good → P1 committed journal → Core connectivity/control/recovery → admitted essential local workloads → optional workloads/analytics**. Under pressure shed or rate-limit optional work before losing Core.
+2. Workload admission must reserve declared recovery headroom and enforce per-workload memory/CPU limits; a workload's `request` and `limit` are different concepts. Do not overcommit guaranteed memory against Core-critical capacity.
+3. When pressure is unavoidable: deny new optional workload, throttle or stop lowest-priority admitted workload, preserve durable ACK semantics and emit local evidence. Never invent a silent successful commit.
+4. Core health must remain observable offline throughout the pressure event, including an eventual safe/degraded state rather than endless OOM/reboot cycles.
+
+### C5 — Acceptance / falsification experiments (W1.7/W1.8)
+
+| Trial ID | Profile and stimulus | Observable pass condition | Evidence |
+|---|---|---|---|
+| C-CPU-01 | Base/Pro packet mix 64/512/1500 B, NAT+firewall, offload on/off | characterize throughput-vs-CPU saturation; report if B MUST is unreachable | pps, throughput, per-core/softirq, drops, RTT |
+| C-CPU-02 | Overlay TARGET together with normal journal/workload | authenticated overlay with intact Core and bounded workloads; report achieved target and headroom | CPU distribution, tunnel throughput, latency |
+| C-CPU-03 | Link-up upstream WAN loss and cloud outage under load | local LAN/Core unaffected, recovery converges, evidence persists | failover p95, failures, journal records |
+| C-MEM-01 | Base 4GiB, Pro 8GiB fixture with steady+burst load | no Core OOM, survival reserve remains available; quantify actual peak/p95 | RSS/cgroups, slab, MemAvailable, OOM |
+| C-MEM-02 | constrained Base 2GiB / Pro 4GiB, hostile workload | reject/shed optional workload **before** P0/P1/Core exhaustion | admission verdict, event IDs, recovery proof |
+| C-MEM-03 | abrupt reboot after committed journal ACK under memory pressure | committed records survive; P0/P1 boot and safe-mode viable | before/after event hashes, replay and logs |
+
+**Decision triggers:** if a candidate needs >70% sustained CPU or exceeds RAM budget / 25% reserve in normal load, `REVISIT` the allocation/platform. If 1 Gbps targets force unacceptable power/cost, explicitly re-open B/ADR rather than quietly changing them. This is a *design gate*, not evidence that benchmarks passed.
+
+**Inputs to D/E:** storage must bound journal write buffering and P0/P1 reserve; Runtime admission must map memory requests/limits to these budgets. **Open:** OS/kernel choice, process accounting, packet acceleration, swap policy, NVR-specific resource profile, observed peak RAM, actual PoC hardware.
+
+
+## W1.5.C–J — Implementation roadmap / inputs y outputs
 
 | Task | Inputs de esta baseline | Entregable / gate |
 |---|---|---|
-| **C Compute & Memory** | perfiles A + envelopes B | budgets por Core/OS/workload/recovery; min/target/max; p95 utilization y headroom; sin SoC |
+| **C Compute & Memory** | perfiles A + envelopes B | **DOCUMENTED PROVISIONAL**: presupuesto CPU/RAM, fixtures de validación y falsificación; pendiente benchmark |
 | **D Storage** | eventos/s y 72h/7d + clases P0–P3 | reserva Core, tamaños journal, IOPS/fsync, endurance, recovery, quota y presión |
 | **E Workload Resource Model** | manifest ejemplo + C/D | schema de requests/limits/admission/isolations; test de rechazo y no-starvation |
 | **F Power/Thermal** | C + perfiles Base/Pro | idle/load/peak W, temperatura, throttle, UPS/autonomía y cooling constraints |
@@ -86,9 +146,9 @@ Repetir cuando aplique: WAN principal caída; WAN link-up pero degradada; WAN fl
 | **I Hardware-agnostic Constraints** | H | cpu/RAM/NIC/storage/power thresholds sin nombres de vendors |
 | **J Resource Gate** | I + benchmark plan | GO / REVISIT / BLOCKED con supuestos y prioridades explícitos |
 
-### Hipótesis de ingeniería previas de C/F/G, sin elevar a baseline
+### Hipótesis de ingeniería aún no confirmadas
 
-La discusión preliminar mencionó `CPU normal sostenida <60–70%` y `RAM normal <70–75%` como posibles márgenes. Son ideas no dimensionadas. **No se congelan** hasta W1.5.C. El research original propone failover, intervención remota, OTA y fiabilidad como targets de PoC; éstos no han sido ensayados.
+W1.5.C convierte el posible límite de CPU sostenida (≤70%) y RAM no comprometida (≥25%) en **hipótesis de validación**, no condiciones técnicas ya demostradas. F/G deben fijar metodología de potencia, térmicas y tiempos de recuperación. Ninguna de estas cifras supone una selección o benchmark de SoC.
 
 ## Política de cambios
 
