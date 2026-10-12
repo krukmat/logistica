@@ -58,9 +58,12 @@ mapfile -t limits < <("$PEF_S3_NODE" "$PEF_S3_REPO_ROOT/scripts/lab/workload-san
   blocked "invalid Core workload resource plan"
 printf '%s\n' "${limits[0]}" >"$cg/cpu.max"
 printf '%s\n' "${limits[1]}" >"$cg/memory.max"
+[[ -f "$cg/memory.swap.max" ]] || blocked "swap controller unavailable"
+printf '0\n' >"$cg/memory.swap.max"
 printf '%s\n' "${limits[2]}" >"$cg/pids.max"
 [[ "$(cat "$cg/cpu.max")" == "${limits[0]}" &&
    "$(cat "$cg/memory.max")" == "${limits[1]}" &&
+   "$(cat "$cg/memory.swap.max")" == "0" &&
    "$(cat "$cg/pids.max")" == "${limits[2]}" ]] || blocked "kernel limits not applied"
 ip netns add "$name"
 created_ns=1
@@ -96,7 +99,7 @@ cat "$out"
 grep -q 'PEF_S3_CHILD_PASS=' "$out" || { echo "missing child evidence" >&2; exit 1; }
 peak="$(cat "$cg/memory.peak")"
 [[ "$peak" -gt 0 && "$peak" -le "${limits[1]}" ]] || { echo "PEF_S3_MEMORY_INVALID=$peak" >&2; exit 1; }
-echo "PEF_S3_KERNEL_LIMITS=PASS cpu.max=${limits[0]} memory.max=${limits[1]} pids.max=${limits[2]} memory.peak=$peak"
+echo "PEF_S3_KERNEL_LIMITS=PASS cpu.max=${limits[0]} memory.max=${limits[1]} swap.max=0 pids.max=${limits[2]} memory.peak=$peak"
 
 # S3.4–S3.6: supervisor host is OUTSIDE the kernel cgroup; forked worker is INSIDE.
 # Same manifest/driver Core as the Mac emulator, with CI-only Linux adapter.
