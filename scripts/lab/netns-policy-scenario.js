@@ -7,7 +7,7 @@ const fs=require("node:fs");
 const path=require("node:path");
 const os=require("node:os");
 const {createFileJournal}=require("../../src/emulator/lab/file-journal.js");
-const {createEdgeRuntime}=require("../../src/emulator/lab/edge-runtime.js");
+const {openEdgeService}=require("../../src/runtime/edge-service.js");
 function need(name){if(!process.env[name])throw Error("LAB_BLOCKED:"+name);return process.env[name];}
 function ip(...args){return execFileSync("ip",args,{encoding:"utf8",timeout:5000}).trim();}
 if(process.platform!=="linux"||process.getuid?.()!==0||
@@ -21,30 +21,9 @@ const root=need("PEF_NETNS_REPO_ROOT");
 const probeScript=path.join(root,"scripts/lab/netns-probe.py");
 const clientScript=path.join(root,"scripts/lab/netns-client.py");
 if(!fs.statSync(probeScript).isFile()||!fs.statSync(clientScript).isFile())throw Error("LAB_BLOCKED:missing-lab-script");
-const gw={primary:["10.250.20.1","wa0"],backup:["10.250.30.1","wb0"]};
-function defaultRoute(){return ip("-n",ns.edge,"route","show","default");}
-function checkRoute(selected){
-  const value=defaultRoute();
-  if(selected===null){if(value!=="")throw Error("UNEXPECTED_DEFAULT_ROUTE:"+value);}
-  else if(!value.includes("via "+gw[selected][0])||!value.includes("dev "+gw[selected][1]))throw Error("ROUTE_DIVERGENCE:"+value);
-  return value;
-}
-async function applyRoute(selected){
-  if(selected===null){
-    if(defaultRoute())ip("-n",ns.edge,"route","del","default");
-  }else{
-    ip("-n",ns.edge,"route","replace","default","via",gw[selected][0],"dev",gw[selected][1]);
-  }
-  checkRoute(selected);
-}
-async function probeWan(id){
-  const linkDescription=ip("-o","-n",ns.edge,"link","show","dev",gw[id][1]);
-  const link=/\bstate UP\b/.test(linkDescription);
-  if(!link)return {link:false,upstream:false,reason:"L2_DOWN"};
-  const probeResult=ip("netns","exec",ns.edge,"python3",probeScript,id);
-  if(!["UP","DOWN"].includes(probeResult))throw Error("BAD_WAN_PROBE:"+probeResult);
-  return {link:true,upstream:probeResult==="UP",reason:probeResult==="UP"?"HEALTHY":"UPSTREAM_UNREACHABLE"};
-}
+const {openLinuxNetnsPorts}=require("../../src/adapters/linux-netns-ports.js");
+const ports=openLinuxNetnsPorts({ns,repoRoot:root});
+const {probe:probeWan,applyRoute,checkRoute}=ports;
 async function client(expect){
   let failure;
   // Only new TCP flows; tolerate brief ARP/neighbour convergence after route migration.
@@ -55,7 +34,7 @@ async function client(expect){
   throw Error("LAN_PROBE_FAILED_AFTER_RETRIES:"+String(failure?.message||failure));
 }
 const scratch=fs.mkdtempSync(path.join(os.tmpdir(),"pef-netns-edge-"));
-const ctrl=createEdgeRuntime({dir:scratch,identity:{siteId:"lab-site",deviceId:"lab-netns",configRevision:"cfg-1"},probe:probeWan,applyRoute,
+const ctrl=openEdgeService({dir:scratch,ports,identity:{siteId:"lab-site",deviceId:"lab-netns",configRevision:"cfg-1"},probe:probeWan,applyRoute,
   simulatorOptions:{failbackHoldSeconds:5},journalOptions:{capacityBytes:65536,controlReserveBytes:8192}});
 const assertions=[],failures=[];
 function assertLab(id,valid,details){
