@@ -71,7 +71,7 @@ async function run(){
       oomKill:oom,limitEvents:denied,
       memoryCurrent:fs.readFileSync(path.join(cgroup,"memory.current"),"utf8").trim(),
       supervisorState:supervisor.list()[0]
-    })+"\\n");
+    })+"\n");
     check("MEMORY_LIMIT_EVENT_RECORDED",denied>0||oom>0);
     await eventually(()=>supervisor.list()[0]?.state==="RUNNING","memory-restart",6000);
     check("RESTART_AFTER_OOM",supervisor.list()[0].attempts===2);
