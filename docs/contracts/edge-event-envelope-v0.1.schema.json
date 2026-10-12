@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "W1.9.O PEF Edge WAN event payload v1 — lab contract, not signed",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "siteId",
+    "deviceId",
+    "sessionId",
+    "eventId",
+    "correlationId",
+    "configRevision",
+    "logicalTime",
+    "selectedWan",
+    "connectivity",
+    "health",
+    "appliedToAdapter",
+    "probes"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "siteId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,47}$"
+    },
+    "deviceId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,47}$"
+    },
+    "sessionId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+    },
+    "configRevision": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$"
+    },
+    "eventId": {
+      "type": "string",
+      "maxLength": 160
+    },
+    "correlationId": {
+      "type": "string",
+      "maxLength": 160
+    },
+    "logicalTime": {
+      "type": "number",
+      "minimum": 0
+    },
+    "selectedWan": {
+      "enum": [
+        "primary",
+        "backup",
+        null
+      ]
+    },
+    "connectivity": {
+      "enum": [
+        "LOCAL_ONLY",
+        "CONNECTED",
+        "MULTI_WAN_HEALTHY"
+      ]
+    },
+    "health": {
+      "enum": [
+        "HEALTHY",
+        "DEGRADED"
+      ]
+    },
+    "appliedToAdapter": {
+      "const": true
+    },
+    "probes": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "wan",
+          "link",
+          "upstream"
+        ],
+        "properties": {
+          "wan": {
+            "enum": [
+              "primary",
+              "backup"
+            ]
+          },
+          "link": {
+            "type": "boolean"
+          },
+          "upstream": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

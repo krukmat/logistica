@@ -3,6 +3,7 @@ const test=require("node:test"),assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path"),os=require("node:os");
 const {createEdgeRuntime}=require("../src/emulator/lab/edge-runtime.js");
 const {createFileJournal}=require("../src/emulator/lab/file-journal.js");
+const identity={siteId:"lab-site",deviceId:"lab-device",configRevision:"cfg-1"};
 async function sandbox(fn){
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),"pef-integrated-"));
   try{return await fn(dir);}finally{fs.rmSync(dir,{recursive:true,force:true});}
@@ -15,7 +16,7 @@ function adapters(){
 }
 test("integrated controller persists observed WAN and LOCAL_ONLY transitions before claiming ACK",()=>sandbox(async dir=>{
   const a=adapters();
-  const edge=createEdgeRuntime({dir,probe:a.probe,applyRoute:a.applyRoute,
+  const edge=createEdgeRuntime({dir,identity,probe:a.probe,applyRoute:a.applyRoute,
     sessionId:"test-one",journalOptions:{capacityBytes:16384,controlReserveBytes:2048},
     simulatorOptions:{failbackHoldSeconds:2}});
   let step=await edge.sample(1);
@@ -46,7 +47,7 @@ test("integrated controller persists observed WAN and LOCAL_ONLY transitions bef
 }));
 test("P1 pressure never claims an ACK and must not block LAN/route decision",()=>sandbox(async dir=>{
   const a=adapters();
-  const edge=createEdgeRuntime({dir,probe:a.probe,applyRoute:a.applyRoute,
+  const edge=createEdgeRuntime({dir,identity,probe:a.probe,applyRoute:a.applyRoute,
     sessionId:"tight",journalOptions:{capacityBytes:512,controlReserveBytes:128}});
   const first=await edge.sample(1);
   a.wan.primary.upstream=false;
@@ -63,14 +64,14 @@ test("P1 pressure never claims an ACK and must not block LAN/route decision",()=
 }));
 test("route adapter failure prevents false journal evidence",()=>sandbox(async dir=>{
   const a=adapters();
-  const edge=createEdgeRuntime({dir,probe:a.probe,applyRoute:async()=>{throw Error("TEST_ROUTE_DOWN");}});
+  const edge=createEdgeRuntime({dir,identity,probe:a.probe,applyRoute:async()=>{throw Error("TEST_ROUTE_DOWN");}});
   await assert.rejects(()=>edge.sample(1),/TEST_ROUTE_DOWN/);
   assert.equal(edge.status().storage.events,0);
   edge.close();
 }));
 test("cloud ACK and compaction preserve critical event after integrated runtime stops",()=>sandbox(async dir=>{
   const a=adapters();
-  const edge=createEdgeRuntime({dir,probe:a.probe,applyRoute:a.applyRoute,sessionId:"audit",
+  const edge=createEdgeRuntime({dir,identity,probe:a.probe,applyRoute:a.applyRoute,sessionId:"audit",
     journalOptions:{capacityBytes:16384}});
   await edge.sample(1);
   a.wan.primary.upstream=false;
@@ -88,7 +89,7 @@ test("cloud ACK and compaction preserve critical event after integrated runtime 
 test("after P1 pressure, cloud ACK and compaction let deferred route evidence be persisted",()=>sandbox(async dir=>{
   const a=adapters();
   const journalOptions={capacityBytes:1750,controlReserveBytes:300};
-  const edge=createEdgeRuntime({dir,probe:a.probe,applyRoute:a.applyRoute,
+  const edge=createEdgeRuntime({dir,identity,probe:a.probe,applyRoute:a.applyRoute,
     sessionId:"pressure",journalOptions});
   const primary=await edge.sample(1);
   assert.equal(primary.event.ack,true);
@@ -122,13 +123,13 @@ test("after P1 pressure, cloud ACK and compaction let deferred route evidence be
 }));
 test("restart uses a distinct boot/session epoch and preserves previously ACKed WAN evidence",()=>sandbox(async dir=>{
   const a=adapters(),journalOptions={capacityBytes:16384};
-  const first=createEdgeRuntime({dir,probe:a.probe,applyRoute:a.applyRoute,
+  const first=createEdgeRuntime({dir,identity,probe:a.probe,applyRoute:a.applyRoute,
     sessionId:"boot-A",journalOptions});
   const firstId=(await first.sample(1)).event.eventId;
   a.wan.primary.upstream=false;
   const backupId=(await first.sample(1)).event.eventId;
   first.close();
-  const second=createEdgeRuntime({dir,probe:a.probe,applyRoute:a.applyRoute,
+  const second=createEdgeRuntime({dir,identity,probe:a.probe,applyRoute:a.applyRoute,
     sessionId:"boot-B",journalOptions});
   const rebootId=(await second.sample(1)).event.eventId;
   assert.notEqual(rebootId,firstId);assert.notEqual(rebootId,backupId);
@@ -141,7 +142,7 @@ test("restart uses a distinct boot/session epoch and preserves previously ACKed 
 }));
 test("bounded volatile journal queue reports lost evidence honestly without interrupting LAN",()=>sandbox(async dir=>{
   const a=adapters();
-  const edge=createEdgeRuntime({dir,probe:a.probe,applyRoute:a.applyRoute,
+  const edge=createEdgeRuntime({dir,identity,probe:a.probe,applyRoute:a.applyRoute,
     sessionId:"bounded",maxVolatileEvents:1,
     journalOptions:{capacityBytes:512,controlReserveBytes:128}});
   await edge.sample(1);
@@ -155,5 +156,21 @@ test("bounded volatile journal queue reports lost evidence honestly without inte
   assert.equal(edge.status().volatilePending,1);
   assert.ok(edge.status().droppedEvidence>=1);
   assert.ok(a.applied.includes(null));
+  edge.close();
+}));
+
+test("missing stable lab device identity fails closed and events include revision and session",()=>sandbox(async dir=>{
+  const a=adapters();
+  assert.throws(()=>createEdgeRuntime({dir,probe:a.probe,applyRoute:a.applyRoute}),/LAB_IDENTITY_REQUIRED/);
+  const edge=createEdgeRuntime({dir,identity,probe:a.probe,applyRoute:a.applyRoute,sessionId:"boot-A"});
+  const sample=await edge.sample(1);
+  assert.equal(sample.event.ack,true);
+  assert.equal(sample.event.eventId,"wan.lab-device.boot-A.1");
+  const stored=createFileJournal({dir}).pending()[0];
+  assert.equal(stored.payload.siteId,identity.siteId);
+  assert.equal(stored.payload.deviceId,identity.deviceId);
+  assert.equal(stored.payload.configRevision,identity.configRevision);
+  assert.equal(stored.payload.sessionId,"boot-A");
+  assert.equal(stored.payload.correlationId,stored.eventId);
   edge.close();
 }));

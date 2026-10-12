@@ -4,10 +4,12 @@
 const {randomUUID}=require("node:crypto");
 const {createConnectivityController}=require("./netns-policy.js");
 const {createFileJournal}=require("./file-journal.js");
+const {validateIdentity,EPOCH}=require("./event-envelope.js");
 function createEdgeRuntime({dir,probe,applyRoute,simulatorOptions={},journalOptions={},
-                           sessionId=randomUUID(),maxVolatileEvents=8}={}){
+                           sessionId=randomUUID(),identity,maxVolatileEvents=8}={}){
+  const stable=validateIdentity(identity);
   if(typeof probe!=="function"||typeof applyRoute!=="function")throw Error("INVALID_EDGE_PORT");
-  if(typeof sessionId!=="string"||!(/^[a-zA-Z0-9_.-]{1,128}$/).test(sessionId))throw Error("INVALID_SESSION_ID");
+  if(typeof sessionId!=="string"||!EPOCH.test(sessionId))throw Error("INVALID_SESSION_ID");
   if(!Number.isSafeInteger(maxVolatileEvents)||maxVolatileEvents<1||maxVolatileEvents>4096)throw Error("INVALID_VOLATILE_BOUND");
   const journal=createFileJournal({dir,...journalOptions});
   const controller=createConnectivityController({probe,applyRoute,simulatorOptions});
@@ -38,6 +40,7 @@ function createEdgeRuntime({dir,probe,applyRoute,simulatorOptions={},journalOpti
     const network=controller.status(),storage=journal.status();
     return {kind:"PEF_INTEGRATED_LOCAL_LAB",network,storage,
       runtimeHealth:storage.unsafe||deferred.length||droppedEvidence?"DEGRADED":"HEALTHY",
+      identity:{...stable,sessionId},
       volatilePending:deferred.length,droppedEvidence,lastError,
       physicalWanValidated:false,physicalPowerCutValidated:false};
   }
@@ -54,10 +57,11 @@ function createEdgeRuntime({dir,probe,applyRoute,simulatorOptions={},journalOpti
       retryPending(); // older events are retried before new transitions
       let event=null;
       if(changed){
-        const eventId="wan."+sessionId+"."+(++sequence);
+        const eventId="wan."+stable.deviceId+"."+sessionId+"."+(++sequence);
         const critical=observed.connectivity==="LOCAL_ONLY"||
           (last&&observed.selectedWan==="backup");
-        const payload={correlationId:eventId,logicalTime:observed.logicalTime,
+        const payload={schemaVersion:1,...stable,sessionId,eventId,
+          correlationId:eventId,logicalTime:observed.logicalTime,
           selectedWan:observed.selectedWan,connectivity:observed.connectivity,
           health:observed.health,appliedToAdapter:true,
           probes:observed.probes.map(p=>({wan:p.wan,link:p.link,upstream:p.upstream}))};

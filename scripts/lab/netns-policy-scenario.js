@@ -55,7 +55,7 @@ async function client(expect){
   throw Error("LAN_PROBE_FAILED_AFTER_RETRIES:"+String(failure?.message||failure));
 }
 const scratch=fs.mkdtempSync(path.join(os.tmpdir(),"pef-netns-edge-"));
-const ctrl=createEdgeRuntime({dir:scratch,probe:probeWan,applyRoute,
+const ctrl=createEdgeRuntime({dir:scratch,identity:{siteId:"lab-site",deviceId:"lab-netns",configRevision:"cfg-1"},probe:probeWan,applyRoute,
   simulatorOptions:{failbackHoldSeconds:5},journalOptions:{capacityBytes:65536,controlReserveBytes:8192}});
 const assertions=[],failures=[];
 function assertLab(id,valid,details){
