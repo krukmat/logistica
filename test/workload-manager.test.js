@@ -71,3 +71,36 @@ test("S2 never launches arbitrary workload binary or shell when manager admits v
     assert.equal(result.state,"BACKOFF");
   }finally{await sup.close();}
 });
+
+test("S2 host timer restarts crashed worker without UI command and isolates after bounded attempts",async()=>{
+  let now=10000;
+  const supervisor=createWorkloadSupervisor({
+    manager:createWorkloadManager(),driver:createNodeProcessDriver(),
+    clock:()=>now,autoReconcileMs:100
+  });
+  const until=async(check,label)=>{
+    for(let i=0;i<75;i++){
+      if(check())return;
+      await new Promise(resolve=>setTimeout(resolve,20));
+    }
+    assert.fail("Timed out: "+label+" "+JSON.stringify(supervisor.list()));
+  };
+  try{
+    const start=await supervisor.start(demoManifest(),{trusted:true,offline:true});
+    assert.equal(start.state,"RUNNING");
+    assert.equal((await supervisor.crash("pef-receiver")).ok,true);
+    await until(()=>supervisor.list()[0]?.state==="BACKOFF","first backoff");
+    now+=1000;
+    await until(()=>supervisor.list()[0]?.state==="RUNNING","automatic restart");
+    assert.equal(supervisor.list()[0].attempts,1);
+    assert.equal((await supervisor.crash("pef-receiver")).ok,true);
+    await until(()=>supervisor.list()[0]?.state==="BACKOFF","second backoff");
+    now+=2000;
+    await until(()=>supervisor.list()[0]?.state==="RUNNING","second automatic restart");
+    assert.equal((await supervisor.crash("pef-receiver")).ok,true);
+    await until(()=>supervisor.list()[0]?.state==="ISOLATED","circuit-breaker");
+    assert.equal(supervisor.list()[0].attempts,3);
+    assert.equal((await supervisor.processReceipt("pef-receiver",{receiptId:"S3",packageId:"BOX3"})).error,
+      "WORKLOAD_NOT_RUNNING");
+  }finally{await supervisor.close();}
+});
