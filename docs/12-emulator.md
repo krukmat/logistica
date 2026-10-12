@@ -188,3 +188,13 @@ La UI ahora tiene **dos modos explícitos**: simulación lógica y **laboratorio
 **P3:** [GitHub Actions #38274368734](https://github.com/krukmat/logistica/actions/runs/38274368734): **65/65 Node PASS**, 7 escenarios `SIM_PASS`, loopback y Linux namespaces `LAB_PASS` con limpieza. Los tests de dashboard pasan por la API HTTP y verifican el journal real con `fsync` del sistema operativo.
 
 **Límites:** el HMAC y las identidades son mocks de laboratorio y no prueban autenticación remota, PKI o Cloud productiva. El frame canónico sólo cubre la tupla de ACK v1; el resto del journal sigue usando serialización Node. No hay NIC física, power-cut, ni pruebas de seguridad de dispositivo certificadas.
+
+## W1.9.Q — Sitio virtual de logística (CI VERIFIED)
+
+Un workload real de ejemplo, **recepción de paquetes**, funciona a través de `POST/GET /api/local/receipts` en el mismo servidor localhost del Control Panel. El formulario **Recepción logística local** envía la petición a la API HTTP; no modifica por su cuenta el estado del modelo.
+
+`local-receipts.js` reutiliza el mismo `createEdgeRuntime` y el journal O1 con `fsync` del sistema operativo. El ID del evento `receipt.{deviceId}.{receiptId}` es estable entre reinicios: mismo ID/mismo paquete retorna duplicado, mismo ID/otro paquete retorna conflicto. Un evento no fsynced nunca aparece como recepción aceptada. El listado se reconstruye desde eventos O1 retenidos (no desde una copia en memoria), incluso tras ACK Cloud, compactación y reapertura.
+
+Con ambas WAN sintéticas desactivadas, registrar `R001/PKG001` sigue devolviendo recepción local 201. Una vez vuelve WAN, el mock Cloud utiliza el pipeline real de replay/ACK del laboratorio, sin duplicar el evento ante ACK remoto perdido. Cuota P1 insuficiente se rechaza explícitamente con HTTP 507. La API está restringida a localhost, token del panel y modo laboratorio; no proporciona aún un endpoint de red LAN productiva.
+
+**Evidencia:** [CI #38281997428](https://github.com/krukmat/logistica/actions/runs/38281997428): 68/68 tests Node PASS, siete escenarios `SIM_PASS`, loopback `LAB_PASS`, Linux namespaces `LAB_PASS CLEAN`. [Guía con Mermaid](17-virtual-site-e2e.md) y [tasks Q](tasks/w1.9-emulator-execution.md). No valida cortes de energía físicos, servicios de transportistas, Cloud persistente ni NICs reales.
