@@ -8,6 +8,7 @@ const path=require("node:path");
 const os=require("node:os");
 const {createFileJournal}=require("../../src/adapters/os-file-journal.js");
 const {openRuntimeBackend}=require("../../src/runtime/backend-registry.js");
+const {createAutonomousEdgeHost}=require("../../src/runtime/autonomous-edge.js");
 function need(name){if(!process.env[name])throw Error("LAB_BLOCKED:"+name);return process.env[name];}
 function ip(...args){return execFileSync("ip",args,{encoding:"utf8",timeout:5000}).trim();}
 if(process.platform!=="linux"||process.getuid?.()!==0||
@@ -97,6 +98,68 @@ async function run(){
     assertLab("integrated-journal-reopen",recoveredJournal.events===previousJournal.events&&
       recoveredJournal.pending===previousJournal.pending&&!recoveredJournal.unsafe&&recoveredJournal.events>=4,
       {before:previousJournal,after:recoveredJournal});
+
+    // T3: same PEF Edge autonomous host uses Linux netns probe/route ports and real OS P1.
+    const labToken="ci-netns-standalone-edge-operator-token-2026";
+    const config={schemaVersion:1,backend:"linux-lab",
+      identity:{siteId:"lab-site",deviceId:"lab-netns",configRevision:"cfg-1"},
+      storageDir:scratch,http:{host:"127.0.0.1",port:0},
+      sampleIntervalMs:200,workload:{enabled:false,reconcileMs:250},
+      journal:{capacityBytes:65536,controlReserveBytes:8192},
+      linuxLab:{ns,repoRoot:root}};
+    const standalone=createAutonomousEdgeHost({config,token:labToken});
+    let hostStarted=false,removedA=false,removedB=false;
+    const get=async(base,p,body)=>{
+      const res=await fetch(base+p,{method:body?"POST":"GET",headers:{
+        "x-pef-token":labToken,...(body?{"content-type":"application/json"}:{})},
+        ...(body?{body:JSON.stringify(body)}:{})});
+      return {http:res.status,...await res.json()};
+    };
+    const awaitOffline=async(base)=>{
+      for(let i=0;i<30;i++){
+        const state=await get(base,"state");
+        if(state.network.connectivity==="LOCAL_ONLY")return state;
+        await new Promise(resolve=>setTimeout(resolve,100));
+      }
+      throw Error("STANDALONE_LINUX_OFFLINE_TIMEOUT");
+    };
+    try{
+      const base=await standalone.listen();hostStarted=true;
+      const initial=await get(base,"state");
+      assertLab("standalone-linux-bootstrap",initial.backend==="linux-lab"&&
+        initial.network.selectedWan==="primary"&&initial.dashboardRequired===false&&
+        initial.storage.unsafe===false,{selectedWan:initial.network.selectedWan});
+      ip("-n",ns.wa,"addr","del","10.250.20.1/24","dev","eth0");removedA=true;
+      ip("-n",ns.wb,"addr","del","10.250.30.1/24","dev","eth0");removedB=true;
+      const offline=await awaitOffline(base);
+      assertLab("standalone-linux-offline",offline.network.selectedWan===null,{state:offline.network});
+      const accepted=await get(base,"receipts",{receiptId:"LINUX-T3-001",packageId:"EDGE-BOX-001"});
+      assertLab("standalone-linux-fsync",accepted.http===201&&accepted.fsyncCompleted===true,accepted);
+      ip("-n",ns.wa,"addr","add","10.250.20.1/24","dev","eth0");
+      ip("-n",ns.wa,"route","replace","10.250.10.0/24","via","10.250.20.2","dev","eth0");removedA=false;
+      ip("-n",ns.wb,"addr","add","10.250.30.1/24","dev","eth0");
+      ip("-n",ns.wb,"route","replace","10.250.10.0/24","via","10.250.30.2","dev","eth0");removedB=false;
+    }finally{
+      if(removedA){
+        ip("-n",ns.wa,"addr","add","10.250.20.1/24","dev","eth0");
+        ip("-n",ns.wa,"route","replace","10.250.10.0/24","via","10.250.20.2","dev","eth0");
+      }
+      if(removedB){
+        ip("-n",ns.wb,"addr","add","10.250.30.1/24","dev","eth0");
+        ip("-n",ns.wb,"route","replace","10.250.10.0/24","via","10.250.30.2","dev","eth0");
+      }
+      await standalone.close();
+    }
+    // A second host instance must reopen the same physical OS journal without dashboard.
+    const repeated=createAutonomousEdgeHost({config,token:labToken});
+    try{
+      const base=await repeated.listen();
+      const state=await get(base,"state");
+      assertLab("standalone-linux-reopen",state.receipts.some(r=>
+        r.receiptId==="LINUX-T3-001"&&r.fsyncRecorded===true),{
+          retainedReceipts:state.receipts.length,selectedWan:state.network.selectedWan});
+    }finally{await repeated.close();}
+
   }catch(err){failures.push("JOURNAL_REOPEN_FAILED:"+String(err.stack||err));}
   finally{try{ctrl.close();fs.rmSync(scratch,{recursive:true,force:true});}catch(err){failures.push("LAB_JOURNAL_CLEANUP_FAILED:"+String(err));}}
   const evidence={kind:"PEF_NETNS_POLICY_LAB",status:failures.length?"LAB_FAIL":"LAB_PASS",
