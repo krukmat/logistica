@@ -97,3 +97,20 @@ grep -q 'PEF_S3_CHILD_PASS=' "$out" || { echo "missing child evidence" >&2; exit
 peak="$(cat "$cg/memory.peak")"
 [[ "$peak" -gt 0 && "$peak" -le "${limits[1]}" ]] || { echo "PEF_S3_MEMORY_INVALID=$peak" >&2; exit 1; }
 echo "PEF_S3_KERNEL_LIMITS=PASS cpu.max=${limits[0]} memory.max=${limits[1]} pids.max=${limits[2]} memory.peak=$peak"
+
+# S3.4–S3.6: supervisor host is OUTSIDE the kernel cgroup; forked worker is INSIDE.
+# Same manifest/driver Core as the Mac emulator, with CI-only Linux adapter.
+cp "$PEF_S3_REPO_ROOT/src/workloads/receiver-worker.js" "$root/app/receiver-worker.js"
+mkdir -p "$tmpdir/host-journal"
+printf 'PEF_S34_HOST_SENTINEL\n' > "$tmpdir/host-canary"
+"$PEF_S3_NODE" "$PEF_S3_REPO_ROOT/scripts/lab/supervised-linux-worker.js" \
+  "$name" "$cg" "$root" "$node_bin" "$tmpdir/host-journal" "$tmpdir/host-canary" \
+  >"$tmpdir/supervised.out" 2>&1 || {
+    cat "$tmpdir/supervised.out" >&2
+    exit 1
+  }
+cat "$tmpdir/supervised.out"
+grep -q 'PEF_S34_SUPERVISED_LINUX_PASS=' "$tmpdir/supervised.out" || {
+  echo "supervised Linux lifecycle evidence absent" >&2
+  exit 1
+}
