@@ -218,3 +218,7 @@ El dashboard (modo Laboratorio integrado) integra un `Workload Manager` de domin
 Linux CI prueba por separado un child workload con **límites reales kernel** derivados del mismo manifest (cgroup v2 150 mCPU / 64 MiB / 16 PIDs), network namespace sin WAN, chroot temporal, UID sin privilegios y P1 fsync, con limpieza. La UI contiene un enlace CI-only para esa evidencia, sin privilegios ni modificaciones de host en el Mac.
 
 [W1.9.S guía](19-workload-runtime.md), [tasks S1–S6](tasks/w1.9-workload-runtime.md), [CI #38293362918](https://github.com/krukmat/logistica/actions/runs/38293362918): **84 Node PASS**, 7 SIM_PASS, loopback, veth, S3 PASS/CLEAN. S3 product driver aún pendiente; W1.8 hardware físico NOT_RUN.
+
+## W1.9.S3.4–S3.8 — Linux driver supervisado, visible pero no ejecutable en macOS
+
+El laboratorio Linux ahora inicia el **mismo Workload Supervisor del Core** con el adaptador de procesos realmente aislados y comparte las reglas de manifests/health/backoff con el driver local macOS. La UI distingue el `NodeProcessDriver` local (`actualLimitsEnforced=false`, sin red/FS/cgroup aisladas) del `LinuxIsolatedProcessDriver` **CI-only** (cgroup/netns/chroot/UID, CPU throttling, OOM kill, limpieza). El panel enlaza la [CI verificada](https://github.com/krukmat/logistica/actions/runs/38299458656); nunca ejecuta Linux root en el Mac. [Contrato S3.4–S3.8](20-supervised-linux-driver.md).
