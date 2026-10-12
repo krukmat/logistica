@@ -41,8 +41,12 @@ on_exit(){
   local rc=$? state="FAILED"
   trap - EXIT
   [[ $rc -eq 0 ]] && state="PASS"
-  cleanup || { state="FAILED"; rc=1; }
-  echo "PEF_S3_ISOLATION=$state CLEANUP=$([[ $created_cg -eq 0 ]] && echo CLEAN || echo FAILED)"
+  local cleaned="CLEAN"
+  cleanup || { state="FAILED"; cleaned="FAILED"; rc=1; }
+  if [[ -n "${PEF_S3_EVIDENCE:-}" ]]; then
+    printf '{"kind":"PEF_S3_LINUX_ISOLATION_LAB","status":"LAB_%s","cleanup":"%s","cpu_max":"20000 100000","memory_max_bytes":134217728,"pids_max":16,"network_namespace":true,"chroot_dropped_uid":65534,"physicalValidated":false}\n' "$state" "$cleaned" >"$PEF_S3_EVIDENCE"
+  fi
+  echo "PEF_S3_ISOLATION=LAB_$state CLEANUP=$cleaned"
   exit "$rc"
 }
 trap on_exit EXIT

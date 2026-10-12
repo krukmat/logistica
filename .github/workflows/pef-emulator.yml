@@ -73,10 +73,21 @@ jobs:
             PEF_NETNS_EVIDENCE="$RUNNER_TEMP/pef-netns-evidence.json" \
             PEF_NETNS_POLICY_EVIDENCE="$RUNNER_TEMP/pef-netns-policy.json" \
             bash scripts/lab/netns-smoke.sh
+      - name: S3 cgroup and namespace workload isolation (ephemeral Linux)
+        env:
+          PEF_S3_ACK: GITHUB_HOSTED_EPHEMERAL_ONLY
+        run: |
+          sudo -n env CI="$CI" GITHUB_ACTIONS="$GITHUB_ACTIONS" RUNNER_ENVIRONMENT="$RUNNER_ENVIRONMENT" \
+            PEF_S3_ACK="$PEF_S3_ACK" PEF_S3_REPO_ROOT="$GITHUB_WORKSPACE" \
+            PEF_S3_NODE="$(command -v node)" \
+            PEF_S3_EVIDENCE="$RUNNER_TEMP/pef-s3-evidence.json" \
+            bash scripts/lab/workload-isolation-smoke.sh
       - name: Upload lab evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pef-netns-evidence
-          path: ${{ runner.temp }}/pef-netns-*.json
+          path: |
+            ${{ runner.temp }}/pef-netns-*.json
+            ${{ runner.temp }}/pef-s3-evidence.json
           if-no-files-found: warn
