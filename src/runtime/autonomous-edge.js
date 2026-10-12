@@ -11,8 +11,14 @@ const {createWorkloadSupervisor}=require("../core/workload-supervisor.js");
 const {createNodeProcessDriver}=require("../adapters/node-process-driver.js");
 const {demoManifest}=require("./demo-workload.js");
 const {openLabBoot}=require("./lab-boot-metadata.js");
-function createAutonomousEdgeHost({config,token}={}){
+function createAutonomousEdgeHost({config,token,workloadDriver}={}){
+  // Explicit driver injection is for trusted in-process host composition, not HTTP or JSON config.
+  // Linux mode MUST NOT silently fall back to an unisolated Node child.
+  if(workloadDriver!==undefined&&typeof workloadDriver?.start!=="function")
+    throw Error("INVALID_WORKLOAD_DRIVER_PORT");
   const cfg=validateEdgeConfig(config);
+  if(cfg.backend==="linux-lab"&&cfg.workload.enabled&&!workloadDriver)
+    throw Error("LINUX_WORKLOAD_DRIVER_REQUIRED");
   if(typeof token!=="string"||token.length<24||token.length>256||/\s/.test(token))
     throw Error("EDGE_OPERATOR_TOKEN_REQUIRED");
   const lock=acquireEdgeLock(cfg.storageDir);
@@ -132,7 +138,7 @@ function createAutonomousEdgeHost({config,token}={}){
       if(!initial.ok)throw Error(initial.error);
       if(cfg.workload.enabled){
         supervisor=createWorkloadSupervisor({
-          manager:createWorkloadManager(),driver:createNodeProcessDriver(),
+          manager:createWorkloadManager(),driver:workloadDriver||createNodeProcessDriver(),
           autoReconcileMs:cfg.workload.reconcileMs
         });
         const launched=await supervisor.start(demoManifest(),{
