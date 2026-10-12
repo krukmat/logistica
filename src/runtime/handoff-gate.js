@@ -21,7 +21,8 @@ function evaluatePreHardwareGate({emulatorResult,linuxResult,policyEvidence,
   const processE2e=supervisedEvidence?.status==="LAB_PASS"&&
     supervisedEvidence.hardwareValidated===false&&
     supervisedEvidence.oomKill>=1&&supervisedEvidence.offlineFsync===true&&
-    ["SUPERVISOR_START","CPU_THROTTLED","RESTART_AFTER_OOM","STOP_AND_RELEASE"].every(x=>kernel.includes(x));
+    ["SUPERVISOR_START","CPU_THROTTLED","RESTART_AFTER_OOM","STOP_AND_RELEASE",
+      "STANDALONE_DAEMON_KERNEL_WORKER","STANDALONE_DAEMON_OFFLINE_FSYNC"].every(x=>kernel.includes(x));
   const ciJobs=emulatorResult==="success"&&linuxResult==="success";
   const passed=Boolean(filesPresent&&ciJobs&&linuxE2e&&processE2e);
   return {kind:"PEF_PRE_HARDWARE_HANDOFF_V1",status:passed?"SOFTWARE_LAB_READY":"BLOCKED",
