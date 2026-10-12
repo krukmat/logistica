@@ -7,9 +7,12 @@ const {createHash}=require("node:crypto");
 function digest(kind,id,payload,category){
   return createHash("sha256").update(JSON.stringify({kind,id,payload,category})).digest("hex");
 }
-function createFileJournal({dir,capacityBytes=1024*1024}={}){
+function createFileJournal({dir,capacityBytes=1024*1024,controlReserveBytes}={}){
   if(typeof dir!=="string"||!dir)throw Error("JOURNAL_DIR_REQUIRED");
   if(!Number.isSafeInteger(capacityBytes)||capacityBytes<128)throw Error("INVALID_JOURNAL_CAPACITY");
+  if(controlReserveBytes===undefined)controlReserveBytes=Math.min(4096,Math.floor(capacityBytes/4));
+  if(!Number.isSafeInteger(controlReserveBytes)||controlReserveBytes<0||controlReserveBytes>=capacityBytes)
+    throw Error("INVALID_CONTROL_RESERVE");
   if(!fs.statSync(dir).isDirectory())throw Error("JOURNAL_DIR_NOT_DIRECTORY");
   const file=path.join(fs.realpathSync(dir),"pef-journal.ndjson");
   const flags=fs.constants.O_RDWR|fs.constants.O_CREAT|fs.constants.O_APPEND|(fs.constants.O_NOFOLLOW||0);
@@ -40,11 +43,12 @@ function createFileJournal({dir,capacityBytes=1024*1024}={}){
     }
   }
   try{load();}catch(err){fs.closeSync(fd);throw err;}
-  function write(record){
+  function write(record,{useControlReserve=false}={}){
     checkOpen();
     if(unsafe)return {ok:false,ack:false,error:"STORAGE_UNSAFE"};
     const buffer=Buffer.from(JSON.stringify(record)+"\n","utf8");
-    if(size+buffer.length>capacityBytes)return {ok:false,ack:false,error:"STORAGE_FULL_OR_UNSAFE"};
+    const limit=useControlReserve?capacityBytes:capacityBytes-controlReserveBytes;
+    if(size+buffer.length>limit)return {ok:false,ack:false,error:"STORAGE_FULL_OR_UNSAFE",controlReserveProtected:!useControlReserve};
     try{
       let offset=0;
       while(offset<buffer.length){const n=fs.writeSync(fd,buffer,offset,buffer.length-offset,null);if(n<=0)throw Error("SHORT_WRITE");offset+=n;}
@@ -71,12 +75,12 @@ function createFileJournal({dir,capacityBytes=1024*1024}={}){
     checkOpen();
     if(!entries.has(eventId))return {ok:false,ack:false,error:"EVENT_NOT_FOUND"};
     if(acked.has(eventId))return {ok:true,ack:true,duplicate:true,physicalPowerCutValidated:false};
-    const res=write(signed("CLOUD_ACK",eventId,null,"P1"));
+    const res=write(signed("CLOUD_ACK",eventId,null,"P1"),{useControlReserve:true});
     if(res.ok)acked.add(eventId);
     return {...res,eventId};
   }
   const pending=()=>{checkOpen();return [...entries.values()].filter(e=>!acked.has(e.id)).map(e=>({eventId:e.id,payload:e.payload,category:e.category,sha256:e.sha256}));};
-  const status=()=>{checkOpen();return {kind:"PEF_OS_FILE_JOURNAL",bytesUsed:size,capacityBytes,events:entries.size,cloudAcked:acked.size,pending:entries.size-acked.size,unsafe,hardwareValidated:false,powerCutValidated:false};};
+  const status=()=>{checkOpen();return {kind:"PEF_OS_FILE_JOURNAL",bytesUsed:size,capacityBytes,controlReserveBytes,regularWriteLimitBytes:capacityBytes-controlReserveBytes,events:entries.size,cloudAcked:acked.size,pending:entries.size-acked.size,unsafe,hardwareValidated:false,powerCutValidated:false};};
   function close(){if(closed)return;closed=true;fs.closeSync(fd);}
   return {append,cloudAck,pending,status,close,file};
 }
