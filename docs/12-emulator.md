@@ -154,3 +154,9 @@ Para salir pulsa `Ctrl+C` en la terminal. También se mantienen `npm test`, `npm
 `src/emulator/lab/edge-runtime.js` combines the probe-driven Connectivity policy with the filesystem journal, maintaining a **single owner for state transitions** and saving WAN selection/offline events with OS `fsync` before returning a durable acknowledgment. `probe` and `applyRoute` are injected, so this module neither changes routing itself nor requires privileged code. High-impact `LOCAL_ONLY`/backup incidents are classified O1; ordinary initial/restore transitions O2, with `correlationId` and logical clock evidence.
 
 When the journal is full or unsafe, routing still proceeds. The result explicitly returns `ack=false`, `DEGRADED`, an ephemeral bounded retry queue and a dropped-evidence counter: **memory is not durable**. There is no claim of product-grade failover, hardware write barriers or network driver implementation. Node regression tests verify reopen, acknowledged transition IDs, backpressure and route error handling.
+
+## W1.9.M — Integrated Linux network lab + OS-file journal
+
+The existing GitHub-hosted `netns-policy-scenario.js` now runs through the [integrated local lab runtime](../src/emulator/lab/edge-runtime.js) rather than the standalone policy model. For each **applied** route transition, the controller writes a local O1/O2 event and the acceptance oracle requires an OS `fsync` ACK. The test later **closes and reopens** the file journal and confirms its event count/pending records. All route writes remain inside the Edge Linux namespace, and the temporary journal directory is removed at test completion.
+
+**Boundary:** real sandbox kernel routing + host OS fsync and process reopening are tested, not physical NIC or power-loss durability. A clean Linux-lab test does not authorize production use. M remains CI pending until validated on the integrated run.

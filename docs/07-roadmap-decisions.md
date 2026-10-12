@@ -112,3 +112,5 @@ Repositorio de trabajo: `krukmat/logistica`, rama `main`. **W1.5.A–J, W1.6.A�
 **J2/J3 audit:** [W1.9 J2/J3](audit/w1.9-j2-j3-2026-10-12.md) — 38/38 Node PASS; compaction staged file/fsync/rename/directory fsync; O0/O1 retained, O2/O3 tombstones, simulated interrupted stages; no physical power-loss validation. **W1.9.L NEXT:** a single local runtime contract combining connectivity transitions with file journal ACK/error boundaries.
 
 **CI actualizado 2026-10-12:** [#38264234999](https://github.com/krukmat/logistica/actions/runs/38264234999) 38/38 tests, siete escenarios SIM_PASS, loopback y namespace LAB_PASS, cliente web JS check PASS. `W1.9.K` implementado; `W1.9.J2` compaction implementada en laboratorio, no certificada para hardware real.
+
+**W1.9.L CI:** [run #38264957781](https://github.com/krukmat/logistica/actions/runs/38264957781), 42 Node tests PASS, seven SIM_PASS, localhost and namespace job PASS. **W1.9.M candidate:** wire same integrated journal into Linux namespaces acceptance: route-change ACK + file reopen under actual veth probes; physical W1.8 remains blocked.

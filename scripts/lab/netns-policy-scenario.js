@@ -5,7 +5,9 @@
 const {execFileSync}=require("node:child_process");
 const fs=require("node:fs");
 const path=require("node:path");
-const {createConnectivityController}=require("../../src/emulator/lab/netns-policy.js");
+const os=require("node:os");
+const {createFileJournal}=require("../../src/emulator/lab/file-journal.js");
+const {createEdgeRuntime}=require("../../src/emulator/lab/edge-runtime.js");
 function need(name){if(!process.env[name])throw Error("LAB_BLOCKED:"+name);return process.env[name];}
 function ip(...args){return execFileSync("ip",args,{encoding:"utf8",timeout:5000}).trim();}
 if(process.platform!=="linux"||process.getuid?.()!==0||
@@ -52,14 +54,20 @@ async function client(expect){
   }
   throw Error("LAN_PROBE_FAILED_AFTER_RETRIES:"+String(failure?.message||failure));
 }
-const ctrl=createConnectivityController({probe:probeWan,applyRoute,simulatorOptions:{failbackHoldSeconds:5}});
+const scratch=fs.mkdtempSync(path.join(os.tmpdir(),"pef-netns-edge-"));
+const ctrl=createEdgeRuntime({dir:scratch,probe:probeWan,applyRoute,
+  simulatorOptions:{failbackHoldSeconds:5},journalOptions:{capacityBytes:65536,controlReserveBytes:8192}});
 const assertions=[],failures=[];
 function assertLab(id,valid,details){
   assertions.push({id,ok:!!valid,details});
   if(!valid)throw Error("ORACLE_FAILED:"+id);
 }
 async function phase(id,seconds,expectedWan,expectedResponse){
-  const observed=await ctrl.sample(seconds);
+  const outcome=await ctrl.sample(seconds);
+  const observed=outcome.observed;
+  if(outcome.event)assertLab(id+"-journal-fsync",
+    outcome.event.ack===true&&outcome.event.fsyncCompleted===true,
+    {eventId:outcome.event.eventId,ack:outcome.event.ack,fsyncCompleted:outcome.event.fsyncCompleted});
   assertLab(id,observed.selectedWan===expectedWan&&observed.routeApplied&&observed.health==="HEALTHY",{
     selected:observed.selectedWan,connectivity:observed.connectivity,clock:observed.logicalTime,probes:observed.probes,route:checkRoute(expectedWan)});
   if(expectedResponse){
@@ -95,10 +103,25 @@ async function run(){
       await applyRoute("primary");
     }catch(err){failures.push("RESTORE_FAILED:"+String(err.stack||err));}
   }
+  // Verify actual OS-file journal reopens with all ACKed transition events intact.
+  let recoveredJournal=null,previousJournal=null;
+  try{
+    previousJournal=ctrl.status().storage;
+    ctrl.close();
+    const reopened=createFileJournal({dir:scratch,capacityBytes:65536,controlReserveBytes:8192});
+    try{recoveredJournal=reopened.status();}
+    finally{reopened.close();}
+    assertLab("integrated-journal-reopen",recoveredJournal.events===previousJournal.events&&
+      recoveredJournal.pending===previousJournal.pending&&!recoveredJournal.unsafe&&recoveredJournal.events>=4,
+      {before:previousJournal,after:recoveredJournal});
+  }catch(err){failures.push("JOURNAL_REOPEN_FAILED:"+String(err.stack||err));}
+  finally{try{ctrl.close();fs.rmSync(scratch,{recursive:true,force:true});}catch(err){failures.push("LAB_JOURNAL_CLEANUP_FAILED:"+String(err));}}
   const evidence={kind:"PEF_NETNS_POLICY_LAB",status:failures.length?"LAB_FAIL":"LAB_PASS",
     scope:"real Linux veth peer HTTP probes and isolated route table; logical decision model",
     physicalWanValidated:false,hardwareValidated:false,latencyPercentilesValidated:false,
-    assertions,failures,observations:ctrl.observations(),simulatorTrace:ctrl.trace(),
+    assertions,failures,observations:ctrl.observations(),simulatorTrace:ctrl.controllerTrace(),
+    journalEvidence:{osFsyncLab:true,reopened:recoveredJournal?.events===previousJournal?.events,
+      events:recoveredJournal?.events||0,physicalPowerCutValidated:false},
     limitations:["No physical WAN or NAT/firewall throughput","Failback seconds are logical ticks, not measured p95","Only isolated test namespace routes modified"]};
   if(process.env.PEF_NETNS_POLICY_EVIDENCE)fs.writeFileSync(process.env.PEF_NETNS_POLICY_EVIDENCE,JSON.stringify(evidence,null,2)+"\n");
   process.stdout.write(JSON.stringify({kind:evidence.kind,status:evidence.status,assertions,failures})+"\n");

@@ -70,6 +70,6 @@ function createEdgeRuntime({dir,probe,applyRoute,simulatorOptions={},journalOpti
   function compact(options){check();return journal.compact(options);}
   function close(){if(closed)return;closed=true;journal.close();}
   return {sample,status,cloudAck,compact,close,controllerTrace:()=>controller.trace(),
-    journalPath:journal.file};
+    journalPath:journal.file,observations:()=>controller.observations()};
 }
 module.exports={createEdgeRuntime};
