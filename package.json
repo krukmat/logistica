@@ -10,7 +10,8 @@
     "test": "node --test test/*.test.js",
     "emulate": "node bin/pef-emulator.js --all",
     "smoke": "node --test test/*.test.js && node bin/pef-emulator.js --all && node bin/pef-loopback-lab.js",
-    "lab:loopback": "node bin/pef-loopback-lab.js"
+    "lab:loopback": "node bin/pef-loopback-lab.js",
+    "dashboard": "node bin/pef-dashboard.js"
   },
   "license": "UNLICENSED"
 }
