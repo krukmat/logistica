@@ -296,6 +296,22 @@
       "implementation": "src/adapters/bounded-wan-ports.js",
       "test": "test/bounded-wan-ports.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "W1.10.B3",
+      "mode": "lab",
+      "title": "Real host fsync journal under deterministic write/fsync/corruption/compaction/metadata fault matrix",
+      "controlIds": [
+        "predevice-panel",
+        "predevice-conformance",
+        "predevice-evidence"
+      ],
+      "actions": [
+        "predeviceConformance"
+      ],
+      "implementation": "src/runtime/storage-fault-conformance.js",
+      "test": "test/storage-fault-conformance.test.js",
+      "hardwareValidated": false
     }
   ]
 }

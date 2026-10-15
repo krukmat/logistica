@@ -155,3 +155,7 @@ The same matrix now also injects **post-mutation** route failure, false reported
 The predevice matrix now adds six scenarios (23 checks): slow probe, route timeout/late mutation, cooperative abort, permanently hung change and boot reconciliation. Bounded ports always quarantine a timed-out route until the underlying operation has settled and readback confirms a trusted expected route. `AbortSignal` is advisory; this is not Linux subprocess fencing, driver certification or actual device bootstrap. [Contract and limits](docs/22-predevice-ports.md).
 
 **W1.10.B2 CI closed (2026-10-15):** [Actions #38736879970](https://github.com/krukmat/logistica/actions/runs/38736879970) **101/101 Node PASS**, **23/23 predevice port checks LAB_PASS** and full prehardware gate success. [Detailed audit](docs/audit/w1.10-b2-2026-10-15.md). This confirms software-lab behavior only, not hardware readiness.
+
+### W1.10.B3 — Fault-injected persistence (software lab)
+
+The shared predevice matrix now rehearses **34 checks** (including 11 storage faults) against the existing OS-file journal and Product LocalReceipts: injected ENOSPC, torn/zero write, failed fsync ambiguity, quota/control reserve, checksum/tail corruption, simulated before/after-rename crash, and schema migration. No device power-cycle or actual host disk exhaustion. [Details](docs/22-predevice-ports.md).

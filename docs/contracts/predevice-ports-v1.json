@@ -42,7 +42,18 @@
     "PORT_LATE_ROUTE_QUARANTINE",
     "PORT_LATE_COMMIT_REQUIRES_REPAIR",
     "PORT_COOPERATIVE_ABORT_RECHECK",
-    "PORT_HUNG_ROUTE_REMAINS_BLOCKED"
+    "PORT_HUNG_ROUTE_REMAINS_BLOCKED",
+    "STORAGE_ENOSPC_FAIL_CLOSED",
+    "STORAGE_PARTIAL_WRITE_QUARANTINE",
+    "STORAGE_ZERO_WRITE_NO_ACK",
+    "STORAGE_FSYNC_AMBIGUITY_IDEMPOTENT_RECOVERY",
+    "STORAGE_QUOTA_CONTROL_RESERVE",
+    "STORAGE_CHECKSUM_CORRUPTION_BLOCKED",
+    "STORAGE_TRUNCATED_TAIL_BLOCKED",
+    "STORAGE_COMPACTION_PRE_RENAME_RECOVERY",
+    "STORAGE_COMPACTION_POST_RENAME_RECHECK",
+    "STORAGE_LEGACY_METADATA_MIGRATION",
+    "STORAGE_FUTURE_SCHEMA_REFUSED"
   ],
   "physicalValidated": false,
   "deviceBackend": "BACKEND_NOT_IMPLEMENTED",
@@ -64,5 +75,17 @@
     "semantics": "AbortSignal advisory; timeout returns error, quarantines routing, pending async task must settle before verified external reconciliation; initial boot starts blocked",
     "hazard": "No process-restart fencing of OS commands; durable intent and OS subprocess termination not yet implemented",
     "physicalValidated": false
+  },
+  "storageFaultMatrix": {
+    "implementation": "src/runtime/storage-fault-conformance.js",
+    "injection": "src/adapters/faultable-file-ops.js",
+    "target": "src/adapters/os-file-journal.js",
+    "recordSchemaVersion": 1,
+    "legacyVersion": "unversioned",
+    "migration": "safe compaction rewrites retained legacy records with version 1; checksum remains stable for cloud replay",
+    "failureCases": "synthetic ENOSPC, partial writes, zero writes, fsync EIO, quota reserve, checksum and tail corruption, pre/post rename hooks, schema migration",
+    "guarantees": "Negative acknowledgments on failed durability; unsafe lockout; no automatic truncate; reopen/readback of ambiguous writes; explicit physical validation pending",
+    "physicalPowerCutValidated": false,
+    "hostDiskExhausted": false
   }
 }

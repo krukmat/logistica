@@ -51,3 +51,15 @@ sequenceDiagram
 The predevice dashboard matrix now contains **23 checks**, including six timing/fencing simulations. Timeout values (15ms) are **test fixtures**, not deployment recommendations. No real hardware, Linux route operations on host, physical power-cut or device certification.
 
 **Validated scope:** [CI run #38736879970](https://github.com/krukmat/logistica/actions/runs/38736879970), 101 Node tests + 23 simulated predevice assertions, Linux lab and prehardware handoff PASS. [Audit](audit/w1.10-b2-2026-10-15.md) describes the truth boundary.
+
+## B3 — Storage failure rehearsal (software/lab, implementation pending CI)
+
+`src/adapters/os-file-journal.js` now accepts a **trusted injected filesystem operations object** solely for deterministic tests. The production/default path remains the actual `node:fs`; operator HTTP cannot configure fault injection. `src/adapters/faultable-file-ops.js` creates ENOSPC/partial/zero-write and fsync-EIO failures on real ephemeral files; `src/runtime/storage-fault-conformance.js` runs all cases with the exact shared local-receipts Core. 11 new cases make **34 matrix checks**.
+
+- **Fail closed:** short write, ENOSPC, fsync error mark journal `unsafe`; never respond with a newly accepted local receipt without confirmed fsync. Partial tails and altered checksums block boot without automatic truncation.
+- **Ambiguous fsync:** complete bytes may be present despite EIO; on validated reopen the event can replay as an idempotent duplicate. Absence of initial ACK does **not** prove the write did not reach disk.
+- **Space:** reject regular events at capacity minus reserved bytes, but permit critical Cloud ACK cursor in reserved space. No host disk is filled by tests.
+- **Compaction:** simulated interruptions before and after atomic rename run against temp files. Reopen and check pending/acked data. A post-rename simulation cannot certify a real power-loss guarantee.
+- **Metadata:** newly written records carry `recordSchemaVersion:1` while *legacy unversioned* records can still load. Successful compaction migrates retained records to the explicit schema; future versions are blocked. The on-disk `sha256` event checksum is **unchanged** to protect remote ACK/replay identity. Schema metadata itself is not cryptographically authenticated separately: this is a format compatibility guard, not a secure migration signature.
+
+**Device blockers:** real ENOSPC on chosen filesystem, remount/readonly behavior, directory fsync + power-cycle, flash wear, durable migration/rollback on hardware, tamper evidence, correct disk error reporting, and actual boot recovery have not been measured. `physicalPowerCutValidated:false` remains mandatory.

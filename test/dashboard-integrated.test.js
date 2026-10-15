@@ -309,7 +309,9 @@ test("W1.10.A dashboard invokes real predevice port conformance and labels physi
  await call({command:"mode",mode:"lab"});
  const report=await call({command:"lab",action:"predeviceConformance"});
  assert.equal(report.result.status,"LAB_PASS",JSON.stringify(report.result.checks.filter(x=>!x.pass)));
- assert.equal(report.result.total,23);
+ assert.equal(report.result.total,34);
+ assert.ok(report.result.checks.some(x=>x.id==="STORAGE_FSYNC_AMBIGUITY_IDEMPOTENT_RECOVERY"&&x.pass));
+ assert.ok(report.result.checks.some(x=>x.id==="STORAGE_PARTIAL_WRITE_QUARANTINE"&&x.pass));
  assert.ok(report.result.checks.some(x=>x.id==="PORT_HUNG_ROUTE_REMAINS_BLOCKED"&&x.pass));
  assert.ok(report.result.checks.some(x=>x.id==="PORT_BOOT_ROUTE_RECONCILIATION"&&x.pass));
  assert.equal(report.lab.predevice.lastEvidence.status,"LAB_PASS");

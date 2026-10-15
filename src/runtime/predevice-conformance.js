@@ -7,6 +7,7 @@ const {createLocalReceipts}=require("../core/local-receipts.js");
 const {openRuntimeBackend}=require("./backend-registry.js");
 const {runVerifiedRouteConformance}=require("./verified-route-conformance.js");
 const {runBoundedPortConformance}=require("./bounded-port-conformance.js");
+const {runStorageFaultConformance}=require("./storage-fault-conformance.js");
 const IDENTITY={siteId:"predevice-site",deviceId:"predevice-edge",configRevision:"lab-r1"};
 async function runPredeviceConformance({tmpParent=os.tmpdir()}={}){
  const checks=[];
@@ -87,6 +88,8 @@ async function runPredeviceConformance({tmpParent=os.tmpdir()}={}){
    for(const check of await runVerifiedRouteConformance())
      record(check.id,check.pass,check.observed);
    for(const check of await runBoundedPortConformance())
+     record(check.id,check.pass,check.observed);
+   for(const check of runStorageFaultConformance({tmpParent}))
      record(check.id,check.pass,check.observed);
  }catch(e){
    record("PORT_CONFORMANCE_UNHANDLED",false,String(e.message||e));
