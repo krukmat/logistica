@@ -159,3 +159,5 @@ The predevice matrix now adds six scenarios (23 checks): slow probe, route timeo
 ### W1.10.B3 — Fault-injected persistence (software lab)
 
 The shared predevice matrix now rehearses **34 checks** (including 11 storage faults) against the existing OS-file journal and Product LocalReceipts: injected ENOSPC, torn/zero write, failed fsync ambiguity, quota/control reserve, checksum/tail corruption, simulated before/after-rename crash, and schema migration. No device power-cycle or actual host disk exhaustion. [Details](docs/22-predevice-ports.md).
+
+**W1.10.B3 software-lab CI closed (2026-10-15):** [run #38766556115](https://github.com/krukmat/logistica/actions/runs/38766556115) **103/103 Node PASS**, **34/34 predevice LAB_PASS**, isolated Linux and prehardware gate SUCCESS. [Full evidence](docs/audit/w1.10-b3-2026-10-15.md). Hardware powercut remains NOT_RUN; successful lab fsync is not a physical reliability certification.

@@ -86,6 +86,16 @@
     "failureCases": "synthetic ENOSPC, partial writes, zero writes, fsync EIO, quota reserve, checksum and tail corruption, pre/post rename hooks, schema migration",
     "guarantees": "Negative acknowledgments on failed durability; unsafe lockout; no automatic truncate; reopen/readback of ambiguous writes; explicit physical validation pending",
     "physicalPowerCutValidated": false,
-    "hostDiskExhausted": false
+    "hostDiskExhausted": false,
+    "ci": {
+      "url": "https://github.com/krukmat/logistica/actions/runs/38766556115",
+      "codeSha": "e1ede2f419173bd7ea7b0990eacb172f8ee4a860",
+      "status": "SOFTWARE_LAB_PASS",
+      "nodeTests": "103/103",
+      "conformance": "34/34",
+      "linuxIsolatedJob": "SUCCESS",
+      "prehardwareGate": "SUCCESS",
+      "hardwareValidated": false
+    }
   }
 }

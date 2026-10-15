@@ -52,7 +52,7 @@ The predevice dashboard matrix now contains **23 checks**, including six timing/
 
 **Validated scope:** [CI run #38736879970](https://github.com/krukmat/logistica/actions/runs/38736879970), 101 Node tests + 23 simulated predevice assertions, Linux lab and prehardware handoff PASS. [Audit](audit/w1.10-b2-2026-10-15.md) describes the truth boundary.
 
-## B3 — Storage failure rehearsal (software/lab, implementation pending CI)
+## B3 — Storage failure rehearsal (software/lab, CI VERIFIED 2026-10-15)
 
 `src/adapters/os-file-journal.js` now accepts a **trusted injected filesystem operations object** solely for deterministic tests. The production/default path remains the actual `node:fs`; operator HTTP cannot configure fault injection. `src/adapters/faultable-file-ops.js` creates ENOSPC/partial/zero-write and fsync-EIO failures on real ephemeral files; `src/runtime/storage-fault-conformance.js` runs all cases with the exact shared local-receipts Core. 11 new cases make **34 matrix checks**.
 
@@ -63,3 +63,5 @@ The predevice dashboard matrix now contains **23 checks**, including six timing/
 - **Metadata:** newly written records carry `recordSchemaVersion:1` while *legacy unversioned* records can still load. Successful compaction migrates retained records to the explicit schema; future versions are blocked. The on-disk `sha256` event checksum is **unchanged** to protect remote ACK/replay identity. Schema metadata itself is not cryptographically authenticated separately: this is a format compatibility guard, not a secure migration signature.
 
 **Device blockers:** real ENOSPC on chosen filesystem, remount/readonly behavior, directory fsync + power-cycle, flash wear, durable migration/rollback on hardware, tamper evidence, correct disk error reporting, and actual boot recovery have not been measured. `physicalPowerCutValidated:false` remains mandatory.
+
+**B3 evidence:** [GitHub Actions #38766556115](https://github.com/krukmat/logistica/actions/runs/38766556115) completed successfully: 103/103 Node regression, 34/34 predevice matrix checks, Linux netns/isolated workload job and third handoff gate successful. [Audit](audit/w1.10-b3-2026-10-15.md) · [machine contract](contracts/predevice-ports-v1.json).
