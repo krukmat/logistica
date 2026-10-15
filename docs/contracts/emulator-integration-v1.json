@@ -264,6 +264,22 @@
       "implementation": "src/runtime/predevice-conformance.js",
       "test": "test/predevice-conformance.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "W1.10.B1",
+      "mode": "lab",
+      "title": "Verified WAN route apply/readback/rollback with partial mutation and quarantine evidence",
+      "controlIds": [
+        "predevice-panel",
+        "predevice-conformance",
+        "predevice-evidence"
+      ],
+      "actions": [
+        "predeviceConformance"
+      ],
+      "implementation": "src/adapters/verified-route-ports.js",
+      "test": "test/verified-route-ports.test.js",
+      "hardwareValidated": false
     }
   ]
 }

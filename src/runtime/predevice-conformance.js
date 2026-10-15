@@ -5,6 +5,7 @@ const {createScriptedWanPorts}=require("../adapters/scripted-wan-ports.js");
 const {openEdgeService}=require("./edge-service.js");
 const {createLocalReceipts}=require("../core/local-receipts.js");
 const {openRuntimeBackend}=require("./backend-registry.js");
+const {runVerifiedRouteConformance}=require("./verified-route-conformance.js");
 const IDENTITY={siteId:"predevice-site",deviceId:"predevice-edge",configRevision:"lab-r1"};
 async function runPredeviceConformance({tmpParent=os.tmpdir()}={}){
  const checks=[];
@@ -82,6 +83,8 @@ async function runPredeviceConformance({tmpParent=os.tmpdir()}={}){
    record("PORT_DEVICE_BACKEND_BLOCKED",device.ok===false&&
      device.error==="BACKEND_NOT_IMPLEMENTED"&&device.capabilities.physical===true,
      {backend:device.kind,error:device.error});
+   for(const check of await runVerifiedRouteConformance())
+     record(check.id,check.pass,check.observed);
  }catch(e){
    record("PORT_CONFORMANCE_UNHANDLED",false,String(e.message||e));
  }finally{

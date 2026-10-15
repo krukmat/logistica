@@ -143,3 +143,7 @@ El emulador mantiene un botón de diagnóstico del Edge autónomo que invoca **e
 `npm run ports:conformance` or **Laboratorio integrado → Ejecutar matriz prehardware** runs 13 stable checks through the shared Product Core, faultable synthetic WAN ports and a temporary OS-file journal. It checks failover/failback, malformed probes, route rejection, offline receipt fsync, deduplication and journal reopen. Device remains `BACKEND_NOT_IMPLEMENTED`.
 
 [Contract](docs/contracts/predevice-ports-v1.json) · [architecture/limitations](docs/22-predevice-ports.md) · [task plan](docs/tasks/w1.10-predevice-emulation.md). LAB results do not certify NIC, powercut, watts, performance or physical hardware. Next: W1.10.B bounded ports/partial route recovery.
+
+### W1.10.B1 — Verified route adapter / partial-commit faults
+
+The same matrix now also injects **post-mutation** route failure, false reported success, failed rollback and explicit operator reconciliation (17 checks total). `src/adapters/verified-route-ports.js` verifies readback and rolls back where possible; when rollback fails it quarantines routing instead of asserting an incorrect Core selection. Simulated operator repair is a test fixture, **not** a physical repair path. Bounded operations/timeouts still pending W1.10.B2.

@@ -32,7 +32,11 @@
     "PORT_IDEMPOTENCY_AND_CONFLICT",
     "PORT_JOURNAL_REOPEN",
     "PORT_FALSE_FSYNC_ACK_REJECTED",
-    "PORT_DEVICE_BACKEND_BLOCKED"
+    "PORT_DEVICE_BACKEND_BLOCKED",
+    "PORT_PARTIAL_ROUTE_ROLLBACK",
+    "PORT_ROUTE_POSTCHECK_REJECTS_FALSE_SUCCESS",
+    "PORT_UNCERTAIN_ROUTE_QUARANTINE",
+    "PORT_EXPLICIT_ROUTE_RECONCILIATION"
   ],
   "physicalValidated": false,
   "deviceBackend": "BACKEND_NOT_IMPLEMENTED",
@@ -43,5 +47,7 @@
     "physical powercut storage",
     "secure boot PKI OTA watchdog",
     "measured CPU RAM energy thermals BOM"
-  ]
+  ],
+  "verifiedRoutePort": "src/adapters/verified-route-ports.js",
+  "routing": "Readback, compensation and quarantine simulated; hardware driver must provide authoritative kernel readback and atomicity/rollback evidence. Time-bounded routing pending."
 }

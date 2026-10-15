@@ -18,3 +18,9 @@ The same `src/core/edge-runtime.js` and actual OS-file journal are used in this 
 **Important limitation:** the mocked route adapter rejects before mutation. An actual Linux driver can fail *after* changing some OS state. The current Core does not provide route rollback; W1.10.B must design verification, compensation, retry deadline and consistency checks before connecting device NICs. Physical power-cut persistence, PKI, workload isolation, boot/OTA, thermals, wattage and unit economics remain `NOT_RUN`.
 
 Run `npm run ports:conformance` or from `npm run dashboard` → Laboratorio integrado → **Ejecutar matriz prehardware**. Evidence includes stable IDs, per-check observations, `physicalValidated:false` and `deviceBackend:BACKEND_NOT_IMPLEMENTED`.
+
+## B1: verified route transaction (2026-10-15)
+
+The port boundary `createVerifiedRoutePorts(raw)` requires `readRoute()` in addition to `probe` and `applyRoute`. It reads current route before mutation, applies the candidate and checks readback. Failure triggers compensation to previous route and verifies it; failed compensation enters **quarantine**, where all further route changes are rejected until explicit `reconcile(expectedRoute)` confirms the external state.
+
+This protects the **Core commit boundary**, but does not prove kernel route atomicity: the test uses synthetic ports, including a deliberately partially-mutated route. A Linux driver needs trustworthy readback and bounded commands. A process crash between partial mutation and rollback still needs boot reconciliation; deadlines, persistence, watchdog and real-device tests remain W1.10.B2/C.
