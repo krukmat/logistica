@@ -7,16 +7,20 @@ const fixture=require("../docs/contracts/hardware-shortlist-v1.json");
 test("C2 shortlist has explicit non-mixed currencies, incomplete BOM and evidence gaps",()=>{
  const r=evaluateShortlist();
  assert.equal(r.ok,true);assert.equal(r.candidates.length,3);
- assert.deepEqual(r.firstInvestigationCandidates,["nanopi-r5s-lts-4gb"]);
+ assert.deepEqual(r.firstInvestigationCandidates,["hp-t620-4gb-refurb","dell-wyse-5070-refurb-4gb"]);
  for(const item of r.candidates){
    assert.equal(item.cost.totalCost,null);
    assert.ok(item.cost.unknownRequiredComponents.length>0);
    assert.equal(item.hardwareValidated,false);
  }
- assert.equal(r.candidates[0].cost.knownSubtotal,143);
- assert.equal(r.candidates[0].cost.currency,"USD");
- assert.equal(r.candidates[1].cost.knownSubtotal,108.54);
- assert.equal(r.candidates[2].screening.ram,"DOCUMENTED_BELOW_MIN");
+ assert.equal(r.candidates[0].cost.knownSubtotal,24);
+ assert.equal(r.candidates[0].cost.currency,"EUR");
+ assert.equal(r.candidates[1].cost.knownSubtotal,54);
+ assert.equal(r.candidates[2].screening.ram,"BELOW_PREFERRED_HEADROOM");
+ assert.ok(r.candidates.every(x=>x.fullDualWanGatewayReady===false));
+ assert.ok(r.candidates.every(x=>x.cost.targetAllInEur===60));
+ assert.ok(r.candidates.every(x=>x.cost.budgetApproved===false));
+ assert.deepEqual(r.excludedHighCost.map(x=>x.status),Array(3).fill("EXCLUDED_HIGH_ENTRY_PRICE"));
  assert.equal(r.physicallyMeasured,false);
  assert.equal(fixture.hardAcceptance.allNotRun,true);
 });
@@ -24,7 +28,7 @@ test("C2 price mismatch, malformed candidate and forged pass do not grant hardwa
  const bad=structuredClone(fixture.candidates[0]);
  bad.billOfMaterials[0].currency="EUR";
  assert.throws(()=>evaluateCandidate(bad),/C2_MIXED_CURRENCY_BOM/);
- bad.billOfMaterials[0].currency="USD";bad.billOfMaterials[0].price=-1;
+ bad.billOfMaterials[0].currency="EUR";bad.billOfMaterials[0].price=-1;
  assert.throws(()=>evaluateCandidate(bad),/C2_INVALID_BOM/);
  assert.throws(()=>evaluateShortlist({candidates:[]}),/C2_CANDIDATE_SET_INVALID/);
  const p=evaluatePhysicalAcceptance({SIGNED_DEVICE_PROVENANCE:true,REAL_POWER_CUT_STORAGE:true});
@@ -48,6 +52,9 @@ test("C2 report retains DEVICE_BLOCKED and does not convert CI host results into
  assert.equal(r.status,"LAB_PASS_PHYSICAL_BLOCKED");
  assert.equal(r.physical.canEnableDevice,false);
  assert.equal(r.shortlist.deviceBackend,"BACKEND_NOT_IMPLEMENTED");
+ assert.equal(r.recommendedFirstPhysicalProbe,"hp-t620-4gb-refurb");
+ assert.equal(r.shortlist.profiles[0].id,"CORE_ONLY_EDGE_NODE");
+ assert.equal(r.shortlist.profiles[1].id,"FULL_DUAL_WAN_GATEWAY");
  assert.equal(r.recommendationStatus,"PROVISIONAL_NO_PROCUREMENT_APPROVAL");
  assert.equal(r.observation.deviceQualified,false);
 });

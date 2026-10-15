@@ -3,225 +3,241 @@
   "kind": "PEF_C2_HARDWARE_SHORTLIST_V1",
   "date": "2026-10-15",
   "intent": "PEF_LOCAL_LOGISTICS_RELIABLE_LOW_COST",
-  "currencyPolicy": "NEVER_MIX_USD_AND_EUR; NO FX ASSUMPTION",
+  "currencyPolicy": "EUR_ONLY_FOR_MVP_CANDIDATES",
   "thresholds": {
     "minRamMiB": 2048,
-    "minTotalEthernetPorts": 3,
-    "minBootStorageGiB": 16
+    "minTotalEthernetPorts": 1,
+    "minBootStorageGiB": 16,
+    "mode": "CORE_ONLY_EDGE_NODE_ATTACHED_TO_EXISTING_ROUTER",
+    "fullWanPlusLanPortsNeeded": 3,
+    "fullWanLabRequired": false,
+    "scopeNote": "Low-cost POC only; the dual-WAN gateway profile still requires separate physical qualifications."
   },
   "hardwareAcquired": false,
   "deviceReadiness": "DEVICE_BLOCKED",
   "productionApproved": false,
   "candidates": [
     {
-      "id": "nanopi-r5s-lts-4gb",
-      "name": "NanoPi R5S-LTS 4GB / 64GB eMMC",
-      "role": "PREFERRED_FIRST_PHYSICAL_VALIDATION_CANDIDATE",
+      "id": "hp-t620-4gb-refurb",
+      "name": "HP Thin Client T620 4GB/16GB reacondicionado",
+      "role": "LOWEST_KNOWN_ENTRY_COST_CORE_ONLY_PROBE",
       "specs": {
-        "arch": "arm64",
+        "arch": "x86_64",
         "ramMiB": 4096,
-        "ethernetNative": 3,
-        "ethernetBreakdown": "1x1GbE+2x2.5GbE",
+        "ethernetNative": 1,
+        "ethernetBreakdown": "1x Gigabit Ethernet; optional USB Ethernet required for routing roles",
         "bootStorage": {
-          "kind": "eMMC",
-          "capacityGiB": 64,
+          "kind": "flash",
+          "capacityGiB": 16,
           "included": true
         },
-        "expandableStorage": "M.2 NVMe",
-        "os": "Debian 13 Core (vendor image) / Linux 6.1",
+        "os": "Linux x86_64 (exact Node version not yet verified)",
         "physicalValidated": false
       },
       "priceReference": {
-        "amount": 128,
-        "currency": "USD",
-        "source": "https://www.friendlyelec.com/index.php?product_id=287&route=product/product",
-        "description": "Vendor listing (R5S-LTS, 4GB/64GB eMMC bare board), excludes EU duty/VAT/shipping, as viewed 2026-10-15"
+        "amount": 24,
+        "currency": "EUR",
+        "source": "https://amso.eu/es/products/ordenadores/tipo-de-caja-de-ordenador/ultra-small-form-factor-usff/terminal-hp-thin-client-t620-amd-gx-415ga-4x1-5ghz-4gb-ram-16gb-ssd-flash-wifi-fuente-de-alimentacion-275422",
+        "description": "24 EUR incl listed power supply, refurbished class A; EU/Spain shipping and exact stock unknown at 2026-10-15"
       },
       "billOfMaterials": [
         {
-          "component": "board+eMMC",
+          "component": "used_board_or_unit",
           "required": true,
-          "price": 128,
-          "currency": "USD",
-          "pricing": "VERIFIED_VENDOR_SNAPSHOT"
+          "price": 24,
+          "currency": "EUR",
+          "pricing": "RETAIL_LISTING_SNAPSHOT"
         },
         {
-          "component": "protective_case",
-          "required": true,
-          "price": 15,
-          "currency": "USD",
-          "pricing": "VERIFIED_VENDOR_OPTION"
-        },
-        {
-          "component": "certified_usb_c_pd_supply",
+          "component": "delivery_spain",
           "required": true,
           "price": null,
-          "currency": "USD",
-          "pricing": "QUOTE_REQUIRED"
+          "currency": "EUR",
+          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
         },
         {
-          "component": "ethernet_cables",
+          "component": "verified_cabling_or_reuse",
           "required": true,
           "price": null,
-          "currency": "USD",
-          "pricing": "QUOTE_REQUIRED"
+          "currency": "EUR",
+          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
         },
         {
-          "component": "import_freight_vat_and_customs",
+          "component": "durable_storage_replacement_budget",
           "required": true,
           "price": null,
-          "currency": "USD",
-          "pricing": "QUOTE_REQUIRED"
+          "currency": "EUR",
+          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
         },
         {
-          "component": "spare_medium_or_backup",
-          "required": true,
+          "component": "optional_usb_ethernet_for_routing",
+          "required": false,
           "price": null,
-          "currency": "USD",
-          "pricing": "QUOTE_REQUIRED"
+          "currency": "EUR",
+          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
+        },
+        {
+          "component": "optional_ups",
+          "required": false,
+          "price": null,
+          "currency": "EUR",
+          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
         }
       ],
       "openQuestions": [
-        "EU landed cost and distributor",
-        "Real kernel NIC/RTL8125 behavior under route fault",
-        "Node >=20 arm64 stability on chosen image",
-        "eMMC journal powercut endurance"
-      ]
+        "Very old AMD GX-415GA, test Node >=20, power idle, FS endurance and support lifetime",
+        "Refurb supplier variant/condition/stock/shipping",
+        "Only ONE Ethernet; full 2-WAN+LAN requires extra network ports and budget"
+      ],
+      "physicalValidated": false
     },
     {
-      "id": "raspberry-pi-4-4gb",
-      "name": "Raspberry Pi 4 Model B 4GB",
-      "role": "LINUX_COMPATIBILITY_BASELINE",
+      "id": "dell-wyse-5070-refurb-4gb",
+      "name": "Dell Wyse 5070 Pentium J5005 4GB/16GB reacondicionado",
+      "role": "FALLBACK_LOW_COST_X86_LAB_NODE",
       "specs": {
-        "arch": "arm64",
+        "arch": "x86_64",
         "ramMiB": 4096,
         "ethernetNative": 1,
-        "ethernetBreakdown": "1x1GbE; requires TWO USB Ethernet adapters for two WAN + LAN",
+        "ethernetBreakdown": "1x Gigabit Ethernet; optional USB NICs for routing",
+        "bootStorage": {
+          "kind": "eMMC",
+          "capacityGiB": 16,
+          "included": true
+        },
+        "os": "Linux x86_64 install unverified for variant",
+        "physicalValidated": false
+      },
+      "priceReference": {
+        "amount": 54,
+        "currency": "EUR",
+        "source": "https://www.ebay.es/itm/127819904422",
+        "description": "eBay seller listing from 54 EUR for variant; choose exact 4GB/16GB option; PSU, stock, shipping and warranty must be confirmed; 2026-10-15"
+      },
+      "billOfMaterials": [
+        {
+          "component": "used_board_or_unit",
+          "required": true,
+          "price": 54,
+          "currency": "EUR",
+          "pricing": "RETAIL_LISTING_SNAPSHOT"
+        },
+        {
+          "component": "power_supply_if_absent",
+          "required": true,
+          "price": null,
+          "currency": "EUR",
+          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
+        },
+        {
+          "component": "delivery_spain",
+          "required": true,
+          "price": null,
+          "currency": "EUR",
+          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
+        },
+        {
+          "component": "cabling_or_reuse",
+          "required": true,
+          "price": null,
+          "currency": "EUR",
+          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
+        },
+        {
+          "component": "optional_usb_ethernet_for_routing",
+          "required": false,
+          "price": null,
+          "currency": "EUR",
+          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
+        },
+        {
+          "component": "optional_ups",
+          "required": false,
+          "price": null,
+          "currency": "EUR",
+          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
+        }
+      ],
+      "openQuestions": [
+        "Buyer must select 4GB/16GB variant; 54 EUR starts at lowest configured price",
+        "PSU not confirmed included",
+        "Shipping and two additional NICs may exceed price cap; no gateway claim"
+      ],
+      "physicalValidated": false
+    },
+    {
+      "id": "orange-pi-r1-plus-lts-1gb",
+      "name": "Orange Pi R1 Plus LTS 1GB",
+      "role": "TWO_NATIVE_NIC_EXPERIMENT_AT_PRICE_CEILING",
+      "specs": {
+        "arch": "arm64",
+        "ramMiB": 1024,
+        "ethernetNative": 2,
+        "ethernetBreakdown": "2x Gigabit Ethernet; 3rd port for 2WAN+LAN requires USB or external VLAN equipment",
         "bootStorage": {
           "kind": "microSD",
           "capacityGiB": null,
           "included": false
         },
-        "expandableStorage": "USB3 SSD",
-        "os": "Raspberry Pi OS 64-bit or Debian-compatible",
+        "os": "Debian/OpenWrt/Armbian variant support and Node >=20 unverified",
         "physicalValidated": false
       },
       "priceReference": {
-        "amount": 108.54,
+        "amount": 59,
         "currency": "EUR",
-        "source": "https://www.raspipc.es/index.php?accion=verArticulo&idProducto=1752&src=raspberrypi&ver=tienda",
-        "description": "Vendor 4GB board tax-inclusive listed price; shipping and accessories extra as viewed 2026-10-15"
+        "source": "https://es.findthedeal.org/p/B0F6S2Z77C/",
+        "description": "59 EUR secondary listing referring to Amazon; live checkout, delivery and actual model availability unverified; 2026-10-15"
       },
       "billOfMaterials": [
         {
-          "component": "board",
+          "component": "used_board_or_unit",
           "required": true,
-          "price": 108.54,
+          "price": 59,
           "currency": "EUR",
-          "pricing": "VERIFIED_LOCAL_VENDOR_SNAPSHOT"
+          "pricing": "RETAIL_LISTING_SNAPSHOT"
         },
         {
-          "component": "two_usb3_ethernet_adapters",
+          "component": "micro_sd_durable_storage",
           "required": true,
           "price": null,
           "currency": "EUR",
-          "pricing": "QUOTE_REQUIRED"
+          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
         },
         {
-          "component": "reliable_storage_medium",
+          "component": "power_supply",
           "required": true,
           "price": null,
           "currency": "EUR",
-          "pricing": "QUOTE_REQUIRED"
+          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
         },
         {
-          "component": "power_supply_5v3a",
+          "component": "delivery_spain",
           "required": true,
           "price": null,
           "currency": "EUR",
-          "pricing": "QUOTE_REQUIRED"
+          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
         },
         {
-          "component": "case_thermal",
+          "component": "case_or_safe_mount",
           "required": true,
           "price": null,
           "currency": "EUR",
-          "pricing": "QUOTE_REQUIRED"
+          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
         },
         {
-          "component": "shipping_and_cables",
-          "required": true,
+          "component": "optional_third_nic_for_gateway",
+          "required": false,
           "price": null,
           "currency": "EUR",
-          "pricing": "QUOTE_REQUIRED"
+          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
         }
       ],
       "openQuestions": [
-        "USB NIC identity/rename stable on reboot",
-        "microSD endurance vs USB3 SSD",
-        "Extra NIC/cables push true BOM beyond board price"
-      ]
-    },
-    {
-      "id": "gl-mt3000",
-      "name": "GL.iNet GL-MT3000 Beryl AX",
-      "role": "ROUTER_COMPANION_OR_EXPERIMENTAL_MINIMAL_NODE",
-      "specs": {
-        "arch": "arm64",
-        "ramMiB": 512,
-        "ethernetNative": 2,
-        "ethernetBreakdown": "1x2.5GbE WAN + 1xGbE LAN",
-        "bootStorage": {
-          "kind": "NAND",
-          "capacityGiB": 0.25,
-          "included": true
-        },
-        "expandableStorage": "USB3 external",
-        "os": "OpenWrt (vendor firmware); Node and durable P1 feasibility unverified",
-        "physicalValidated": false
-      },
-      "priceReference": {
-        "amount": 101.99,
-        "currency": "EUR",
-        "source": "https://store-eu.gl-inet.com/collections/new-year-deals",
-        "description": "GL.iNet EU store listing snapshot, additional storage, delivery and tax details to confirm"
-      },
-      "billOfMaterials": [
-        {
-          "component": "router",
-          "required": true,
-          "price": 101.99,
-          "currency": "EUR",
-          "pricing": "VERIFIED_EU_STORE_SNAPSHOT"
-        },
-        {
-          "component": "external_storage",
-          "required": true,
-          "price": null,
-          "currency": "EUR",
-          "pricing": "QUOTE_REQUIRED"
-        },
-        {
-          "component": "additional_ethernet_or_approved_external_edge_host",
-          "required": true,
-          "price": null,
-          "currency": "EUR",
-          "pricing": "QUOTE_REQUIRED"
-        },
-        {
-          "component": "shipping_and_power_verification",
-          "required": true,
-          "price": null,
-          "currency": "EUR",
-          "pricing": "QUOTE_REQUIRED"
-        }
+        "1GB below preferred 2GB runtime headroom; may fail supervised workloads",
+        "Need microSD/power/case; completed unit likely exceeds 60 EUR",
+        "2 native Ethernet not 3; missing 2WAN+LAN third port"
       ],
-      "openQuestions": [
-        "512MB RAM below current 2GiB screening threshold",
-        "Node package/runtime support on OpenWrt not established",
-        "Single USB3 port shared by external storage/network expansion",
-        "Only two physical Ethernet ports"
-      ]
+      "physicalValidated": false
     }
   ],
   "hardAcceptance": {
@@ -239,5 +255,57 @@
     ],
     "allNotRun": true,
     "physicalGoAllowed": false
-  }
+  },
+  "costPriority": "STRICT_LOW_COST_MVP_FIRST",
+  "budget": {
+    "currency": "EUR",
+    "targetCompletePoCEur": 60,
+    "maxReferenceDeviceEur": 60,
+    "status": "OWNER_PRIORITY_LOW_COST; TARGET_PROVISIONAL_POC_NOT_COMMITTED_MARKET_QUOTE",
+    "targetMode": "EDGE_NODE_BEHIND_EXISTING_LAN_ROUTER",
+    "excludedFromTarget": "UPS/optional second and third NICs, labor/service, supplier VAT/shipping are still tracked as unknowns; full routing not claimed",
+    "procurementApproved": false
+  },
+  "profiles": [
+    {
+      "id": "CORE_ONLY_EDGE_NODE",
+      "neededEthernetPorts": 1,
+      "portOwnership": "NO_ROUTE/NAT/FIREWALL_CONTROL_OF_EXISTING_ROUTER",
+      "targetAllInEuro": 60,
+      "limits": "Local-first receipt/journal/process/Cloud deferred sync, no physical WAN failover certified"
+    },
+    {
+      "id": "FULL_DUAL_WAN_GATEWAY",
+      "neededEthernetPorts": 3,
+      "portOwnership": "PHYSICAL_WAN_1_WAN_2_LAN",
+      "targetAllInEuro": null,
+      "limits": "BLOCKED until explicit separate cost and interface evidence; not silently downgraded"
+    }
+  ],
+  "oldHighCostOptions": [
+    {
+      "id": "nanopi-r5s-lts-4gb",
+      "formerPriceReference": {
+        "amount": 128,
+        "currency": "USD"
+      },
+      "status": "EXCLUDED_HIGH_ENTRY_PRICE"
+    },
+    {
+      "id": "raspberry-pi-4-4gb",
+      "formerPriceReference": {
+        "amount": 108.54,
+        "currency": "EUR"
+      },
+      "status": "EXCLUDED_HIGH_ENTRY_PRICE"
+    },
+    {
+      "id": "gl-mt3000",
+      "formerPriceReference": {
+        "amount": 101.99,
+        "currency": "EUR"
+      },
+      "status": "EXCLUDED_HIGH_ENTRY_PRICE"
+    }
+  ]
 }

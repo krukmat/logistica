@@ -9,7 +9,7 @@ function runCandidateScreening({tmpParent,samples=8}={}){
  return {kind:"PEF_C2_HARDWARE_SCREENING_REPORT_V1",
    status:success?"LAB_PASS_PHYSICAL_BLOCKED":"LAB_FAIL",
    ok:success,shortlist,observation,physical,
-   recommendedFirstPhysicalProbe:"nanopi-r5s-lts-4gb",
+   recommendedFirstPhysicalProbe:"hp-t620-4gb-refurb",
    recommendationStatus:"PROVISIONAL_NO_PROCUREMENT_APPROVAL",
    approval:"NO_DEVICE_GO",hardwareAcquired:false,hostRoutesChanged:false,
    physicalValidated:false};

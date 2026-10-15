@@ -2,24 +2,25 @@
 
 **Status:** **SCREENING / SOFTWARE_LAB_ONLY**. No board acquired or installed. Machine-readable [hardware-shortlist-v1.json](contracts/hardware-shortlist-v1.json) · [C1 safety contract](24-device-integration.md) · [W1.8 hard gates](11-architecture-shootout.md).
 
-## Business constraint and selection logic
+## Cheap-first correction — 2026-10-15
 
-Prioritize a low-cost, locally reliable logistics/property/host Edge node carrying the **same Product Core**. At least two WAN links plus one site LAN should work without exotic dependencies. Initial **screening** threshold is 2GiB RAM / three usable Ethernet connections / 16GiB boot medium, subject to later W1.8 measured revision; these are C2 *screening heuristics*, not certified specifications or product standards.
+**Owner priority:** inexpensive **complete MVP device**, not an expensive router development board. We now use a **provisional target of ≤60 EUR all-in for the Core-only POC** as a screening constraint. It is **not a validated total cost**, not a guaranteed quote and not a user-authorized purchase. Do not increase this target silently to accommodate a favorite board; disclose over-budget alternatives as rejected/deferred.
 
-| Candidate | Vendor-proven technical fit | Example source board price (2026-10-15) | Provisional role |
-|---|---|---|---|
-| **NanoPi R5S-LTS 4GB/64GB eMMC** | RK3568B2 arm64 quad A55, 1x GbE + 2x 2.5GbE, eMMC, NVMe M.2, Debian 13 Core image | **USD 128** bare board, plus USD 15 case; EU duty/VAT/delivery/PSU missing | **First physical investigation** |
-| **Raspberry Pi 4 Model B 4GB** | Broadcom BCM2711 arm64, native Gigabit Ethernet, USB3; requires 2 extra USB NICs for 2WAN+LAN, storage/power/case | **EUR 108.54** incl local seller VAT for board; extras and delivery missing | Compatibility fallback |
-| **GL.iNet GL-MT3000 Beryl AX** | MT7981 dual-core, 512MB RAM, 256MB NAND, 1x2.5GbE WAN and 1xGigabit LAN, USB3, OpenWrt | **EUR 101.99** EU online store listing; external storage and third port/compute missing | Router companion or experimental split architecture only |
+**Architecture trade-off:** the minimum POC is a **LAN-attached local logistics Edge** behind an existing site router. One Gigabit NIC is sufficient for this phase's physical P1 receipt/journal/restart/powercut experiments. It does **not** claim control of two WANs, NAT/firewall or three independent Ethernet interfaces. Keep dual-WAN networking in the shared Product Core and the emulator; the separate `FULL_DUAL_WAN_GATEWAY` profile remains **BLOCKED** until real 3-port hardware and its price are proven. This **narrows the first physical test**, not the Product requirement.
 
-**Verifiable primary sources:**
-- NanoPi R5S-LTS [manufacturer specifications and purchase options](https://www.friendlyelec.com/index.php?product_id=287&route=product/product); [board/OS wiki](https://wiki.friendlyelec.com/wiki/index.php/NanoPi_R5S). **Seller explicitly indicates buyer may owe import duty**. The quote is in USD, **not converted** to EUR.
-- Raspberry Pi 4 [official technical specifications](https://www.raspberrypi.com/products/raspberry-pi-4-model-b/specifications/) and [4GB Spanish price listing](https://www.raspipc.es/index.php?accion=verArticulo&idProducto=1752&src=raspberrypi&ver=tienda).
-- GL-MT3000 [manufacturer specification](https://www.gl-inet.com/es/products/gl-mt3000) and [EU store listing](https://store-eu.gl-inet.com/collections/new-year-deals); [OpenWrt platform entry](https://openwrt.org/toh/hwdata/gl.inet/gl.inet_gl-mt3000).
+| Low-entry candidate | Listed price in EUR (not BOM) | Network/RAM/storage | Qualification for cheap POC |
+|---|---:|---|---|
+| **HP T620 refurbished** | **24 €** (incl. PSU according to seller) | 4GB RAM, 16GB flash, 1x Gigabit; Linux x86_64 to verify | **First low-cost POC investigation**, used/EOL |
+| **Dell Wyse 5070 refurbished** | **54 € from seller variant** | 4GB/16GB selected configuration, 1x Gigabit; PSU unconfirmed | Backup; shipping/PSU may break 60 € cap |
+| **Orange Pi R1 Plus LTS 1GB** | **59 € secondary listing** | 1GB RAM, 2x Gigabit, microSD and PSU extra | Router experiment only; low RAM and all-in budget likely fail |
 
-**Price semantics:** these are dated per-product snapshot references, not quotes or EU landed BOM/TCO. Requirements for a complete quote: board, PSU, enclosure/cooling, durable storage and spare, enough Ethernet adapters/cables, customs/VAT/shipping, optional UPS, deployment labor, power, maintenance and possible replacement. The executable comparator rejects mixed currencies and returns `totalCost:null` while anything required remains unpriced. Do not assert R5S cheapest: its EU import and eMMC endurance remain uncertain.
+References, **not guaranteed stock or landed cost:** [HP T620 24 EUR incl. supply, refurbished](https://amso.eu/es/products/ordenadores/tipo-de-caja-de-ordenador/ultra-small-form-factor-usff/terminal-hp-thin-client-t620-amd-gx-415ga-4x1-5ghz-4gb-ram-16gb-ssd-flash-wifi-fuente-de-alimentacion-275422) (delivery Spain must be confirmed), [Dell Wyse 5070 listing from 54 EUR](https://www.ebay.es/itm/127819904422) (seller variants, shipping and PSU unknown), [Orange Pi R1 Plus LTS 59 EUR secondary listing](https://es.findthedeal.org/p/B0F6S2Z77C/) (confirm direct seller checkout). Values are seller snapshot references observed 2026-10-15; no currency conversion.
 
-**First candidate rationale:** R5S has three Ethernet ports as shipped and a usable 64GiB eMMC option and M.2 path. Pi 4 is more mainstream for Linux experimentation but the three-link topology introduces USB NIC complexity. MT3000 has attractive integrated networking, but 512MB/256MB and the USB port limit prevent a robust all-in-one Core assumption without profiling; it may suit a separate routing front-end. No design/OS/platform selection is binding.
+**Excluded from C2 MVP selection:** NanoPi R5S-LTS (128 USD board only), Raspberry Pi 4 4GB (108.54 EUR board only), GL-MT3000 (101.99 EUR router). They may be useful later for the separately priced **full dual-WAN device**, but **are not financially justified as a first local-logistics POC**.
+
+**All-in budget enforcement:** each candidate lists required but still unpriced items. HP T620 leaves **36 EUR** of the *provisional* 60 EUR budget to cover delivery Spain, cables and storage contingency; it is not a 60 EUR confirmed build. Dell leaves only **6 EUR**, so likely fails once confirmed shipping/PSU is added. Orange Pi leaves **1 EUR** before power/storage and is unlikely to fit. No recommendation can be approved until checkout and complete landed quote; verify stock, PSU and correct unit variant. Electricity (external wattmeter), reliability, SSD/flash endurance, and lifetime support remain unmeasured. Low upfront cost is not proven low total ownership cost.
+
+**Technical risk:** the HP T620 is older, so verify Linux kernel drivers, Node ≥20 x86_64 support, actual fsync and real power interruption before any production inference. Protect the 16GB medium: the journal workload can exhaust it. External USB NICs may be added as experiments, but their price and Linux behavior must be validated and must not silently turn a 1-port local node into a claimed dual-WAN gateway.
 
 ## Executable C2 screening (no root, no hardware effects)
 
@@ -31,7 +32,7 @@ npm run dashboard
 # Laboratorio integrado → Evaluar candidatos y observaciones
 ```
 
-`src/runtime/hardware-screening.js` reads only documented specs and the BOM fixture, producing `PEF_HARDWARE_SHORTLIST_ASSESSMENT_V1`. `src/runtime/device-observation.js` observes **the host that executes Node**: CPU count, installed memory, process RSS and 8 temporary local-receipt append+fsync durations with reopen. It does not touch network routes, SPI/UART, block device partitions or privileged OS controls; temp data are removed. Results carry `scope=LOCAL_DEVELOPMENT_HOST` on the Mac or `EPHEMERAL_CI_RUNNER` in Actions. **Neither is an R5S/Pi/MT3000 measurement**. In particular wall timing is not calibrated latency, and `networkThroughputMbps`, `boardIdleWatts`, `thermalDegreesC` and `actualPowerCutRecovered` are all explicitly `null`.
+`src/runtime/hardware-screening.js` reads only documented specs and the BOM fixture, producing `PEF_HARDWARE_SHORTLIST_ASSESSMENT_V1`. `src/runtime/device-observation.js` observes **the host that executes Node**: CPU count, installed memory, process RSS and 8 temporary local-receipt append+fsync durations with reopen. It does not touch network routes, SPI/UART, block device partitions or privileged OS controls; temp data are removed. Results carry `scope=LOCAL_DEVELOPMENT_HOST` on the Mac or `EPHEMERAL_CI_RUNNER` in Actions. **Neither is an HP/Dell/Orange Pi device measurement**. In particular wall timing is not calibrated latency, and `networkThroughputMbps`, `boardIdleWatts`, `thermalDegreesC` and `actualPowerCutRecovered` are all explicitly `null`.
 
 The [C2 test file](../test/device-candidate-screen.test.js) rejects mixed-currency BOMs, fabricated completion and forged hardware acceptance claims, verifies no false watts, and prevents physical backend promotion. `PEF_C2_PHYSICAL_ACCEPTANCE_V1` remains `NOT_RUN` until a completely separate trusted pipeline exists.
 
