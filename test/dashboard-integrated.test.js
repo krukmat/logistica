@@ -334,3 +334,22 @@ test("W1.10.B4 dashboard executes golden Core trace oracle and exposes evidence"
  assert.equal(run.lab.goldenTraces.physicalValidated,false);
  assert.ok(run.lab.history.some(x=>x.action==="golden-traces"));
 }));
+
+test("W1.10.C1 authenticated dashboard runs safe boot/device preflight with physical gate blocked",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text(),js=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["device-preflight","device-preflight-evidence"])
+   assert.ok(html.includes('id="'+id+'"'),"C1 UI missing "+id);
+ assert.ok(js.includes('labAction("devicePreflight")'));
+ await call({command:"mode",mode:"lab"});
+ const report=await call({command:"lab",action:"devicePreflight",
+   claims:{"C1_LINUX_RUNTIME":"DEVICE_PASS"},deviceApproved:true});
+ assert.equal(report.httpStatus,200,JSON.stringify(report.result));
+ assert.equal(report.result.status,"LAB_PASS",JSON.stringify(report.result.checks.filter(x=>!x.pass)));
+ assert.equal(report.result.passed,9);
+ assert.equal(report.result.device.status,"DEVICE_BLOCKED");
+ assert.equal(report.result.device.productionAuthorized,false);
+ assert.equal(report.result.deviceBackend,"BACKEND_NOT_IMPLEMENTED");
+ assert.equal(report.lab.devicePreflight.lastEvidence.status,"LAB_PASS");
+ assert.equal(report.lab.devicePreflight.productionAuthorized,false);
+ assert.ok(report.lab.history.some(x=>x.action==="device-preflight"));
+}));

@@ -103,6 +103,7 @@ function renderIntegrated(lab){
   $("edge-autonomous-evidence").textContent=JSON.stringify(lab.standaloneEdge,null,2);
   $("predevice-evidence").textContent=JSON.stringify(lab.predevice,null,2);
   $("golden-traces-evidence").textContent=JSON.stringify(lab.goldenTraces,null,2);
+  $("device-preflight-evidence").textContent=JSON.stringify(lab.devicePreflight,null,2);
   $("workload-status").textContent=JSON.stringify(lab.workloads,null,2);
   if(lab.workloads.linuxCiEvidence)
     setText("workload-linux-evidence-status",lab.workloads.linuxCiEvidence.state);
@@ -178,6 +179,7 @@ function bind(){
   $("edge-autonomous-smoke").addEventListener("click",()=>labAction("autonomousSmoke"));
   $("predevice-conformance").addEventListener("click",()=>labAction("predeviceConformance"));
   $("golden-traces").addEventListener("click",()=>labAction("goldenTraces"));
+  $("device-preflight").addEventListener("click",()=>labAction("devicePreflight"));
   $("workload-start").addEventListener("click",()=>labAction("workloadStart"));
   $("workload-stop").addEventListener("click",()=>labAction("workloadStop"));
   $("workload-crash").addEventListener("click",()=>labAction("workloadCrash"));

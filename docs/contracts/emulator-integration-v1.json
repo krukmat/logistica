@@ -327,6 +327,21 @@
       "implementation": "src/runtime/golden-traces.js",
       "test": "test/golden-traces.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "W1.10.C1",
+      "mode": "lab",
+      "title": "Read-only Linux device integration prerequisites and simulated fail-closed boot intent rehearsal",
+      "controlIds": [
+        "device-preflight",
+        "device-preflight-evidence"
+      ],
+      "actions": [
+        "devicePreflight"
+      ],
+      "implementation": "src/runtime/device-integration-rehearsal.js",
+      "test": "test/device-integration-rehearsal.test.js",
+      "hardwareValidated": false
     }
   ]
 }
