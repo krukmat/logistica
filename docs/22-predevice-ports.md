@@ -25,7 +25,7 @@ The port boundary `createVerifiedRoutePorts(raw)` requires `readRoute()` in addi
 
 This protects the **Core commit boundary**, but does not prove kernel route atomicity: the test uses synthetic ports, including a deliberately partially-mutated route. A Linux driver needs trustworthy readback and bounded commands. A process crash between partial mutation and rollback still needs boot reconciliation; deadlines, persistence, watchdog and real-device tests remain W1.10.B2/C.
 
-## B2 — Bounded WAN adapter and boot gate
+## B2 — Bounded WAN adapter and boot gate · CI VERIFIED 2026-10-15
 
 `createBoundedWanPorts(raw,{probeTimeoutMs,routeTimeoutMs,reconcileTimeoutMs})` is **new adapter composition**, reusing the existing verified route adapter and Product `ConnectivityController`. The raw driver receives an advisory `AbortSignal` for probes, route apply, and readback. The wrapper enforces a timer-based deadline for each operation. A rejected/late probe does not advance Core clock nor change routes. A timed-out route **always** quarantines further writes, even if the underlying asynchronous operation later reports success.
 
@@ -49,3 +49,5 @@ sequenceDiagram
 **Bootstrap is fail-closed:** on every newly created bounded adapter, routing remains blocked until `reconcile(expectedRoute)` compares external readback with a *trusted* expected route (the lab passes this explicitly). Do not derive that expectation from a public HTTP parameter in production. A boot validator must obtain the expected state from durable, trusted local metadata. Neither the synthetic fixture nor JavaScript `AbortSignal` terminates Linux subprocesses, nor prevents commands started before a process restart from modifying OS state afterward. Real driver must fence orphan commands, handle readback timeouts and prove durable boot recovery independently.
 
 The predevice dashboard matrix now contains **23 checks**, including six timing/fencing simulations. Timeout values (15ms) are **test fixtures**, not deployment recommendations. No real hardware, Linux route operations on host, physical power-cut or device certification.
+
+**Validated scope:** [CI run #38736879970](https://github.com/krukmat/logistica/actions/runs/38736879970), 101 Node tests + 23 simulated predevice assertions, Linux lab and prehardware handoff PASS. [Audit](audit/w1.10-b2-2026-10-15.md) describes the truth boundary.
