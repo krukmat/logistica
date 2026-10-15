@@ -13,7 +13,8 @@
     "lab:loopback": "node bin/pef-loopback-lab.js",
     "dashboard": "node bin/pef-dashboard.js",
     "edge": "node bin/pef-edge.js",
-    "ports:conformance": "node bin/pef-port-conformance.js"
+    "ports:conformance": "node bin/pef-port-conformance.js",
+    "traces:check": "node bin/pef-golden-traces.js"
   },
   "license": "UNLICENSED"
 }

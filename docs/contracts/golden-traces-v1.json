@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "kind": "PEF_GOLDEN_TRACES_V1",
+  "scope": "PINNED_SOFTWARE_BEHAVIOR_ONLY",
+  "scenarios": [
+    {
+      "id": "wan-failover-recovery",
+      "trace": [
+        {
+          "step": "primary",
+          "clock": 1,
+          "selectedWan": "primary",
+          "connectivity": "MULTI_WAN_HEALTHY",
+          "route": "primary",
+          "pending": 1,
+          "fsync": true
+        },
+        {
+          "step": "backup",
+          "clock": 2,
+          "selectedWan": "backup",
+          "connectivity": "CONNECTED",
+          "route": "backup",
+          "pending": 2,
+          "fsync": true
+        },
+        {
+          "step": "offline",
+          "clock": 3,
+          "selectedWan": null,
+          "connectivity": "LOCAL_ONLY",
+          "route": null,
+          "pending": 3,
+          "fsync": true
+        },
+        {
+          "step": "restore-primary",
+          "clock": 4,
+          "selectedWan": "primary",
+          "connectivity": "CONNECTED",
+          "route": "primary",
+          "pending": 4,
+          "fsync": true
+        },
+        {
+          "step": "restore-backup",
+          "clock": 5,
+          "selectedWan": "primary",
+          "connectivity": "MULTI_WAN_HEALTHY",
+          "route": "primary",
+          "pending": 5,
+          "fsync": true
+        }
+      ]
+    },
+    {
+      "id": "offline-receipt-replay",
+      "trace": [
+        {
+          "step": "offline",
+          "clock": 1,
+          "selectedWan": null,
+          "connectivity": "LOCAL_ONLY",
+          "pending": 1
+        },
+        {
+          "step": "receive",
+          "accepted": true,
+          "duplicate": false,
+          "fsync": true,
+          "pending": 2
+        },
+        {
+          "step": "duplicate",
+          "accepted": true,
+          "duplicate": true,
+          "pending": 2
+        },
+        {
+          "step": "conflict",
+          "accepted": false,
+          "error": "EVENT_ID_CONFLICT",
+          "pending": 2
+        },
+        {
+          "step": "reopen",
+          "retained": 1,
+          "pending": 2,
+          "unsafe": false
+        },
+        {
+          "step": "sync",
+          "status": "SYNC_OK",
+          "acked": 2,
+          "pending": 0,
+          "remote": 2
+        }
+      ]
+    },
+    {
+      "id": "verified-route-recovery",
+      "trace": [
+        {
+          "step": "baseline",
+          "clock": 1,
+          "selectedWan": "primary",
+          "route": "primary",
+          "quarantined": false
+        },
+        {
+          "step": "partial",
+          "clock": 1,
+          "selectedWan": "primary",
+          "route": "backup",
+          "quarantined": true,
+          "error": "ROUTE_UNCERTAIN_RECONCILIATION_REQUIRED"
+        },
+        {
+          "step": "blocked",
+          "clock": 1,
+          "selectedWan": "primary",
+          "route": "backup",
+          "quarantined": true,
+          "error": "ROUTE_RECONCILIATION_REQUIRED"
+        },
+        {
+          "step": "reconciled",
+          "clock": 1,
+          "selectedWan": "primary",
+          "route": "primary",
+          "quarantined": false,
+          "ok": true
+        },
+        {
+          "step": "recovered",
+          "clock": 2,
+          "selectedWan": "backup",
+          "route": "backup",
+          "quarantined": false
+        }
+      ]
+    },
+    {
+      "id": "fsync-ambiguity",
+      "trace": [
+        {
+          "step": "fsync-error",
+          "accepted": false,
+          "error": "STORAGE_UNSAFE",
+          "unsafe": true
+        },
+        {
+          "step": "reopen",
+          "retained": 1,
+          "pending": 1,
+          "unsafe": false
+        },
+        {
+          "step": "duplicate",
+          "accepted": true,
+          "duplicate": true,
+          "pending": 1
+        },
+        {
+          "step": "conflict",
+          "accepted": false,
+          "error": "EVENT_ID_CONFLICT",
+          "pending": 1
+        }
+      ]
+    }
+  ],
+  "physicalValidated": false,
+  "metricsNormative": false
+}

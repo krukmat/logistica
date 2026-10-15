@@ -43,6 +43,15 @@ jobs:
           name: pef-predevice-ports
           path: ${{ runner.temp }}/pef-predevice-ports.json
           if-no-files-found: warn
+      - name: Canonical Core golden traces on Linux runner
+        run: npm run traces:check -- --output "$RUNNER_TEMP/pef-golden-traces-linux.json"
+      - name: Upload golden trace evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pef-golden-traces-linux
+          path: ${{ runner.temp }}/pef-golden-traces-linux.json
+          if-no-files-found: warn
       - name: Deterministic scenarios
         run: npm run emulate
       - name: Loopback connectivity lab
