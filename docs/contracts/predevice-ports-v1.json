@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "kind": "PEF_PREDEVICE_PORTS_CONTRACT_V1",
+  "scope": "SOFTWARE_REHEARSAL_ONLY",
+  "core": "src/core/edge-runtime.js",
+  "ports": {
+    "probe": {
+      "signature": "async probe(wanId) -> {link:boolean,upstream:boolean,reason?:string}",
+      "failure": "invalid probe -> fail closed, do not write route"
+    },
+    "applyRoute": {
+      "signature": "async applyRoute(selectedWan|'null') -> void",
+      "failure": "throw before mutation; actual OS partial changes not covered and must be compensated by physical driver"
+    },
+    "journal": {
+      "signature": "append/retained/pending/cloudAck/compact/status",
+      "durability": "positive acceptance requires fsyncCompleted or genuine durable duplicate"
+    }
+  },
+  "fixture": "src/adapters/scripted-wan-ports.js",
+  "runner": "src/runtime/predevice-conformance.js",
+  "assertions": [
+    "PORT_PROBE_PRIMARY",
+    "PORT_FAILOVER_TO_BACKUP",
+    "PORT_BOTH_DOWN_LOCAL_ONLY",
+    "PORT_MALFORMED_PROBE_FAIL_CLOSED",
+    "PORT_ROUTE_FAILURE_FAIL_CLOSED",
+    "PORT_ROUTE_RECOVERY",
+    "PORT_RECOVERY_BACKUP",
+    "PORT_FAILBACK_HYSTERESIS",
+    "PORT_OFFLINE_RECEIPT_FSYNC",
+    "PORT_IDEMPOTENCY_AND_CONFLICT",
+    "PORT_JOURNAL_REOPEN",
+    "PORT_FALSE_FSYNC_ACK_REJECTED",
+    "PORT_DEVICE_BACKEND_BLOCKED"
+  ],
+  "physicalValidated": false,
+  "deviceBackend": "BACKEND_NOT_IMPLEMENTED",
+  "hardwareGaps": [
+    "bounded port timeouts and cancellation",
+    "partial route apply compensation",
+    "NIC and radio hardware",
+    "physical powercut storage",
+    "secure boot PKI OTA watchdog",
+    "measured CPU RAM energy thermals BOM"
+  ]
+}

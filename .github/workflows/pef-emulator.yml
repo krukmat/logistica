@@ -34,6 +34,15 @@ jobs:
         run: node --check public/dashboard.js
       - name: Node regression suite
         run: npm test
+      - name: Pre-device port contract rehearsal
+        run: npm run ports:conformance -- --output "$RUNNER_TEMP/pef-predevice-ports.json"
+      - name: Upload predevice evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pef-predevice-ports
+          path: ${{ runner.temp }}/pef-predevice-ports.json
+          if-no-files-found: warn
       - name: Deterministic scenarios
         run: npm run emulate
       - name: Loopback connectivity lab

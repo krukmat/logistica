@@ -248,6 +248,22 @@
       "implementation": "src/runtime/autonomous-edge.js",
       "test": "test/dashboard-integrated.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "W1.10.A",
+      "mode": "lab",
+      "title": "Real Core port conformance with synthetic hardware errors",
+      "controlIds": [
+        "predevice-panel",
+        "predevice-conformance",
+        "predevice-evidence"
+      ],
+      "actions": [
+        "predeviceConformance"
+      ],
+      "implementation": "src/runtime/predevice-conformance.js",
+      "test": "test/predevice-conformance.test.js",
+      "hardwareValidated": false
     }
   ]
 }

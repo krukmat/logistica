@@ -12,6 +12,7 @@ const {createWorkloadSupervisor}=require("../core/workload-supervisor.js");
 const {createNodeProcessDriver}=require("../adapters/node-process-driver.js");
 const {demoManifest}=require("../runtime/demo-workload.js");
 const {runStandaloneEdgeSmoke}=require("./lab/autonomous-smoke.js");
+const {runPredeviceConformance}=require("../runtime/predevice-conformance.js");
 const CAPABILITIES=Object.freeze([
   "wan-probes","local-routing-model","os-file-fsync","journal-pressure",
   "journal-compaction","durable-ack-replay","identity-revision","boot-session",
@@ -19,12 +20,13 @@ const CAPABILITIES=Object.freeze([
   "lab-identity-bootstrap","bounded-deadline","bounded-retry","lab-ack-proof","protocol-v1",
   "local-logistics-receipts","offline-workload-replay",
   "workload-admission","node-worker-process","bounded-supervisor","ipc-health","offline-worker-receipts",
-  "ci-linux-supervised-worker","autonomous-edge-host","boot-reopen-without-dashboard"
+  "ci-linux-supervised-worker","autonomous-edge-host","boot-reopen-without-dashboard",
+  "predevice-port-conformance"
 ]);
 const IDENTITY=Object.freeze({siteId:"demo-site",deviceId:"demo-edge",configRevision:"cfg-demo-1"});
 function createDashboardLab({tmpParent=os.tmpdir()}={}){
   let dir=null,edge=null,cloud=null,history=[],route=null,revision=0,closed=false,busy=false;
-  let cloudAvailable=true,profile="normal",lastResult=null,wan=null,boot=null,supervisor=null,autonomousEvidence=null;
+  let cloudAvailable=true,profile="normal",lastResult=null,wan=null,boot=null,supervisor=null,autonomousEvidence=null,predeviceEvidence=null;
   function guard(){if(closed)throw Error("LAB_CLOSED");}
   function start(next="normal"){
     if(!["normal","pressure"].includes(next))throw Error("UNSUPPORTED_LAB_PROFILE");
@@ -32,7 +34,7 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
     if(edge)edge.close();
     if(dir)fs.rmSync(dir,{recursive:true,force:true});
     dir=fs.mkdtempSync(path.join(tmpParent,"pef-visual-lab-"));
-    profile=next;history=[];lastResult=null;route=null;revision=0;cloudAvailable=true;autonomousEvidence=null;
+    profile=next;history=[];lastResult=null;route=null;revision=0;cloudAvailable=true;autonomousEvidence=null;predeviceEvidence=null;
     wan={primary:{link:true,upstream:true},backup:{link:true,upstream:true}};
     const proofKey=randomBytes(32);
     cloud=createLabCloudReplica({siteId:IDENTITY.siteId,deviceId:IDENTITY.deviceId,
@@ -80,6 +82,8 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
       cloud:{...cloud.status(),available:cloudAvailable,
         connected:cloudAvailable&&status.network.selectedWan!==null},
       receipts:edge.listReceipts(),
+      predevice:{kind:"PEF_PREDEVICE_PORT_CONFORMANCE_V1",scope:"SOFTWARE_LAB_ONLY",lastEvidence:predeviceEvidence,
+        deviceBackend:"BACKEND_NOT_IMPLEMENTED",physicalValidated:false},
       standaloneEdge:{kind:"PEF_STANDALONE_SERVICE_SMOKE",scope:"LAB_ONLY",lastEvidence:autonomousEvidence,
         daemonCli:"node bin/pef-edge.js --config /absolute/config.json",physicalValidated:false},
       workloads:{entries:supervisor?.list()||[],budgets:supervisor?.limits()||{},
@@ -102,6 +106,9 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
     try{
       let result;
       switch(body.action){
+        case "predeviceConformance":
+          predeviceEvidence=await runPredeviceConformance();
+          return emit("predevice-conformance",predeviceEvidence);
         case "autonomousSmoke":
           autonomousEvidence=await runStandaloneEdgeSmoke();
           return emit("autonomous-edge-smoke",autonomousEvidence);

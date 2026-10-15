@@ -300,3 +300,18 @@ test("T emulator offers actual standalone daemon smoke via HTTP and displays its
   assert.equal(smoke.lab.standaloneEdge.lastEvidence.status,"LAB_PASS");
   assert.equal(smoke.lab.standaloneEdge.physicalValidated,false);
 }));
+
+test("W1.10.A dashboard invokes real predevice port conformance and labels physical blocked",()=>withPanel(async({url,call})=>{
+ const html=await (await fetch(url)).text(),js=await (await fetch(url+"dashboard.js")).text();
+ for(const id of ["predevice-panel","predevice-conformance","predevice-evidence"])
+   assert.ok(html.includes('id="'+id+'"'),"Missing "+id);
+ assert.ok(js.includes('labAction("predeviceConformance")'));
+ await call({command:"mode",mode:"lab"});
+ const report=await call({command:"lab",action:"predeviceConformance"});
+ assert.equal(report.result.status,"LAB_PASS",JSON.stringify(report.result.checks.filter(x=>!x.pass)));
+ assert.equal(report.result.total,13);
+ assert.equal(report.lab.predevice.lastEvidence.status,"LAB_PASS");
+ assert.equal(report.lab.predevice.deviceBackend,"BACKEND_NOT_IMPLEMENTED");
+ assert.equal(report.lab.predevice.physicalValidated,false);
+ assert.ok(report.lab.history.some(x=>x.action==="predevice-conformance"));
+}));
