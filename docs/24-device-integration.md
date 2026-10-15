@@ -47,3 +47,10 @@ npm run dashboard
 ## Next dependency / risk
 
 W1.10.C2 requires a selected Linux platform, deliberate implementation/verification of physical route/boot/PKI drivers and measured CPU/RAM/throughput/power/thermal/recovery with real hardware. W1.10.C3 may only consider promoting the device backend with independently checked physical evidence. No hardware acquisition, systemd installation, external service, secret/key issuance, OS route change or root command is authorized by C1.
+
+
+## Software/lab acceptance evidence — 2026-10-15
+
+[GitHub Actions #38780758276](https://github.com/krukmat/logistica/actions/runs/38780758276) returned **SUCCESS** in all three jobs: 110 Node regression tests, 9/9 C1 safe preflight assertions, 34/34 prior prehardware assertions, 4/4 golden traces, plus isolated Linux networking/workload and prehardware handoff. [C1 JSON artifact](https://github.com/krukmat/logistica/actions/runs/38780758276/artifacts/11996280973) · [audit](audit/w1.10-c1-2026-10-15.md).
+
+**Verdict:** C1 software contract and safe boot rehearsal **CLOSED**. Hardware provisioning and actual Linux device drivers **NOT IMPLEMENTED / NOT RUN**. Positive laboratory evidence is explicitly ineligible to promote the `device` backend.

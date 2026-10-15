@@ -171,3 +171,6 @@ Run `npm run traces:check` for four pinned Product Core scenarios; `npm run trac
 ### W1.10.C1 — Device-integration preflight (no hardware)
 
 `npm run device:preflight` executes a nine-case host-safe rehearsal: Linux driver port requirements, unsigned lab-only boot intent with real host `fsync`, rejected unverified provisioning claims, route mismatch/quarantine, operator-simulated repair, Core receipt persistence and strict checks on reopen. From the dashboard use **Laboratorio integrado → Ejecutar preflight sin hardware**. **The device backend is always blocked**; this code neither configures your Mac's NICs nor installs packages, certificates or a service. [C1 technical scope](docs/24-device-integration.md).
+
+
+**W1.10.C1 lab closure (2026-10-15):** [CI #38780758276](https://github.com/krukmat/logistica/actions/runs/38780758276) **110/110 Node**, **9/9 safe preflight**, **34/34 port checks**, **4/4 golden traces**, Linux lab and third gate PASS. The device backend remains `BACKEND_NOT_IMPLEMENTED` and requires independent physical acceptance. [C1 audit](docs/audit/w1.10-c1-2026-10-15.md).
