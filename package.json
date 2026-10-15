@@ -15,7 +15,8 @@
     "edge": "node bin/pef-edge.js",
     "ports:conformance": "node bin/pef-port-conformance.js",
     "traces:check": "node bin/pef-golden-traces.js",
-    "device:preflight": "node bin/pef-device-preflight.js"
+    "device:preflight": "node bin/pef-device-preflight.js",
+    "device:candidates": "node bin/pef-device-candidates.js"
   },
   "license": "UNLICENSED"
 }

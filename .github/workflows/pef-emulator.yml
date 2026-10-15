@@ -61,6 +61,15 @@ jobs:
           name: pef-device-preflight
           path: ${{ runner.temp }}/pef-device-preflight.json
           if-no-files-found: warn
+      - name: C2 hardware candidates and read-only CI host observation
+        run: npm run device:candidates -- --output "$RUNNER_TEMP/pef-c2-candidates.json"
+      - name: Upload C2 candidate screening evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pef-c2-hardware-screening
+          path: ${{ runner.temp }}/pef-c2-candidates.json
+          if-no-files-found: warn
       - name: Deterministic scenarios
         run: npm run emulate
       - name: Loopback connectivity lab

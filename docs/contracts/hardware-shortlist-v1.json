@@ -1,0 +1,243 @@
+{
+  "schemaVersion": 1,
+  "kind": "PEF_C2_HARDWARE_SHORTLIST_V1",
+  "date": "2026-10-15",
+  "intent": "PEF_LOCAL_LOGISTICS_RELIABLE_LOW_COST",
+  "currencyPolicy": "NEVER_MIX_USD_AND_EUR; NO FX ASSUMPTION",
+  "thresholds": {
+    "minRamMiB": 2048,
+    "minTotalEthernetPorts": 3,
+    "minBootStorageGiB": 16
+  },
+  "hardwareAcquired": false,
+  "deviceReadiness": "DEVICE_BLOCKED",
+  "productionApproved": false,
+  "candidates": [
+    {
+      "id": "nanopi-r5s-lts-4gb",
+      "name": "NanoPi R5S-LTS 4GB / 64GB eMMC",
+      "role": "PREFERRED_FIRST_PHYSICAL_VALIDATION_CANDIDATE",
+      "specs": {
+        "arch": "arm64",
+        "ramMiB": 4096,
+        "ethernetNative": 3,
+        "ethernetBreakdown": "1x1GbE+2x2.5GbE",
+        "bootStorage": {
+          "kind": "eMMC",
+          "capacityGiB": 64,
+          "included": true
+        },
+        "expandableStorage": "M.2 NVMe",
+        "os": "Debian 13 Core (vendor image) / Linux 6.1",
+        "physicalValidated": false
+      },
+      "priceReference": {
+        "amount": 128,
+        "currency": "USD",
+        "source": "https://www.friendlyelec.com/index.php?product_id=287&route=product/product",
+        "description": "Vendor listing (R5S-LTS, 4GB/64GB eMMC bare board), excludes EU duty/VAT/shipping, as viewed 2026-10-15"
+      },
+      "billOfMaterials": [
+        {
+          "component": "board+eMMC",
+          "required": true,
+          "price": 128,
+          "currency": "USD",
+          "pricing": "VERIFIED_VENDOR_SNAPSHOT"
+        },
+        {
+          "component": "protective_case",
+          "required": true,
+          "price": 15,
+          "currency": "USD",
+          "pricing": "VERIFIED_VENDOR_OPTION"
+        },
+        {
+          "component": "certified_usb_c_pd_supply",
+          "required": true,
+          "price": null,
+          "currency": "USD",
+          "pricing": "QUOTE_REQUIRED"
+        },
+        {
+          "component": "ethernet_cables",
+          "required": true,
+          "price": null,
+          "currency": "USD",
+          "pricing": "QUOTE_REQUIRED"
+        },
+        {
+          "component": "import_freight_vat_and_customs",
+          "required": true,
+          "price": null,
+          "currency": "USD",
+          "pricing": "QUOTE_REQUIRED"
+        },
+        {
+          "component": "spare_medium_or_backup",
+          "required": true,
+          "price": null,
+          "currency": "USD",
+          "pricing": "QUOTE_REQUIRED"
+        }
+      ],
+      "openQuestions": [
+        "EU landed cost and distributor",
+        "Real kernel NIC/RTL8125 behavior under route fault",
+        "Node >=20 arm64 stability on chosen image",
+        "eMMC journal powercut endurance"
+      ]
+    },
+    {
+      "id": "raspberry-pi-4-4gb",
+      "name": "Raspberry Pi 4 Model B 4GB",
+      "role": "LINUX_COMPATIBILITY_BASELINE",
+      "specs": {
+        "arch": "arm64",
+        "ramMiB": 4096,
+        "ethernetNative": 1,
+        "ethernetBreakdown": "1x1GbE; requires TWO USB Ethernet adapters for two WAN + LAN",
+        "bootStorage": {
+          "kind": "microSD",
+          "capacityGiB": null,
+          "included": false
+        },
+        "expandableStorage": "USB3 SSD",
+        "os": "Raspberry Pi OS 64-bit or Debian-compatible",
+        "physicalValidated": false
+      },
+      "priceReference": {
+        "amount": 108.54,
+        "currency": "EUR",
+        "source": "https://www.raspipc.es/index.php?accion=verArticulo&idProducto=1752&src=raspberrypi&ver=tienda",
+        "description": "Vendor 4GB board tax-inclusive listed price; shipping and accessories extra as viewed 2026-10-15"
+      },
+      "billOfMaterials": [
+        {
+          "component": "board",
+          "required": true,
+          "price": 108.54,
+          "currency": "EUR",
+          "pricing": "VERIFIED_LOCAL_VENDOR_SNAPSHOT"
+        },
+        {
+          "component": "two_usb3_ethernet_adapters",
+          "required": true,
+          "price": null,
+          "currency": "EUR",
+          "pricing": "QUOTE_REQUIRED"
+        },
+        {
+          "component": "reliable_storage_medium",
+          "required": true,
+          "price": null,
+          "currency": "EUR",
+          "pricing": "QUOTE_REQUIRED"
+        },
+        {
+          "component": "power_supply_5v3a",
+          "required": true,
+          "price": null,
+          "currency": "EUR",
+          "pricing": "QUOTE_REQUIRED"
+        },
+        {
+          "component": "case_thermal",
+          "required": true,
+          "price": null,
+          "currency": "EUR",
+          "pricing": "QUOTE_REQUIRED"
+        },
+        {
+          "component": "shipping_and_cables",
+          "required": true,
+          "price": null,
+          "currency": "EUR",
+          "pricing": "QUOTE_REQUIRED"
+        }
+      ],
+      "openQuestions": [
+        "USB NIC identity/rename stable on reboot",
+        "microSD endurance vs USB3 SSD",
+        "Extra NIC/cables push true BOM beyond board price"
+      ]
+    },
+    {
+      "id": "gl-mt3000",
+      "name": "GL.iNet GL-MT3000 Beryl AX",
+      "role": "ROUTER_COMPANION_OR_EXPERIMENTAL_MINIMAL_NODE",
+      "specs": {
+        "arch": "arm64",
+        "ramMiB": 512,
+        "ethernetNative": 2,
+        "ethernetBreakdown": "1x2.5GbE WAN + 1xGbE LAN",
+        "bootStorage": {
+          "kind": "NAND",
+          "capacityGiB": 0.25,
+          "included": true
+        },
+        "expandableStorage": "USB3 external",
+        "os": "OpenWrt (vendor firmware); Node and durable P1 feasibility unverified",
+        "physicalValidated": false
+      },
+      "priceReference": {
+        "amount": 101.99,
+        "currency": "EUR",
+        "source": "https://store-eu.gl-inet.com/collections/new-year-deals",
+        "description": "GL.iNet EU store listing snapshot, additional storage, delivery and tax details to confirm"
+      },
+      "billOfMaterials": [
+        {
+          "component": "router",
+          "required": true,
+          "price": 101.99,
+          "currency": "EUR",
+          "pricing": "VERIFIED_EU_STORE_SNAPSHOT"
+        },
+        {
+          "component": "external_storage",
+          "required": true,
+          "price": null,
+          "currency": "EUR",
+          "pricing": "QUOTE_REQUIRED"
+        },
+        {
+          "component": "additional_ethernet_or_approved_external_edge_host",
+          "required": true,
+          "price": null,
+          "currency": "EUR",
+          "pricing": "QUOTE_REQUIRED"
+        },
+        {
+          "component": "shipping_and_power_verification",
+          "required": true,
+          "price": null,
+          "currency": "EUR",
+          "pricing": "QUOTE_REQUIRED"
+        }
+      ],
+      "openQuestions": [
+        "512MB RAM below current 2GiB screening threshold",
+        "Node package/runtime support on OpenWrt not established",
+        "Single USB3 port shared by external storage/network expansion",
+        "Only two physical Ethernet ports"
+      ]
+    }
+  ],
+  "hardAcceptance": {
+    "required": [
+      "SIGNED_DEVICE_PROVENANCE",
+      "TRUE_DEVICE_RUNTIME",
+      "PHYSICAL_NIC_FAILOVER",
+      "REAL_POWER_CUT_STORAGE",
+      "ACTUAL_CPU_RAM_PRESSURE",
+      "MEASURED_THROUGHPUT",
+      "EXTERNAL_WATTMETER",
+      "THERMAL_SOAK",
+      "VERIFIED_BOM_LANDED_EUR",
+      "TRUSTED_BOOT_AND_COMMAND_FENCING"
+    ],
+    "allNotRun": true,
+    "physicalGoAllowed": false
+  }
+}
