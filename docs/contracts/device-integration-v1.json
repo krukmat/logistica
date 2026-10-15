@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "kind": "PEF_DEVICE_INTEGRATION_CONTRACT_V1",
+  "task": "W1.10.C1",
+  "scope": "PLANNING_AND_SIMULATED_BOOT_ONLY",
+  "approval": "GO_FOR_DRIVER_IMPLEMENTATION_ONLY",
+  "deviceBackend": "BACKEND_NOT_IMPLEMENTED",
+  "physicalValidated": false,
+  "driverPorts": {
+    "wan": {
+      "required": [
+        "probe",
+        "applyRoute",
+        "readRoute"
+      ],
+      "contract": "Bounded WAN port with verified pre/post readback, route compensation and fail-closed timeouts"
+    },
+    "storage": {
+      "required": [
+        "append",
+        "retained",
+        "pending",
+        "cloudAck",
+        "status",
+        "compact"
+      ],
+      "contract": "Durable ACK after verified fsync and physical powercut qualification"
+    },
+    "workloads": {
+      "required": [
+        "start"
+      ],
+      "contract": "Manifest-admitted supervised isolated process; kernel resource enforcement"
+    },
+    "trust": {
+      "required": [
+        "readIdentity",
+        "verifyProvisioning"
+      ],
+      "contract": "Hardware-backed identity, signature verification, credential lifecycle"
+    },
+    "boot": {
+      "required": [
+        "readTrustedExpectedRoute",
+        "fenceOrphanOperations"
+      ],
+      "contract": "Trusted persisted route intent; exclusive route owner / subprocess fencing across reboot"
+    }
+  },
+  "requirements": [
+    {
+      "id": "C1_LINUX_RUNTIME",
+      "needed": "Supported kernel, Node runtime, service startup and persistent operation",
+      "evidence": "device boot / systemd execution"
+    },
+    {
+      "id": "C1_WAN_KERNEL",
+      "needed": "NIC/link vs upstream, routing/NAT/firewall readback and rollback",
+      "evidence": "physical WAN isolation and fault tests"
+    },
+    {
+      "id": "C1_ROUTE_FENCING",
+      "needed": "Timeout must kill/fence orphan routing commands across restarts",
+      "evidence": "kernel observation under crash/restart"
+    },
+    {
+      "id": "C1_BOOT_AUTHORITY",
+      "needed": "Authenticated on-disk expected route + exclusive writer",
+      "evidence": "trusted boot source and replay protection"
+    },
+    {
+      "id": "C1_DURABLE_STORAGE",
+      "needed": "Filesystem/P1 durability, space pressure and powercut",
+      "evidence": "real interruption recovery on selected medium"
+    },
+    {
+      "id": "C1_TRUST_PKI",
+      "needed": "Device identity, key isolation and mTLS provisioning/revocation",
+      "evidence": "independent security/PKI verification"
+    },
+    {
+      "id": "C1_WATCHDOG_OTA",
+      "needed": "Service watchdog, rollback, update and recovery",
+      "evidence": "device restart/update with power interruption"
+    },
+    {
+      "id": "C1_WORKLOAD_KERNEL",
+      "needed": "Process sandbox and persistent cgroup/storage quotas",
+      "evidence": "physical isolated worker and quota verification"
+    },
+    {
+      "id": "C1_PERFORMANCE_COST",
+      "needed": "Measured memory/CPU, throughput, thermals, power and BOM/TCO",
+      "evidence": "device-specific W1.8.E-G"
+    }
+  ],
+  "labChecks": [
+    "C1_BACKEND_DEVICE_DISABLED",
+    "C1_DRIVER_INTERFACE_DECLARED",
+    "C1_UNATTESTED_REQUIREMENTS_BLOCKED",
+    "C1_MISSING_BOOT_INTENT_DENIED",
+    "C1_BOOT_INTENT_REQUIRES_FSYNC",
+    "C1_IDENTITY_REVISION_MISMATCH_DENIED",
+    "C1_BOOT_ROUTE_MISMATCH_NO_MUTATION",
+    "C1_EXPLICIT_REPAIR_RECONCILES_CORE",
+    "C1_REBOOT_REQUIRES_RECONCILIATION"
+  ],
+  "prohibited": [
+    "ROOT_ON_MAC",
+    "DEVICE_ROUTE_MUTATION",
+    "AUTOMATIC_PROVISIONING",
+    "EMBEDDED_PRIVATE_KEYS",
+    "PRODUCTION_APPROVAL_FROM_LAB"
+  ],
+  "nextTasks": [
+    "W1.10.C2",
+    "W1.8.E",
+    "W1.8.F",
+    "W1.8.G"
+  ]
+}

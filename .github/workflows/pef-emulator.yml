@@ -52,6 +52,15 @@ jobs:
           name: pef-golden-traces-linux
           path: ${{ runner.temp }}/pef-golden-traces-linux.json
           if-no-files-found: warn
+      - name: C1 safe pre-device boot and provisioning preflight
+        run: npm run device:preflight -- --output "$RUNNER_TEMP/pef-device-preflight.json"
+      - name: Upload C1 preflight evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pef-device-preflight
+          path: ${{ runner.temp }}/pef-device-preflight.json
+          if-no-files-found: warn
       - name: Deterministic scenarios
         run: npm run emulate
       - name: Loopback connectivity lab
