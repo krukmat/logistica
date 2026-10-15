@@ -1,6 +1,6 @@
 # 22 — Predevice port conformance (W1.10.A)
 
-**IMPLEMENTED in software, CI verification pending.** No real device driver is present. [Tasks](tasks/w1.10-predevice-emulation.md) · [machine contract](contracts/predevice-ports-v1.json).
+**CI VERIFIED in software/laboratory (2026-10-15).** [Run #38735602133](https://github.com/krukmat/logistica/actions/runs/38735602133): 99/99 Node PASS, 17/17 port conformance LAB_PASS, isolated Linux and prehardware gate SUCCESS. The physical device backend remains blocked. No real device driver is present. [Tasks](tasks/w1.10-predevice-emulation.md) · [machine contract](contracts/predevice-ports-v1.json).
 
 ```mermaid
 flowchart LR
