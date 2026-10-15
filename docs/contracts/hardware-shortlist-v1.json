@@ -3,241 +3,253 @@
   "kind": "PEF_C2_HARDWARE_SHORTLIST_V1",
   "date": "2026-10-15",
   "intent": "PEF_LOCAL_LOGISTICS_RELIABLE_LOW_COST",
-  "currencyPolicy": "EUR_ONLY_FOR_MVP_CANDIDATES",
+  "currencyPolicy": "USD_SEEED_QUOTES_AND_EUR_CEILING_NOT_DIRECTLY_COMPARABLE",
   "thresholds": {
     "minRamMiB": 2048,
     "minTotalEthernetPorts": 1,
     "minBootStorageGiB": 16,
-    "mode": "CORE_ONLY_EDGE_NODE_ATTACHED_TO_EXISTING_ROUTER",
+    "mode": "CORE_ONLY_FIRST_POC",
     "fullWanPlusLanPortsNeeded": 3,
     "fullWanLabRequired": false,
-    "scopeNote": "Low-cost POC only; the dual-WAN gateway profile still requires separate physical qualifications."
+    "scopeNote": "Physical POC may connect to existing router; separate full WAN+LAN hardware acceptance remains blocked."
   },
   "hardwareAcquired": false,
   "deviceReadiness": "DEVICE_BLOCKED",
   "productionApproved": false,
   "candidates": [
     {
-      "id": "hp-t620-4gb-refurb",
-      "name": "HP Thin Client T620 4GB/16GB reacondicionado",
-      "role": "LOWEST_KNOWN_ENTRY_COST_CORE_ONLY_PROBE",
-      "specs": {
-        "arch": "x86_64",
-        "ramMiB": 4096,
-        "ethernetNative": 1,
-        "ethernetBreakdown": "1x Gigabit Ethernet; optional USB Ethernet required for routing roles",
-        "bootStorage": {
-          "kind": "flash",
-          "capacityGiB": 16,
-          "included": true
-        },
-        "os": "Linux x86_64 (exact Node version not yet verified)",
-        "physicalValidated": false
-      },
-      "priceReference": {
-        "amount": 24,
-        "currency": "EUR",
-        "source": "https://amso.eu/es/products/ordenadores/tipo-de-caja-de-ordenador/ultra-small-form-factor-usff/terminal-hp-thin-client-t620-amd-gx-415ga-4x1-5ghz-4gb-ram-16gb-ssd-flash-wifi-fuente-de-alimentacion-275422",
-        "description": "24 EUR incl listed power supply, refurbished class A; EU/Spain shipping and exact stock unknown at 2026-10-15"
-      },
-      "billOfMaterials": [
-        {
-          "component": "used_board_or_unit",
-          "required": true,
-          "price": 24,
-          "currency": "EUR",
-          "pricing": "RETAIL_LISTING_SNAPSHOT"
-        },
-        {
-          "component": "delivery_spain",
-          "required": true,
-          "price": null,
-          "currency": "EUR",
-          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
-        },
-        {
-          "component": "verified_cabling_or_reuse",
-          "required": true,
-          "price": null,
-          "currency": "EUR",
-          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
-        },
-        {
-          "component": "durable_storage_replacement_budget",
-          "required": true,
-          "price": null,
-          "currency": "EUR",
-          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
-        },
-        {
-          "component": "optional_usb_ethernet_for_routing",
-          "required": false,
-          "price": null,
-          "currency": "EUR",
-          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
-        },
-        {
-          "component": "optional_ups",
-          "required": false,
-          "price": null,
-          "currency": "EUR",
-          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
-        }
-      ],
-      "openQuestions": [
-        "Very old AMD GX-415GA, test Node >=20, power idle, FS endurance and support lifetime",
-        "Refurb supplier variant/condition/stock/shipping",
-        "Only ONE Ethernet; full 2-WAN+LAN requires extra network ports and budget"
-      ],
-      "physicalValidated": false
-    },
-    {
-      "id": "dell-wyse-5070-refurb-4gb",
-      "name": "Dell Wyse 5070 Pentium J5005 4GB/16GB reacondicionado",
-      "role": "FALLBACK_LOW_COST_X86_LAB_NODE",
-      "specs": {
-        "arch": "x86_64",
-        "ramMiB": 4096,
-        "ethernetNative": 1,
-        "ethernetBreakdown": "1x Gigabit Ethernet; optional USB NICs for routing",
-        "bootStorage": {
-          "kind": "eMMC",
-          "capacityGiB": 16,
-          "included": true
-        },
-        "os": "Linux x86_64 install unverified for variant",
-        "physicalValidated": false
-      },
-      "priceReference": {
-        "amount": 54,
-        "currency": "EUR",
-        "source": "https://www.ebay.es/itm/127819904422",
-        "description": "eBay seller listing from 54 EUR for variant; choose exact 4GB/16GB option; PSU, stock, shipping and warranty must be confirmed; 2026-10-15"
-      },
-      "billOfMaterials": [
-        {
-          "component": "used_board_or_unit",
-          "required": true,
-          "price": 54,
-          "currency": "EUR",
-          "pricing": "RETAIL_LISTING_SNAPSHOT"
-        },
-        {
-          "component": "power_supply_if_absent",
-          "required": true,
-          "price": null,
-          "currency": "EUR",
-          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
-        },
-        {
-          "component": "delivery_spain",
-          "required": true,
-          "price": null,
-          "currency": "EUR",
-          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
-        },
-        {
-          "component": "cabling_or_reuse",
-          "required": true,
-          "price": null,
-          "currency": "EUR",
-          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
-        },
-        {
-          "component": "optional_usb_ethernet_for_routing",
-          "required": false,
-          "price": null,
-          "currency": "EUR",
-          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
-        },
-        {
-          "component": "optional_ups",
-          "required": false,
-          "price": null,
-          "currency": "EUR",
-          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
-        }
-      ],
-      "openQuestions": [
-        "Buyer must select 4GB/16GB variant; 54 EUR starts at lowest configured price",
-        "PSU not confirmed included",
-        "Shipping and two additional NICs may exceed price cap; no gateway claim"
-      ],
-      "physicalValidated": false
-    },
-    {
-      "id": "orange-pi-r1-plus-lts-1gb",
-      "name": "Orange Pi R1 Plus LTS 1GB",
-      "role": "TWO_NATIVE_NIC_EXPERIMENT_AT_PRICE_CEILING",
+      "id": "seeed-linkstar-h28k-0408",
+      "name": "Seeed LinkStar H28K-0408 4GB/8GB",
+      "role": "BEST_TECHNICAL_LOW_UNIT_PRICE_BUT_MOQ_BLOCKED",
+      "manufacturer": "Seeed Studio",
+      "condition": "NEW",
+      "kind": "COMPUTE_ROUTER_BOARD",
       "specs": {
         "arch": "arm64",
-        "ramMiB": 1024,
+        "ramMiB": 4096,
         "ethernetNative": 2,
-        "ethernetBreakdown": "2x Gigabit Ethernet; 3rd port for 2WAN+LAN requires USB or external VLAN equipment",
+        "ethernetBreakdown": "2x1GbE",
+        "bootStorage": {
+          "kind": "eMMC",
+          "capacityGiB": 8,
+          "included": true
+        },
+        "expandableStorage": "TF/microSD (up to vendor claimed 512GB)",
+        "os": "QWRT vendor image; Node >=20 and Debian compatibility NOT_VERIFIED",
+        "physicalValidated": false
+      },
+      "priceReference": {
+        "amount": 39.9,
+        "currency": "USD",
+        "source": "https://www.seeedstudio.com/LinkStar-H28K-0408-p-5849.html",
+        "description": "Single unit catalogue price USD 39.90, minimum order quantity 50 units; excludes VAT/delivery and required power/TF, Seeed 2026-10-15"
+      },
+      "commerce": {
+        "inStock": true,
+        "minimumOrderQuantity": 50,
+        "singleUnitOrderable": false,
+        "basis": "EXPLICIT_VENDOR_MOQ_50",
+        "quantityVerified": true
+      },
+      "billOfMaterials": [
+        {
+          "component": "linkstar_h28k_board",
+          "required": true,
+          "price": 39.9,
+          "currency": "USD",
+          "pricing": "SEED_STUDIO_LISTED_SINGLE_UNIT_PRICE_MOQ50"
+        },
+        {
+          "component": "usb_c_power_supply",
+          "required": true,
+          "price": null,
+          "currency": "USD",
+          "pricing": "QUOTE_REQUIRED"
+        },
+        {
+          "component": "micro_sd_or_durability_storage",
+          "required": true,
+          "price": null,
+          "currency": "USD",
+          "pricing": "QUOTE_REQUIRED"
+        },
+        {
+          "component": "case_thermal",
+          "required": true,
+          "price": null,
+          "currency": "USD",
+          "pricing": "QUOTE_REQUIRED"
+        },
+        {
+          "component": "eu_import_vat_shipping",
+          "required": true,
+          "price": null,
+          "currency": "USD",
+          "pricing": "QUOTE_REQUIRED"
+        },
+        {
+          "component": "optional_third_ethernet_adapter",
+          "required": false,
+          "price": null,
+          "currency": "USD",
+          "pricing": "QUOTE_REQUIRED"
+        }
+      ],
+      "openQuestions": [
+        "Seeed MOQ 50 means 1 sample not directly purchasable",
+        "Node >=20 install on QWRT not demonstrated",
+        "8GB embedded storage below preferred 16GB, TF endurance to evaluate",
+        "Dual Ethernet insufficient for 2 WAN plus LAN without add-on"
+      ]
+    },
+    {
+      "id": "seeed-cm4-dual-gbe-kit",
+      "name": "Seeed reRouter dual-GbE CM4 carrier + CM4 2GB Lite",
+      "role": "INDIVIDUAL_PARTS_EXPENSIVE_AND_COMPUTE_MODULE_WAREHOUSE_RESTRICTIONS",
+      "manufacturer": "Seeed Studio",
+      "condition": "NEW",
+      "kind": "UNASSEMBLED_KIT",
+      "specs": {
+        "arch": "arm64",
+        "ramMiB": 2048,
+        "ethernetNative": 2,
+        "ethernetBreakdown": "2x1GbE on carrier only when CM4 fitted",
         "bootStorage": {
           "kind": "microSD",
           "capacityGiB": null,
           "included": false
         },
-        "os": "Debian/OpenWrt/Armbian variant support and Node >=20 unverified",
+        "expandableStorage": "carrier microSD, USB3",
+        "os": "Linux/OpenWrt on CM4; PEF runtime Node>=20 NOT_VERIFIED",
         "physicalValidated": false
       },
       "priceReference": {
-        "amount": 59,
-        "currency": "EUR",
-        "source": "https://es.findthedeal.org/p/B0F6S2Z77C/",
-        "description": "59 EUR secondary listing referring to Amazon; live checkout, delivery and actual model availability unverified; 2026-10-15"
+        "amount": 45,
+        "currency": "USD",
+        "source": "https://www.seeedstudio.com/Rapberry-Pi-CM4-Dual-GbE-Carrier-Board-p-4874.html",
+        "description": "Carrier only USD 45; CM4 2GB Lite SKU CM4102000 separately listed USD 62.50, no included storage/PSU"
+      },
+      "commerce": {
+        "inStock": true,
+        "minimumOrderQuantity": null,
+        "singleUnitOrderable": null,
+        "basis": "CARRIER_STOCKED; CM4_IN_STOCK_BUT_CHINA_BACKORDER_MIN_250_CONDITION",
+        "quantityVerified": false
       },
       "billOfMaterials": [
         {
-          "component": "used_board_or_unit",
+          "component": "seeed_dual_gbe_carrier",
           "required": true,
-          "price": 59,
-          "currency": "EUR",
-          "pricing": "RETAIL_LISTING_SNAPSHOT"
+          "price": 45,
+          "currency": "USD",
+          "pricing": "SEED_LISTED_IN_STOCK"
         },
         {
-          "component": "micro_sd_durable_storage",
+          "component": "cm4_2gb_lite_module",
+          "required": true,
+          "price": 62.5,
+          "currency": "USD",
+          "pricing": "SEEED_LISTED_SEPARATE_MODULE"
+        },
+        {
+          "component": "micro_sd_card",
           "required": true,
           "price": null,
-          "currency": "EUR",
-          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
+          "currency": "USD",
+          "pricing": "QUOTE_REQUIRED"
         },
         {
           "component": "power_supply",
           "required": true,
           "price": null,
-          "currency": "EUR",
-          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
+          "currency": "USD",
+          "pricing": "QUOTE_REQUIRED"
         },
         {
-          "component": "delivery_spain",
+          "component": "case",
           "required": true,
           "price": null,
-          "currency": "EUR",
-          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
+          "currency": "USD",
+          "pricing": "QUOTE_REQUIRED"
         },
         {
-          "component": "case_or_safe_mount",
+          "component": "vat_shipping",
           "required": true,
           "price": null,
-          "currency": "EUR",
-          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
+          "currency": "USD",
+          "pricing": "QUOTE_REQUIRED"
+        }
+      ],
+      "extraSource": "https://www.seeedstudio.com/Raspberry-Pi-Compute-Module-CM4102000-p-4718.html",
+      "openQuestions": [
+        "Carrier only at USD 45, not a complete PEF",
+        "Minimum known component subtotal USD 107.50, excluding storage/PSU/case",
+        "Seeed CM4 listing: China warehouse backorders require minimum 250 units",
+        "2 Ethernet ports, not 3; device physical validation NOT_RUN"
+      ]
+    },
+    {
+      "id": "seeed-linkstar-h68k-0232",
+      "name": "Seeed LinkStar H68K 2GB/32GB",
+      "role": "FUNCTIONAL_DUAL_WAN_ROUTER_BUT_OUT_OF_STOCK_AND_PRICE_OVER_GOAL",
+      "manufacturer": "Seeed Studio",
+      "condition": "NEW",
+      "kind": "ROUTER_BOARD",
+      "specs": {
+        "arch": "arm64",
+        "ramMiB": 2048,
+        "ethernetNative": 4,
+        "ethernetBreakdown": "2x2.5GbE + 2x1GbE",
+        "bootStorage": {
+          "kind": "eMMC",
+          "capacityGiB": 32,
+          "included": true
+        },
+        "expandableStorage": "TF",
+        "os": "Debian/OpenWrt vendor-supported family (exact Node build not verified)",
+        "physicalValidated": false
+      },
+      "priceReference": {
+        "amount": 99,
+        "currency": "USD",
+        "source": "https://www.seeedstudio.com/LinkStar-H68K-0232-p-5499.html",
+        "description": "Seeed USD 99 product listing, out of stock 2026-10-15; PSU/taxes/shipping extra"
+      },
+      "commerce": {
+        "inStock": false,
+        "minimumOrderQuantity": 1,
+        "singleUnitOrderable": false,
+        "basis": "OUT_OF_STOCK",
+        "quantityVerified": true
+      },
+      "billOfMaterials": [
+        {
+          "component": "linkstar_h68k_board",
+          "required": true,
+          "price": 99,
+          "currency": "USD",
+          "pricing": "SEED_LISTED_OUT_OF_STOCK"
         },
         {
-          "component": "optional_third_nic_for_gateway",
-          "required": false,
+          "component": "usb_c_power",
+          "required": true,
           "price": null,
-          "currency": "EUR",
-          "pricing": "QUOTE_REQUIRED_OR_EXISTING_REUSE_VERIFICATION"
+          "currency": "USD",
+          "pricing": "QUOTE_REQUIRED"
+        },
+        {
+          "component": "vat_shipping",
+          "required": true,
+          "price": null,
+          "currency": "USD",
+          "pricing": "QUOTE_REQUIRED"
         }
       ],
       "openQuestions": [
-        "1GB below preferred 2GB runtime headroom; may fail supervised workloads",
-        "Need microSD/power/case; completed unit likely exceeds 60 EUR",
-        "2 native Ethernet not 3; missing 2WAN+LAN third port"
-      ],
-      "physicalValidated": false
+        "Out of stock",
+        "USD 99 for board only, too expensive for EUR 60 complete-unit target",
+        "Four native Ethernet interfaces fit full 2WAN+LAN topology conceptually, but actual routing driver unimplemented"
+      ]
     }
   ],
   "hardAcceptance": {
@@ -260,52 +272,41 @@
   "budget": {
     "currency": "EUR",
     "targetCompletePoCEur": 60,
-    "maxReferenceDeviceEur": 60,
-    "status": "OWNER_PRIORITY_LOW_COST; TARGET_PROVISIONAL_POC_NOT_COMMITTED_MARKET_QUOTE",
-    "targetMode": "EDGE_NODE_BEHIND_EXISTING_LAN_ROUTER",
-    "excludedFromTarget": "UPS/optional second and third NICs, labor/service, supplier VAT/shipping are still tracked as unknowns; full routing not claimed",
+    "status": "PROVISIONAL_TARGET_NOT_A_VERIFIED_BUILD_COST",
+    "condition": "SINGLE_UNIT_DELIVERED_SPAIN_VAT_AND_ALL_REQUIRED_PARTS_INCLUDED",
     "procurementApproved": false
   },
   "profiles": [
     {
       "id": "CORE_ONLY_EDGE_NODE",
       "neededEthernetPorts": 1,
-      "portOwnership": "NO_ROUTE/NAT/FIREWALL_CONTROL_OF_EXISTING_ROUTER",
+      "portOwnership": "NO_CONTROL_OF_EXISTING_ROUTER",
       "targetAllInEuro": 60,
-      "limits": "Local-first receipt/journal/process/Cloud deferred sync, no physical WAN failover certified"
+      "limits": "Local-first Core/receipts/fsync/workload only, physical WAN switching untested"
     },
     {
       "id": "FULL_DUAL_WAN_GATEWAY",
       "neededEthernetPorts": 3,
       "portOwnership": "PHYSICAL_WAN_1_WAN_2_LAN",
       "targetAllInEuro": null,
-      "limits": "BLOCKED until explicit separate cost and interface evidence; not silently downgraded"
+      "limits": "Not implied by two-port or one-port hardware; requires separate driver/NIC/Power qualification"
     }
   ],
   "oldHighCostOptions": [
     {
-      "id": "nanopi-r5s-lts-4gb",
-      "formerPriceReference": {
-        "amount": 128,
-        "currency": "USD"
-      },
-      "status": "EXCLUDED_HIGH_ENTRY_PRICE"
+      "id": "used-refurbished-hp-dell",
+      "status": "EXCLUDED_BY_OWNER_NEW_ONLY"
     },
     {
-      "id": "raspberry-pi-4-4gb",
-      "formerPriceReference": {
-        "amount": 108.54,
-        "currency": "EUR"
-      },
-      "status": "EXCLUDED_HIGH_ENTRY_PRICE"
+      "id": "non-seeed-hardware",
+      "status": "EXCLUDED_BY_OWNER_SEEED_ONLY"
     },
     {
-      "id": "gl-mt3000",
-      "formerPriceReference": {
-        "amount": 101.99,
-        "currency": "EUR"
-      },
-      "status": "EXCLUDED_HIGH_ENTRY_PRICE"
+      "id": "seeed-rerouter-cm4-complete",
+      "status": "EXCLUDED_HIGH_COST",
+      "price": "USD 206.50",
+      "url": "https://www.seeedstudio.com/reRouter-CM4102032-p-5734.html"
     }
-  ]
+  ],
+  "scope": "ONLY_NEW_SEEED_STUDIO_OFFERINGS_SINGLE_UNIT_POC"
 }

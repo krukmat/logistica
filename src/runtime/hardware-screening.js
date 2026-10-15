@@ -1,59 +1,65 @@
 "use strict";
-// W1.10.C2: cheap-first POC screening, never equate a board price with an all-in BOM.
+// C2: Seeed-only NEW hardware. Quantity, stock, missing kit items and FX prevent a fake POC GO.
 const inventory=require("../../docs/contracts/hardware-shortlist-v1.json");
 const money=n=>typeof n==="number"&&Number.isFinite(n)&&n>=0;
-function evaluateCandidate(candidate){
- if(!candidate||typeof candidate.id!=="string"||!candidate.specs||
-    !Array.isArray(candidate.billOfMaterials)||!candidate.priceReference)
-   throw Error("C2_INVALID_CANDIDATE");
- const items=candidate.billOfMaterials;
- if(!items.length||items.some(x=>typeof x.component!=="string"||typeof x.required!=="boolean"||
-   typeof x.currency!=="string"||x.price!==null&&!money(x.price)))
-   throw Error("C2_INVALID_BOM");
- const currency=candidate.priceReference.currency;
- if(currency!=="EUR"||items.some(x=>x.currency!==currency))throw Error("C2_MIXED_CURRENCY_BOM");
+function evaluateCandidate(c){
+ if(!c||typeof c.id!=="string"||!c.specs||!Array.isArray(c.billOfMaterials)||
+   !c.priceReference||!c.commerce)throw Error("C2_INVALID_CANDIDATE");
+ if(c.condition!=="NEW"||c.manufacturer!=="Seeed Studio"||
+   !c.priceReference.source?.startsWith("https://www.seeedstudio.com/"))
+   throw Error("C2_SUPPLIER_NEW_ONLY");
+ const currency=c.priceReference.currency,items=c.billOfMaterials;
+ if(!items.length||!money(c.priceReference.amount)||!["USD","EUR"].includes(currency)||
+    items.some(x=>!x||typeof x.component!=="string"||typeof x.required!=="boolean"||
+     x.currency!==currency||x.price!==null&&!money(x.price)))throw Error("C2_MIXED_CURRENCY_BOM");
  const required=items.filter(x=>x.required);
  const missing=required.filter(x=>x.price===null).map(x=>x.component);
- const known=required.filter(x=>x.price!==null);
- const subtotal=Math.round(known.reduce((s,x)=>s+x.price,0)*100)/100;
- const {ramMiB,ethernetNative,bootStorage}=candidate.specs;
- const min=inventory.thresholds,budget=inventory.budget;
+ const subtotal=Math.round(required.reduce((sum,x)=>sum+(x.price||0),0)*100)/100;
+ const ramOK=c.specs.ramMiB>=inventory.thresholds.minRamMiB,
+  netOK=c.specs.ethernetNative>=inventory.thresholds.minTotalEthernetPorts,
+  storageOK=c.specs.bootStorage?.included===true&&
+     c.specs.bootStorage?.capacityGiB>=inventory.thresholds.minBootStorageGiB;
+ const qty=c.commerce.minimumOrderQuantity;
+ if(qty!==null&&(!Number.isSafeInteger(qty)||qty<1))throw Error("C2_INVALID_MOQ");
+ const oneUnitAvailable=c.commerce.inStock===true&&c.commerce.singleUnitOrderable===true&&
+     qty!==null&&qty<=1;
+ const sameCurrency=currency===inventory.budget.currency;
+ const knownBudgetUnderLimit=sameCurrency?subtotal<=inventory.budget.targetCompletePoCEur:null;
+ const bomComplete=missing.length===0;
+ const pricedAllIn=oneUnitAvailable&&bomComplete&&sameCurrency&&knownBudgetUnderLimit;
  const screening={
-   ram:ramMiB>=min.minRamMiB?"DOCUMENTED_FIT":"BELOW_PREFERRED_HEADROOM",
-   network:ethernetNative>=min.minTotalEthernetPorts?"SINGLE_LAN_PORT_PRESENT":"LAN_ADAPTER_REQUIRED",
-   storage:bootStorage?.included===true&&bootStorage.capacityGiB>=min.minBootStorageGiB?
-     "NOMINAL_CAPACITY_ONLY":"STORAGE_PROVISIONING_REQUIRED"};
- const entryWithinBudget=candidate.priceReference.amount<=budget.maxReferenceDeviceEur&&
-   subtotal<=budget.targetCompletePoCEur;
- const firstInvestigationEligible=entryWithinBudget&&
-   screening.ram==="DOCUMENTED_FIT"&&
-   screening.network==="SINGLE_LAN_PORT_PRESENT"&&
-   screening.storage==="NOMINAL_CAPACITY_ONLY";
- return {id:candidate.id,name:candidate.name,role:candidate.role,
-   screening,qualifiesForFirstDeviceInvestigation:firstInvestigationEligible,
-   coreOnlyEligibleForProbe:firstInvestigationEligible,
+   ram:ramOK?"DOCUMENTED_FIT":"BELOW_PREFERRED_HEADROOM",
+   network:netOK?"SINGLE_LAN_PORT_PRESENT":"LAN_ADAPTER_REQUIRED",
+   storage:storageOK?"NOMINAL_CAPACITY_ONLY":"STORAGE_PROVISIONING_REQUIRED"};
+ return {id:c.id,name:c.name,role:c.role,
+   condition:c.condition,manufacturer:c.manufacturer,
+   screening,qualifiesForFirstDeviceInvestigation:Boolean(pricedAllIn&&ramOK&&netOK&&storageOK),
+   coreOnlyEligibleForProbe:Boolean(pricedAllIn&&ramOK&&netOK&&storageOK),
    fullDualWanGatewayReady:false,
-   requiredGatewayEthernetPorts:min.fullWanPlusLanPortsNeeded,
-   cost:{currency,referencePrice:candidate.priceReference.amount,knownSubtotal:subtotal,
-     targetAllInEur:budget.targetCompletePoCEur,
-     remainingUnallocatedEur:Math.round((budget.targetCompletePoCEur-subtotal)*100)/100,
-     entryWithinBudget,unknownRequiredComponents:missing,totalCost:null,complete:false,
-     taxAndShippingVerified:false,budgetApproved:false,
-     status:missing.length?"INCOMPLETE_PRICE_CANNOT_APPROVE":"VERIFY_LANDED_COST"},
-   sources:[candidate.priceReference.source],questions:candidate.openQuestions,
-   evidence:"LISTING_AND_SPEC_SCREENING_ONLY",hardwareValidated:false};
+   requiredGatewayEthernetPorts:inventory.thresholds.fullWanPlusLanPortsNeeded,
+   commerce:{...c.commerce,oneUnitAvailable,volumePriceNotPrototypePrice:qty!==null&&qty>1},
+   cost:{currency,referencePrice:c.priceReference.amount,knownSubtotal:subtotal,
+     targetAllInEur:inventory.budget.targetCompletePoCEur,
+     knownWithinEuroBudget:knownBudgetUnderLimit,unknownRequiredComponents:missing,
+     totalCost:null,complete:false,taxAndShippingVerified:false,budgetApproved:false,
+     status:!oneUnitAvailable?"NOT_AVAILABLE_AS_ONE_UNIT":!sameCurrency?
+       "FX_AND_EU_LANDED_COST_UNKNOWN":!bomComplete?"BOM_INCOMPLETE":"VERIFY_LANDED_COST"},
+   sources:[c.priceReference.source,...(c.extraSource?[c.extraSource]:[])],
+   questions:c.openQuestions,evidence:"SEEED_PRODUCT_PAGE_SCREENING_NOT_PURCHASE_OR_DEVICE_TEST",
+   hardwareValidated:false};
 }
 function evaluateShortlist({candidates=inventory.candidates}={}){
  if(!Array.isArray(candidates)||candidates.length!==3||
    new Set(candidates.map(x=>x.id)).size!==3)throw Error("C2_CANDIDATE_SET_INVALID");
  const results=candidates.map(evaluateCandidate);
- const eligible=results.filter(x=>x.qualifiesForFirstDeviceInvestigation)
-   .sort((a,b)=>a.cost.knownSubtotal-b.cost.knownSubtotal).map(x=>x.id);
- return {kind:"PEF_HARDWARE_SHORTLIST_ASSESSMENT_V1",status:"CHEAP_FIRST_SCREENING_PHYSICAL_NOT_RUN",
-   ok:true,shortlistDate:inventory.date,criteria:inventory.thresholds,
-   budget:inventory.budget,profiles:inventory.profiles,
-   excludedHighCost:inventory.oldHighCostOptions,candidates:results,
-   firstInvestigationCandidates:eligible,
+ const eligible=results.filter(c=>c.qualifiesForFirstDeviceInvestigation).map(c=>c.id);
+ return {kind:"PEF_HARDWARE_SHORTLIST_ASSESSMENT_V1",
+   status:"SEEED_SINGLE_UNIT_SEARCH_BLOCKED",
+   ok:true,shortlistDate:inventory.date,criteria:inventory.thresholds,budget:inventory.budget,
+   profiles:inventory.profiles,excludedHighCost:inventory.oldHighCostOptions,
+   candidates:results,firstInvestigationCandidates:eligible,
+   possibleVolumeLead:"seeed-linkstar-h28k-0408",
+   singlePrototypeStatus:eligible.length?"PRICE_VERIFIED":"NO_CONFIRMED_CHEAP_ONE_UNIT_PEF",
    physicallyMeasured:false,deviceBackend:"BACKEND_NOT_IMPLEMENTED",
    procurementApproved:false,fieldDeploymentApproved:false};
 }

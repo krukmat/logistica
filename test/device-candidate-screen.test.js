@@ -3,58 +3,58 @@ const test=require("node:test"),assert=require("node:assert/strict");
 const {evaluateShortlist,evaluateCandidate,evaluatePhysicalAcceptance}=require("../src/runtime/hardware-screening.js");
 const {observeHost,percentile}=require("../src/runtime/device-observation.js");
 const {runCandidateScreening}=require("../src/runtime/device-candidate-screen.js");
-const fixture=require("../docs/contracts/hardware-shortlist-v1.json");
-test("C2 shortlist has explicit non-mixed currencies, incomplete BOM and evidence gaps",()=>{
+const inventory=require("../docs/contracts/hardware-shortlist-v1.json");
+test("C2 Seeed-only new hardware never recommends non-orderable single-unit products",()=>{
  const r=evaluateShortlist();
  assert.equal(r.ok,true);assert.equal(r.candidates.length,3);
- assert.deepEqual(r.firstInvestigationCandidates,["hp-t620-4gb-refurb","dell-wyse-5070-refurb-4gb"]);
- for(const item of r.candidates){
-   assert.equal(item.cost.totalCost,null);
-   assert.ok(item.cost.unknownRequiredComponents.length>0);
-   assert.equal(item.hardwareValidated,false);
- }
- assert.equal(r.candidates[0].cost.knownSubtotal,24);
- assert.equal(r.candidates[0].cost.currency,"EUR");
- assert.equal(r.candidates[1].cost.knownSubtotal,54);
- assert.equal(r.candidates[2].screening.ram,"BELOW_PREFERRED_HEADROOM");
- assert.ok(r.candidates.every(x=>x.fullDualWanGatewayReady===false));
- assert.ok(r.candidates.every(x=>x.cost.targetAllInEur===60));
- assert.ok(r.candidates.every(x=>x.cost.budgetApproved===false));
- assert.deepEqual(r.excludedHighCost.map(x=>x.status),Array(3).fill("EXCLUDED_HIGH_ENTRY_PRICE"));
+ assert.deepEqual(r.firstInvestigationCandidates,[]);
+ assert.equal(r.singlePrototypeStatus,"NO_CONFIRMED_CHEAP_ONE_UNIT_PEF");
+ assert.equal(r.possibleVolumeLead,"seeed-linkstar-h28k-0408");
+ assert.equal(r.candidates[0].commerce.minimumOrderQuantity,50);
+ assert.equal(r.candidates[0].commerce.oneUnitAvailable,false);
+ assert.equal(r.candidates[0].cost.knownSubtotal,39.90);
+ assert.equal(r.candidates[1].cost.knownSubtotal,107.50);
+ assert.equal(r.candidates[1].commerce.oneUnitAvailable,false);
+ assert.equal(r.candidates[2].commerce.inStock,false);
+ assert.equal(r.candidates[2].screening.network,"SINGLE_LAN_PORT_PRESENT");
+ assert.ok(r.candidates.every(c=>c.manufacturer==="Seeed Studio"&&c.condition==="NEW"));
+ assert.ok(r.candidates.every(c=>c.cost.totalCost===null&&c.cost.budgetApproved===false));
+ assert.ok(r.candidates.every(c=>c.fullDualWanGatewayReady===false));
  assert.equal(r.physicallyMeasured,false);
- assert.equal(fixture.hardAcceptance.allNotRun,true);
+ assert.equal(inventory.hardAcceptance.allNotRun,true);
 });
-test("C2 price mismatch, malformed candidate and forged pass do not grant hardware",()=>{
- const bad=structuredClone(fixture.candidates[0]);
+test("C2 missing parts, USD/EUR, invalid MOQ, supplier change and self-attested hardware cannot grant GO",()=>{
+ const bad=structuredClone(inventory.candidates[0]);
  bad.billOfMaterials[0].currency="EUR";
  assert.throws(()=>evaluateCandidate(bad),/C2_MIXED_CURRENCY_BOM/);
- bad.billOfMaterials[0].currency="EUR";bad.billOfMaterials[0].price=-1;
- assert.throws(()=>evaluateCandidate(bad),/C2_INVALID_BOM/);
+ bad.billOfMaterials[0].currency="USD";bad.billOfMaterials[0].price=-1;
+ assert.throws(()=>evaluateCandidate(bad),/C2_MIXED_CURRENCY_BOM/);
+ bad.billOfMaterials[0].price=39.9;bad.commerce.minimumOrderQuantity=0;
+ assert.throws(()=>evaluateCandidate(bad),/C2_INVALID_MOQ/);
+ bad.commerce.minimumOrderQuantity=1;bad.condition="REFURBISHED";
+ assert.throws(()=>evaluateCandidate(bad),/C2_SUPPLIER_NEW_ONLY/);
  assert.throws(()=>evaluateShortlist({candidates:[]}),/C2_CANDIDATE_SET_INVALID/);
  const p=evaluatePhysicalAcceptance({SIGNED_DEVICE_PROVENANCE:true,REAL_POWER_CUT_STORAGE:true});
- assert.equal(p.canEnableDevice,false);
- assert.ok(p.required.every(x=>x.verified===false&&x.state==="NOT_RUN"));
- assert.equal(p.required.filter(x=>x.selfReported).length,2);
+ assert.equal(p.canEnableDevice,false);assert.ok(p.required.every(x=>x.verified===false&&x.state==="NOT_RUN"));
 });
-test("C2 host collector measures only safe temporary fsync and never invents watts",()=>{
+test("C2 host-only observations never invent target-device measurements",()=>{
  const r=observeHost({samples:3});
  assert.equal(r.status,"LAB_PASS",JSON.stringify(r));
- assert.equal(r.sampleCount,3);assert.equal(r.journal.ackAndFsync,3);
- assert.equal(r.journal.reopenRetained,3);
+ assert.equal(r.journal.ackAndFsync,3);assert.equal(r.journal.reopenRetained,3);
  assert.equal(r.boardIdleWatts,null);assert.equal(r.networkThroughputMbps,null);
  assert.equal(r.actualPowerCutRecovered,null);assert.equal(r.hostRoutesChanged,false);
  assert.equal(r.physicalValidated,false);
  assert.equal(percentile([1,2,3,4],.95),3);
  assert.throws(()=>observeHost({samples:100}),/C2_INVALID_SAMPLE_COUNT/);
 });
-test("C2 report retains DEVICE_BLOCKED and does not convert CI host results into a device",()=>{
- const r=runCandidateScreening({samples:3});
- assert.equal(r.status,"LAB_PASS_PHYSICAL_BLOCKED");
- assert.equal(r.physical.canEnableDevice,false);
- assert.equal(r.shortlist.deviceBackend,"BACKEND_NOT_IMPLEMENTED");
- assert.equal(r.recommendedFirstPhysicalProbe,"hp-t620-4gb-refurb");
- assert.equal(r.shortlist.profiles[0].id,"CORE_ONLY_EDGE_NODE");
- assert.equal(r.shortlist.profiles[1].id,"FULL_DUAL_WAN_GATEWAY");
- assert.equal(r.recommendationStatus,"PROVISIONAL_NO_PROCUREMENT_APPROVAL");
- assert.equal(r.observation.deviceQualified,false);
+test("C2 report keeps no buy/approval when every Seeed option is commercially blocked or incomplete",()=>{
+ const report=runCandidateScreening({samples:3});
+ assert.equal(report.status,"LAB_PASS_PHYSICAL_BLOCKED");
+ assert.equal(report.shortlist.singlePrototypeStatus,"NO_CONFIRMED_CHEAP_ONE_UNIT_PEF");
+ assert.equal(report.recommendedFirstPhysicalProbe,null);
+ assert.equal(report.preferredVolumeDesignCandidate,"seeed-linkstar-h28k-0408");
+ assert.equal(report.physical.canEnableDevice,false);
+ assert.equal(report.shortlist.deviceBackend,"BACKEND_NOT_IMPLEMENTED");
+ assert.equal(report.recommendationStatus,"PROVISIONAL_NO_PROCUREMENT_APPROVAL");
+ assert.equal(report.observation.deviceQualified,false);
 });

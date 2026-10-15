@@ -364,7 +364,10 @@ test("W1.10.C2 dashboard screens evidence-grounded candidates and measures only 
  assert.equal(run.httpStatus,200,JSON.stringify(run.result));
  assert.equal(run.result.status,"LAB_PASS_PHYSICAL_BLOCKED");
  assert.equal(run.result.shortlist.candidates.length,3);
- assert.deepEqual(run.result.shortlist.firstInvestigationCandidates,["nanopi-r5s-lts-4gb"]);
+ assert.deepEqual(run.result.shortlist.firstInvestigationCandidates,[]);
+ assert.equal(run.result.shortlist.singlePrototypeStatus,"NO_CONFIRMED_CHEAP_ONE_UNIT_PEF");
+ assert.equal(run.result.recommendedFirstPhysicalProbe,null);
+ assert.equal(run.result.preferredVolumeDesignCandidate,"seeed-linkstar-h28k-0408");
  assert.equal(run.result.physical.canEnableDevice,false);
  assert.equal(run.result.observation.physicalValidated,false);
  assert.equal(run.result.physicalValidated,false);
