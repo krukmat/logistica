@@ -3,12 +3,12 @@ const test=require("node:test"),assert=require("node:assert/strict");
 const {createScriptedWanPorts}=require("../src/adapters/scripted-wan-ports.js");
 const {runPredeviceConformance}=require("../src/runtime/predevice-conformance.js");
 const contract=require("../docs/contracts/predevice-ports-v1.json");
-test("W1.10.A + B1 real Core passes 17 predevice port conformance cases",async()=>{
+test("W1.10.A + B1 real Core passes 23 predevice port conformance cases",async()=>{
  const report=await runPredeviceConformance();
  assert.equal(report.status,"LAB_PASS",JSON.stringify(report.checks.filter(x=>!x.pass)));
  assert.equal(report.total,contract.assertions.length);
  assert.deepEqual(report.checks.map(x=>x.id),contract.assertions);
- assert.equal(report.passed,17);
+ assert.equal(report.passed,23);
  assert.equal(report.physicalValidated,false);
  assert.equal(report.hostRoutesChanged,false);
  assert.equal(report.deviceBackend,"BACKEND_NOT_IMPLEMENTED");

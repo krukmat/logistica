@@ -280,6 +280,22 @@
       "implementation": "src/adapters/verified-route-ports.js",
       "test": "test/verified-route-ports.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "W1.10.B2",
+      "mode": "lab",
+      "title": "Bounded WAN probes, route abort advisory, quarantine on late mutation, explicit boot reconciliation",
+      "controlIds": [
+        "predevice-panel",
+        "predevice-conformance",
+        "predevice-evidence"
+      ],
+      "actions": [
+        "predeviceConformance"
+      ],
+      "implementation": "src/adapters/bounded-wan-ports.js",
+      "test": "test/bounded-wan-ports.test.js",
+      "hardwareValidated": false
     }
   ]
 }

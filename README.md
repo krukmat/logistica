@@ -149,3 +149,7 @@ El emulador mantiene un botón de diagnóstico del Edge autónomo que invoca **e
 The same matrix now also injects **post-mutation** route failure, false reported success, failed rollback and explicit operator reconciliation (17 checks total). `src/adapters/verified-route-ports.js` verifies readback and rolls back where possible; when rollback fails it quarantines routing instead of asserting an incorrect Core selection. Simulated operator repair is a test fixture, **not** a physical repair path. Bounded operations/timeouts still pending W1.10.B2.
 
 **W1.10 CI (2026-10-15):** [workflow #38735602133](https://github.com/krukmat/logistica/actions/runs/38735602133) PASS — 99/99 Node, 17 predevice conformance checks, Linux CI and prehardware gate. [Evidence and limitations](docs/audit/w1.10-a-b1-2026-10-15.md); no device/hardware qualification.
+
+### W1.10.B2 — Timeouts and uncertain operations (software lab)
+
+The predevice matrix now adds six scenarios (23 checks): slow probe, route timeout/late mutation, cooperative abort, permanently hung change and boot reconciliation. Bounded ports always quarantine a timed-out route until the underlying operation has settled and readback confirms a trusted expected route. `AbortSignal` is advisory; this is not Linux subprocess fencing, driver certification or actual device bootstrap. [Contract and limits](docs/22-predevice-ports.md).

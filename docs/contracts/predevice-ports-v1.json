@@ -36,7 +36,13 @@
     "PORT_PARTIAL_ROUTE_ROLLBACK",
     "PORT_ROUTE_POSTCHECK_REJECTS_FALSE_SUCCESS",
     "PORT_UNCERTAIN_ROUTE_QUARANTINE",
-    "PORT_EXPLICIT_ROUTE_RECONCILIATION"
+    "PORT_EXPLICIT_ROUTE_RECONCILIATION",
+    "PORT_BOOT_ROUTE_RECONCILIATION",
+    "PORT_PROBE_DEADLINE_NO_COMMIT",
+    "PORT_LATE_ROUTE_QUARANTINE",
+    "PORT_LATE_COMMIT_REQUIRES_REPAIR",
+    "PORT_COOPERATIVE_ABORT_RECHECK",
+    "PORT_HUNG_ROUTE_REMAINS_BLOCKED"
   ],
   "physicalValidated": false,
   "deviceBackend": "BACKEND_NOT_IMPLEMENTED",
@@ -49,5 +55,14 @@
     "measured CPU RAM energy thermals BOM"
   ],
   "verifiedRoutePort": "src/adapters/verified-route-ports.js",
-  "routing": "Readback, compensation and quarantine simulated; hardware driver must provide authoritative kernel readback and atomicity/rollback evidence. Time-bounded routing pending."
+  "routing": "Readback, compensation and quarantine simulated; hardware driver must provide authoritative kernel readback and atomicity/rollback evidence. Time-bounded routing pending.",
+  "boundedPorts": {
+    "implementation": "src/adapters/bounded-wan-ports.js",
+    "probeTimeoutMs": "5–30000 (configurable; synthetic test 15ms)",
+    "routeTimeoutMs": "5–30000 (configurable; synthetic test 15ms)",
+    "reconcileTimeoutMs": "5–30000 (configurable; synthetic test 15ms)",
+    "semantics": "AbortSignal advisory; timeout returns error, quarantines routing, pending async task must settle before verified external reconciliation; initial boot starts blocked",
+    "hazard": "No process-restart fencing of OS commands; durable intent and OS subprocess termination not yet implemented",
+    "physicalValidated": false
+  }
 }
