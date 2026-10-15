@@ -15,6 +15,7 @@ const {runStandaloneEdgeSmoke}=require("./lab/autonomous-smoke.js");
 const {runPredeviceConformance}=require("../runtime/predevice-conformance.js");
 const {runGoldenTraces}=require("../runtime/golden-traces.js");
 const {runDeviceIntegrationRehearsal}=require("../runtime/device-integration-rehearsal.js");
+const {runCandidateScreening}=require("../runtime/device-candidate-screen.js");
 const CAPABILITIES=Object.freeze([
   "wan-probes","local-routing-model","os-file-fsync","journal-pressure",
   "journal-compaction","durable-ack-replay","identity-revision","boot-session",
@@ -23,12 +24,13 @@ const CAPABILITIES=Object.freeze([
   "local-logistics-receipts","offline-workload-replay",
   "workload-admission","node-worker-process","bounded-supervisor","ipc-health","offline-worker-receipts",
   "ci-linux-supervised-worker","autonomous-edge-host","boot-reopen-without-dashboard",
-  "predevice-port-conformance","golden-trace-parity","safe-device-integration-preflight"
+  "predevice-port-conformance","golden-trace-parity","safe-device-integration-preflight",
+  "hardware-candidate-screening"
 ]);
 const IDENTITY=Object.freeze({siteId:"demo-site",deviceId:"demo-edge",configRevision:"cfg-demo-1"});
 function createDashboardLab({tmpParent=os.tmpdir()}={}){
   let dir=null,edge=null,cloud=null,history=[],route=null,revision=0,closed=false,busy=false;
-  let cloudAvailable=true,profile="normal",lastResult=null,wan=null,boot=null,supervisor=null,autonomousEvidence=null,predeviceEvidence=null,goldenTraceEvidence=null,devicePreflightEvidence=null;
+  let cloudAvailable=true,profile="normal",lastResult=null,wan=null,boot=null,supervisor=null,autonomousEvidence=null,predeviceEvidence=null,goldenTraceEvidence=null,devicePreflightEvidence=null,candidateEvidence=null;
   function guard(){if(closed)throw Error("LAB_CLOSED");}
   function start(next="normal"){
     if(!["normal","pressure"].includes(next))throw Error("UNSUPPORTED_LAB_PROFILE");
@@ -36,7 +38,7 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
     if(edge)edge.close();
     if(dir)fs.rmSync(dir,{recursive:true,force:true});
     dir=fs.mkdtempSync(path.join(tmpParent,"pef-visual-lab-"));
-    profile=next;history=[];lastResult=null;route=null;revision=0;cloudAvailable=true;autonomousEvidence=null;predeviceEvidence=null;goldenTraceEvidence=null;devicePreflightEvidence=null;
+    profile=next;history=[];lastResult=null;route=null;revision=0;cloudAvailable=true;autonomousEvidence=null;predeviceEvidence=null;goldenTraceEvidence=null;devicePreflightEvidence=null;candidateEvidence=null;
     wan={primary:{link:true,upstream:true},backup:{link:true,upstream:true}};
     const proofKey=randomBytes(32);
     cloud=createLabCloudReplica({siteId:IDENTITY.siteId,deviceId:IDENTITY.deviceId,
@@ -90,6 +92,8 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
         deviceBackend:"BACKEND_NOT_IMPLEMENTED",physicalValidated:false},
       devicePreflight:{kind:"PEF_DEVICE_INTEGRATION_REHEARSAL_V1",scope:"SOFTWARE_LAB_ONLY",lastEvidence:devicePreflightEvidence,
         deviceBackend:"BACKEND_NOT_IMPLEMENTED",physicalValidated:false,productionAuthorized:false},
+      hardwareCandidates:{kind:"PEF_C2_HARDWARE_SCREENING_REPORT_V1",scope:"DOCUMENTED_SPECS_AND_HOST_OBSERVATIONS",
+        lastEvidence:candidateEvidence,deviceBackend:"BACKEND_NOT_IMPLEMENTED",physicalValidated:false},
       standaloneEdge:{kind:"PEF_STANDALONE_SERVICE_SMOKE",scope:"LAB_ONLY",lastEvidence:autonomousEvidence,
         daemonCli:"node bin/pef-edge.js --config /absolute/config.json",physicalValidated:false},
       workloads:{entries:supervisor?.list()||[],budgets:supervisor?.limits()||{},
@@ -121,6 +125,9 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
         case "devicePreflight":
           devicePreflightEvidence=await runDeviceIntegrationRehearsal();
           return emit("device-preflight",devicePreflightEvidence);
+        case "hardwareScreening":
+          candidateEvidence=runCandidateScreening();
+          return emit("hardware-screening",candidateEvidence);
         case "autonomousSmoke":
           autonomousEvidence=await runStandaloneEdgeSmoke();
           return emit("autonomous-edge-smoke",autonomousEvidence);

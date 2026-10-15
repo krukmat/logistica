@@ -104,6 +104,7 @@ function renderIntegrated(lab){
   $("predevice-evidence").textContent=JSON.stringify(lab.predevice,null,2);
   $("golden-traces-evidence").textContent=JSON.stringify(lab.goldenTraces,null,2);
   $("device-preflight-evidence").textContent=JSON.stringify(lab.devicePreflight,null,2);
+  $("hardware-screening-evidence").textContent=JSON.stringify(lab.hardwareCandidates,null,2);
   $("workload-status").textContent=JSON.stringify(lab.workloads,null,2);
   if(lab.workloads.linuxCiEvidence)
     setText("workload-linux-evidence-status",lab.workloads.linuxCiEvidence.state);
@@ -180,6 +181,7 @@ function bind(){
   $("predevice-conformance").addEventListener("click",()=>labAction("predeviceConformance"));
   $("golden-traces").addEventListener("click",()=>labAction("goldenTraces"));
   $("device-preflight").addEventListener("click",()=>labAction("devicePreflight"));
+  $("hardware-screening").addEventListener("click",()=>labAction("hardwareScreening"));
   $("workload-start").addEventListener("click",()=>labAction("workloadStart"));
   $("workload-stop").addEventListener("click",()=>labAction("workloadStop"));
   $("workload-crash").addEventListener("click",()=>labAction("workloadCrash"));

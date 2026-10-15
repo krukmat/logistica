@@ -342,6 +342,21 @@
       "implementation": "src/runtime/device-integration-rehearsal.js",
       "test": "test/device-integration-rehearsal.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "W1.10.C2",
+      "mode": "lab",
+      "title": "Evidence-traceable Linux device shortlist, incomplete BOM and safe host-only fsync observations",
+      "controlIds": [
+        "hardware-screening",
+        "hardware-screening-evidence"
+      ],
+      "actions": [
+        "hardwareScreening"
+      ],
+      "implementation": "src/runtime/device-candidate-screen.js",
+      "test": "test/device-candidate-screen.test.js",
+      "hardwareValidated": false
     }
   ]
 }

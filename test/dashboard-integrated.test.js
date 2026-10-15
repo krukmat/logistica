@@ -353,3 +353,21 @@ test("W1.10.C1 authenticated dashboard runs safe boot/device preflight with phys
  assert.equal(report.lab.devicePreflight.productionAuthorized,false);
  assert.ok(report.lab.history.some(x=>x.action==="device-preflight"));
 }));
+
+test("W1.10.C2 dashboard screens evidence-grounded candidates and measures only local temporary fsync",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text(),js=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["hardware-screening","hardware-screening-evidence"])
+   assert.ok(html.includes('id="'+id+'"'),"Missing C2 UI "+id);
+ assert.ok(js.includes('labAction("hardwareScreening")'));
+ await call({command:"mode",mode:"lab"});
+ const run=await call({command:"lab",action:"hardwareScreening",hardwareApproved:true});
+ assert.equal(run.httpStatus,200,JSON.stringify(run.result));
+ assert.equal(run.result.status,"LAB_PASS_PHYSICAL_BLOCKED");
+ assert.equal(run.result.shortlist.candidates.length,3);
+ assert.deepEqual(run.result.shortlist.firstInvestigationCandidates,["nanopi-r5s-lts-4gb"]);
+ assert.equal(run.result.physical.canEnableDevice,false);
+ assert.equal(run.result.observation.physicalValidated,false);
+ assert.equal(run.result.physicalValidated,false);
+ assert.equal(run.lab.hardwareCandidates.lastEvidence.status,"LAB_PASS_PHYSICAL_BLOCKED");
+ assert.ok(run.lab.history.some(x=>x.action==="hardware-screening"));
+}));

@@ -174,3 +174,7 @@ Run `npm run traces:check` for four pinned Product Core scenarios; `npm run trac
 
 
 **W1.10.C1 lab closure (2026-10-15):** [CI #38780758276](https://github.com/krukmat/logistica/actions/runs/38780758276) **110/110 Node**, **9/9 safe preflight**, **34/34 port checks**, **4/4 golden traces**, Linux lab and third gate PASS. The device backend remains `BACKEND_NOT_IMPLEMENTED` and requires independent physical acceptance. [C1 audit](docs/audit/w1.10-c1-2026-10-15.md).
+
+### W1.10.C2 — Comparison of low-cost physical Edge candidates
+
+`npm run device:candidates` checks three candidate configurations, source-backed board price snapshots, missing required bill-of-materials items and an **unprivileged host-only** journal fsync/reopen sampler. `npm run device:candidates -- --output /tmp/pef-c2.json` saves typed JSON evidence. The dashboard's **Laboratorio integrado → Evaluar candidatos y observaciones** runs the same evaluation. Candidate choice is provisional; physical NIC, installed CPU/RAM measurements, watts, uptime/powercut and actual complete EU landed BOM remain `NOT_RUN`. [W1.10.C2 report](docs/25-hardware-screening.md).
