@@ -22,3 +22,7 @@ npm run dashboard
 The `--compare` command *reruns* the local golden scenarios, verifies the supplied external JSON independently against the pinned baseline, then compares normalized behaviors. Evidence output includes pinned and actual SHA-256, environment metadata, per-scenario wall duration and process RSS, but timings/RSS are not compared and cannot infer device wattage or latencies. The JSON checksum is for comparison, not authenticated provenance. Never accept an untrusted report or auto-promote it as a baseline.
 
 Linux CI runs `npm run traces:check` and uploads `pef-golden-traces-linux`; this **does not itself prove macOS conformance** until executed on an actual Mac. Later device adapters should emit the same semantic schema, but will need explicit hardware/kernel validation independently. `device` remains `BACKEND_NOT_IMPLEMENTED`. No powercut, NIC, real ISP routing, production cloud, actual watt/thermal/throughput or power budget validated.
+
+## CI verification — 2026-10-15
+
+[Run #38768767489](https://github.com/krukmat/logistica/actions/runs/38768767489) completed SUCCESS. 107 Node tests pass, four normative trace scenarios PASS with matching SHA-256 `e8e72bdf0362ffd5a80811202c1aa86ce776038f8d53380cc574915bd64ff976`, all 34 existing prehardware checks PASS; Linux networking/workloads and handoff passed. [Linux golden trace artifact](https://github.com/krukmat/logistica/actions/runs/38768767489/artifacts/11990463988) · [audit](audit/w1.10-b4-2026-10-15.md). A Mac run is still needed for literal Mac↔Linux parity.

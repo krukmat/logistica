@@ -165,3 +165,5 @@ The shared predevice matrix now rehearses **34 checks** (including 11 storage fa
 ### W1.10.B4 — Golden trace parity (software lab)
 
 Run `npm run traces:check` for four pinned Product Core scenarios; `npm run traces:check -- --output /absolute/mac.json` writes your local report. Download the `pef-golden-traces-linux` CI artifact, then run `npm run traces:check -- --compare /absolute/pef-golden-traces-linux.json` to validate Mac vs Linux behavior (both independently checked against pinned reference). Alternatively **Laboratorio integrado → Comparar trazas canónicas**. Wall time and process RSS are observations only; this is not a physical device benchmark. [Contract](docs/23-golden-traces.md).
+
+**W1.10.B4 software/lab closed 2026-10-15:** [CI #38768767489](https://github.com/krukmat/logistica/actions/runs/38768767489), 107 Node tests + 34 prehardware checks + four pinned golden traces PASS. [Audit](docs/audit/w1.10-b4-2026-10-15.md). Physical device `BACKEND_NOT_IMPLEMENTED`; Mac comparison is an optional explicit local validation, not already proven by Linux CI.
