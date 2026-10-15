@@ -102,6 +102,7 @@ function renderIntegrated(lab){
   setText("receipt-count",accepted+" recepciones locales · "+cloudAcked+" confirmadas en Cloud mock");
   $("edge-autonomous-evidence").textContent=JSON.stringify(lab.standaloneEdge,null,2);
   $("predevice-evidence").textContent=JSON.stringify(lab.predevice,null,2);
+  $("golden-traces-evidence").textContent=JSON.stringify(lab.goldenTraces,null,2);
   $("workload-status").textContent=JSON.stringify(lab.workloads,null,2);
   if(lab.workloads.linuxCiEvidence)
     setText("workload-linux-evidence-status",lab.workloads.linuxCiEvidence.state);
@@ -176,6 +177,7 @@ function bind(){
   $("receive-package").addEventListener("click",submitReceipt);
   $("edge-autonomous-smoke").addEventListener("click",()=>labAction("autonomousSmoke"));
   $("predevice-conformance").addEventListener("click",()=>labAction("predeviceConformance"));
+  $("golden-traces").addEventListener("click",()=>labAction("goldenTraces"));
   $("workload-start").addEventListener("click",()=>labAction("workloadStart"));
   $("workload-stop").addEventListener("click",()=>labAction("workloadStop"));
   $("workload-crash").addEventListener("click",()=>labAction("workloadCrash"));

@@ -319,3 +319,18 @@ test("W1.10.A dashboard invokes real predevice port conformance and labels physi
  assert.equal(report.lab.predevice.physicalValidated,false);
  assert.ok(report.lab.history.some(x=>x.action==="predevice-conformance"));
 }));
+
+test("W1.10.B4 dashboard executes golden Core trace oracle and exposes evidence",()=>withPanel(async({url,call})=>{
+ const html=await (await fetch(url)).text(),js=await (await fetch(url+"dashboard.js")).text();
+ for(const id of ["golden-traces","golden-traces-evidence"])
+   assert.ok(html.includes('id="'+id+'"'),"Missing B4 UI "+id);
+ assert.ok(js.includes('labAction("goldenTraces")'));
+ await call({command:"mode",mode:"lab"});
+ const run=await call({command:"lab",action:"goldenTraces"});
+ assert.equal(run.httpStatus,200,JSON.stringify(run.result));
+ assert.equal(run.result.status,"LAB_PASS",JSON.stringify(run.result.comparison));
+ assert.equal(run.result.traces.scenarios.length,4);
+ assert.equal(run.lab.goldenTraces.lastEvidence.canonicalSha256,run.result.baselineSha256);
+ assert.equal(run.lab.goldenTraces.physicalValidated,false);
+ assert.ok(run.lab.history.some(x=>x.action==="golden-traces"));
+}));

@@ -312,6 +312,21 @@
       "implementation": "src/runtime/storage-fault-conformance.js",
       "test": "test/storage-fault-conformance.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "W1.10.B4",
+      "mode": "lab",
+      "title": "Pinned Product Core golden trace parity with local/CI artifact comparator",
+      "controlIds": [
+        "golden-traces",
+        "golden-traces-evidence"
+      ],
+      "actions": [
+        "goldenTraces"
+      ],
+      "implementation": "src/runtime/golden-traces.js",
+      "test": "test/golden-traces.test.js",
+      "hardwareValidated": false
     }
   ]
 }
