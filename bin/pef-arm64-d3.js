@@ -42,7 +42,7 @@ function open(dir,sessionId){
    primary:{link:true,upstream:false},backup:{link:true,upstream:false}}),...options});
 }
 function bootId(){return fs.readFileSync("/proc/sys/kernel/random/boot_id","utf8").trim();}
-function pidStart(pid){const raw=fs.readFileSync("/proc/"+pid+"/stat","utf8");return raw.split(") ").pop().trim().split(/\\s+/)[19];}
+function pidStart(pid){const raw=fs.readFileSync("/proc/"+pid+"/stat","utf8");return raw.split(") ").pop().trim().split(/\s+/)[19];}
 function inspect(dir){
  const file=path.join(dir,"prepared.json");
  if(!fs.existsSync(file))throw Error("D3_NOT_PREPARED");
