@@ -14,3 +14,9 @@ npm test
 npm run traces:check
 npm run ports:conformance
 node bin/pef-arm64-vm.js --profile "$profile" --require-arm64 --enforce-guest-limits --base-dir "$state" --output "$state/$profile.json"
+
+if ! command -v ip >/dev/null || ! command -v ping >/dev/null;then
+ sudo -n apt-get update -qq
+ sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq iproute2 iputils-ping
+fi
+sudo -n env PEF_ARM64_VM_ACK=R28S_GUEST_NETNS_ONLY PEF_ARM64_VM_ROOT="$root" bash scripts/arm64-vm/guest-network-lab.sh

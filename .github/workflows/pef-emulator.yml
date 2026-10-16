@@ -86,6 +86,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: ARM64 guest shell syntax check (no kernel operations on CI)
+        run: bash -n scripts/arm64-vm/lima.sh scripts/arm64-vm/guest-run.sh scripts/arm64-vm/guest-network-lab.sh
       - name: ARM64 Core test suite
         run: npm test
       - name: ARM64 ISA golden parity and journal

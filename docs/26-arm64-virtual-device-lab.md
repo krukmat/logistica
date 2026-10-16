@@ -17,3 +17,5 @@ Guest installs Debian Node >=20 with apt if necessary, runs npm test, pinned Gol
 CI ubuntu-24.04-arm runs native ARM64 but is NOT a 1GiB VM, so must return LAB_PASS_PROFILE_NOT_ENFORCED. It verifies ISA compatibility and actual shared Core results, not CPU equivalence with Cortex-A53.
 
 D2.2 guest-only Linux namespaces coupled to shared Core route adapter remain pending. D3 abrupt virtual reboot, D4 UI comparison and real device validation remain pending. The two native Ethernet ports of the target board cannot be falsely described as physical dual WAN plus LAN without additional interfaces.
+
+D2.2 now provides an ARM64 Linux VM-only adapter, 3 temporary veth logical paths (WAN A, WAN B, LAN), Core-controlled real namespace route writes/readback, failover from WAN A to WAN B, local-only, then recovery. Root operations apply only inside VM namespaces; no host default route changes. Do not confuse three virtual paths with the R28S's two physical Ethernet ports.
