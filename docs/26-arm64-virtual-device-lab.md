@@ -61,3 +61,7 @@ Dashboard → **ARM64 Virtual Hardware Lab** → choose that local comparison JS
 D4 output remains blocked if any evidence file is missing/inconsistent. Host/local guest import is operator-supplied and unauthenticated. No Mac root, real ISP route writes or purchases.
 
 **CI evidence augmentation:** native Linux ARM64 runner repeats 2,000 receipt fsync/reopen workload and records bounded-process resource figures as `pef-arm64-2k-load-no-memory-cap`. This must not be treated as the 1GiB VM test; rerun `lima.sh load r28s-1g` locally for genuine constrained VM evidence.
+
+## D3/D4 CI closure — 2026-10-16
+
+[Audit](audit/w1.10-d3-d4-virtual-arm64-2026-10-16.md) · [CI SUCCESS #38964168864](https://github.com/krukmat/logistica/actions/runs/38964168864). 123/123 ARM64 tests, D3 process SIGKILL with live journal, 2,000/2,000 D4 synthetic receipts retained. **No Lima force-stop executed on the operator Mac in this change.**
