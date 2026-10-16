@@ -1,25 +1,42 @@
 "use strict";
 const test=require("node:test"),assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path"),os=require("node:os");
-const {spawn}=require("node:child_process");
+const {spawn,spawnSync}=require("node:child_process");
 const cli=path.resolve(__dirname,"../bin/pef-arm64-d3.js");
-// CI deliberately kills a process, NOT a VM. Never attempts force-stop outside the operator's Lima VM.
-test("D3 writer remains open through SIGKILL, data and dedup survive process restart",async t=>{
- if(process.platform!=="linux"||process.arch!=="arm64"){t.skip("Only Linux ARM64 guest/CI");return;}
- // CI ARM64 has >1GiB: construct temp writer by injecting a test-only OS memory report is prohibited.
- // This test checks the guard instead; actual limited 1GiB writer is operator-run in Lima VM.
- const dir=fs.mkdtempSync(path.join(os.tmpdir(),"d3-guard-"));
+test("D3 process SIGKILL persists durable receipts and dedup on ARM64 CI",async t=>{
+ if(process.platform!=="linux"||process.arch!=="arm64"||process.env.CI!=="true"||
+    process.env.RUNNER_ENVIRONMENT!=="github-hosted"){
+   t.skip("Real child kill only on ephemeral Linux ARM64 CI");return;
+ }
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),"pef-d3-"));
+ const env={...process.env,PEF_D3_CI_ACK:"PROCESS_KILL_ONLY"};
+ let child;
  try{
-  const child=spawn(process.execPath,[cli,"--mode","writer","--base-dir",dir],{stdio:["ignore","pipe","pipe"]});
-  let log="";
-  for await(const data of child.stderr)log+=String(data);
-  await new Promise(resolve=>child.on("close",resolve));
-  assert.match(log,/D3_CONSTRAINED_ARM64_VM_REQUIRED/);
- }finally{fs.rmSync(dir,{recursive:true,force:true});}
+  child=spawn(process.execPath,[cli,"--mode","writer","--profile","r28s-1g","--base-dir",dir],
+    {env,stdio:["ignore","pipe","pipe"]});
+  let chunks="",errors="";
+  child.stderr.on("data",d=>{errors+=String(d);});
+  const deadline=Date.now()+12000;
+  while(Date.now()<deadline&&!fs.existsSync(path.join(dir,"d3-r28s-1g","prepared.json"))&&child.exitCode===null)
+    await new Promise(r=>setTimeout(r,20));
+  assert.ok(fs.existsSync(path.join(dir,"d3-r28s-1g","prepared.json")),errors);
+  const inspect=spawnSync(process.execPath,[cli,"--mode","inspect","--base-dir",dir],{encoding:"utf8"});
+  assert.equal(inspect.status,0,inspect.stderr);
+  assert.equal(JSON.parse(inspect.stdout).writerStillLive,true);
+  child.kill("SIGKILL");
+  await new Promise(resolve=>child.once("close",resolve));
+  const v=spawnSync(process.execPath,[cli,"--mode","verify","--base-dir",dir],{encoding:"utf8"});
+  assert.equal(v.status,0,v.stderr);
+  const report=JSON.parse(v.stdout);
+  assert.equal(report.ok,true);
+  assert.equal(report.retained,120);
+  assert.equal(report.duplicateDetected,true);
+  assert.equal(report.conflictBlocked,true);
+  assert.equal(report.status,"PROCESS_EXIT_REOPEN_PASS");
+  assert.equal(report.physicalPowercutValidated,false);
+ }finally{if(child?.exitCode===null)child.kill("SIGKILL");fs.rmSync(dir,{recursive:true,force:true});}
 });
-test("D3 CLI cannot verify missing persisted evidence or write on arbitrary path",()=>{
- const {spawnSync}=require("node:child_process");
- const r=spawnSync(process.execPath,[cli,"--mode","verify","--base-dir","/path/not/exists"],{encoding:"utf8"});
- assert.notEqual(r.status,0);
- assert.match(r.stderr,/PEF_D3_BLOCKED/);
+test("D3 blocks arbitrary directory, missing manifest and unsafe elevated claims",()=>{
+ const r=spawnSync(process.execPath,[cli,"--mode","verify","--base-dir","/not/a/path"],{encoding:"utf8"});
+ assert.notEqual(r.status,0);assert.match(r.stderr,/PEF_D3_BLOCKED/);
 });

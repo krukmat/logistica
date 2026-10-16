@@ -18,7 +18,8 @@
     "device:preflight": "node bin/pef-device-preflight.js",
     "device:candidates": "node bin/pef-device-candidates.js",
     "arm64:profile": "node bin/pef-arm64-vm.js",
-    "arm64:d3": "node bin/pef-arm64-d3.js"
+    "arm64:d3": "node bin/pef-arm64-d3.js",
+    "arm64:compare": "node bin/pef-arm64-compare.js"
   },
   "license": "UNLICENSED"
 }

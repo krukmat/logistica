@@ -42,3 +42,20 @@ bash scripts/arm64-vm/lima.sh d3-export r28s-1g > /tmp/pef-arm64-d3.json
 Each phase is explicit; force-stop is **not automatic** during ordinary D1/D2 runs. If the crash test was already prepared, D3 refuses to overwrite its evidence: preserve or rename the guest's directory before a new run. Guest D3 logs are at `~/.local/share/pef-arm64-lab/d3-r28s-1g.log`.
 
 The final report explicitly marks `evidenceOrigin:LIMA_FORCE_STOP_HOST_CLI_SELF_REPORTED` and `physicalPowercutValidated:false`. CI never force-stops a VM. It tests the D3 state/interface guard only. This VM stop exercises guest virtual-disk behavior, not real microSD power interruption, flash cache guarantees or real boot/watchdog/OTA.
+
+## D4 — Bounded load and operator-imported virtual evidence comparison
+
+```bash
+cd ~/logistica && git switch main && git pull
+# Rerun D1/D2 after updating golden trace digest in the JSON:
+bash scripts/arm64-vm/lima.sh run r28s-1g
+bash scripts/arm64-vm/lima.sh load r28s-1g
+# After D3 prepare → force-stop → verify:
+bash scripts/arm64-vm/lima.sh d4-compare r28s-1g
+bash scripts/arm64-vm/lima.sh d4-export r28s-1g > /tmp/pef-r28s-1g-comparison.json
+npm run dashboard
+```
+
+Dashboard → **ARM64 Virtual Hardware Lab** → choose that local comparison JSON. File is loaded in-browser as text (not uploaded to Cloud); the dashboard does not trust reports as device attestation. D4 requires 4 canonical SHA-matching traces, restricted ARM64 guest memory, D3 force-stop operator evidence, WAN state transitions and at least 1000 fsync-acknowledged/retained events. It returns at most `R28S_1GB_CORE_ONLY_PROMISING`, never physical GO. The stress test is a **bounded 2000-event burst**, not a 72-hour retention/storage guarantee. CPU/perf figures reflect Apple ARM64 virtual CPUs, not the R28S SoC.
+
+D4 output remains blocked if any evidence file is missing/inconsistent. Host/local guest import is operator-supplied and unauthenticated. No Mac root, real ISP route writes or purchases.

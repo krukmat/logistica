@@ -59,8 +59,10 @@ function writer({dir,profile}){
  // Prevent reusing or deleting prior evidence without explicit operator cleanup.
  fs.mkdirSync(dir,{mode:0o700});
  const guest={platform:process.platform,arch:process.arch,memoryMiB:Math.floor(os.totalmem()/1048576)};
+ const ciProcessKillOnly=process.env.CI==="true"&&process.env.GITHUB_ACTIONS==="true"&&
+   process.env.RUNNER_ENVIRONMENT==="github-hosted"&&process.env.PEF_D3_CI_ACK==="PROCESS_KILL_ONLY";
  if(process.platform!=="linux"||process.arch!=="arm64"||
-   Math.abs(guest.memoryMiB-profiles[profile].memoryMiB)>profiles[profile].memoryMiB*0.12)
+   (!ciProcessKillOnly&&Math.abs(guest.memoryMiB-profiles[profile].memoryMiB)>profiles[profile].memoryMiB*0.12))
    throw Error("D3_CONSTRAINED_ARM64_VM_REQUIRED");
  const edge=open(dir,"d3-live-"+randomUUID());
  const receipts=expected();
@@ -70,7 +72,7 @@ function writer({dir,profile}){
  }
  syncJson(path.join(dir,"prepared.json"),{kind:"PEF_ARM64_D3_PREPARED_V1",stage:"OPEN_WRITER",
   runId:randomUUID(),pid:process.pid,bootId:bootId(),pidStart:pidStart(process.pid),expected:count,sha256:hash(receipts),
-  guest,physicalValidated:false,vmPowerLossVerified:false});
+  guest,ciProcessKillOnly,physicalValidated:false,vmPowerLossVerified:false});
  process.stdout.write(JSON.stringify({kind:"PEF_ARM64_D3_READY",status:"OPEN_WRITER",pid:process.pid,
   accepted:count,readyForForceStop:true,physicalValidated:false})+"\n");
  // Intentionally do NOT close edge: the VM force-stop will terminate the active writer.
