@@ -59,3 +59,5 @@ npm run dashboard
 Dashboard → **ARM64 Virtual Hardware Lab** → choose that local comparison JSON. File is loaded in-browser as text (not uploaded to Cloud); the dashboard does not trust reports as device attestation. D4 requires 4 canonical SHA-matching traces, restricted ARM64 guest memory, D3 force-stop operator evidence, WAN state transitions and at least 1000 fsync-acknowledged/retained events. It returns at most `R28S_1GB_CORE_ONLY_PROMISING`, never physical GO. The stress test is a **bounded 2000-event burst**, not a 72-hour retention/storage guarantee. CPU/perf figures reflect Apple ARM64 virtual CPUs, not the R28S SoC.
 
 D4 output remains blocked if any evidence file is missing/inconsistent. Host/local guest import is operator-supplied and unauthenticated. No Mac root, real ISP route writes or purchases.
+
+**CI evidence augmentation:** native Linux ARM64 runner repeats 2,000 receipt fsync/reopen workload and records bounded-process resource figures as `pef-arm64-2k-load-no-memory-cap`. This must not be treated as the 1GiB VM test; rerun `lima.sh load r28s-1g` locally for genuine constrained VM evidence.

@@ -103,6 +103,17 @@ jobs:
           path: ${{ runner.temp }}/pef-arm64-isa.json
           if-no-files-found: warn
 
+      - name: D4 bounded 2000-receipt ARM64 load (no 1GiB memory cap)
+        run: |
+          npm run arm64:profile -- --profile r28s-1g --count 2000 --require-arm64 \
+            --base-dir "$RUNNER_TEMP/pef-arm64-data" --output "$RUNNER_TEMP/pef-arm64-load-unconstrained.json"
+      - name: Upload D4 ARM64 load evidence (not memory-constrained)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pef-arm64-2k-load-no-memory-cap
+          path: ${{ runner.temp }}/pef-arm64-load-unconstrained.json
+          if-no-files-found: warn
   netns-lab:
     runs-on: ubuntu-latest
     timeout-minutes: 10
