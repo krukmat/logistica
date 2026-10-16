@@ -25,3 +25,20 @@ Guest network evidence is stored in the VM at ~/.local/share/pef-arm64-lab/r28s-
 ## Actual local Mac ARM64 VM run — 2026-10-16
 
 See [operator terminal-log audit](audit/w1.10-d1-d2-arm64-mac-2026-10-16.md). The reported 972 MiB observed guest RAM, Node v20.19.2 ARM64, four pinned traces, 34/34 port conformance, 50/50 receipts across normal close/reopen, process RSS 53.83 MiB, and WAN failover/local-only/recovery are **operator-observed guest evidence**. They do not validate host-wide memory under sustained load, abrupt powercut, physical 2WAN+LAN wiring, real microSD durability or the R28S Rockchip SoC.
+
+## D3 — VM forced stop with an active journal writer (IMPLEMENTED, Mac guest NOT_RUN)
+
+A **new** guest-owned directory d3-r28s-1g on the Lima VM's private disk contains 120 fsync-ACKed O1 receipt records and a synced manifest. The writer process stays alive with the journal **OPEN**. Host launcher checks writer readiness before calling Lima's `stop --force` on the **explicitly named** `pef-r28s-1g` VM, then restarts this VM and verifies recovered receipts, idempotency and conflicting event rejection. No host/default network route writes, Mac root, guest artifact deletion, device backend enable or physical-board claims. **Never run against an existing non-PEF VM.**
+
+```bash
+cd ~/logistica
+git switch main && git pull
+bash scripts/arm64-vm/lima.sh d3-prepare r28s-1g
+bash scripts/arm64-vm/lima.sh d3-force-stop r28s-1g
+bash scripts/arm64-vm/lima.sh d3-verify r28s-1g
+bash scripts/arm64-vm/lima.sh d3-export r28s-1g > /tmp/pef-arm64-d3.json
+```
+
+Each phase is explicit; force-stop is **not automatic** during ordinary D1/D2 runs. If the crash test was already prepared, D3 refuses to overwrite its evidence: preserve or rename the guest's directory before a new run. Guest D3 logs are at `~/.local/share/pef-arm64-lab/d3-r28s-1g.log`.
+
+The final report explicitly marks `evidenceOrigin:LIMA_FORCE_STOP_HOST_CLI_SELF_REPORTED` and `physicalPowercutValidated:false`. CI never force-stops a VM. It tests the D3 state/interface guard only. This VM stop exercises guest virtual-disk behavior, not real microSD power interruption, flash cache guarantees or real boot/watchdog/OTA.

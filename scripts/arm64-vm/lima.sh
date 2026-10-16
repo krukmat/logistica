@@ -6,6 +6,15 @@ case "$profile" in r28s-1g) mem="1";; r28s-768m) mem="0.75";; r28s-512m) mem="0.
 command -v limactl >/dev/null || { echo "Install Lima with brew install lima" >&2;exit 78; }
 name="pef-$profile";root="$(cd "$(dirname "$0")/../.." && pwd)"
 case "$action" in
+ d3-prepare) limactl shell "$name" bash "$root/scripts/arm64-vm/guest-d3.sh" prepare "$root" "$profile";;
+ d3-force-stop)
+  limactl shell "$name" bash "$root/scripts/arm64-vm/guest-d3.sh" inspect "$root" "$profile"
+  echo "Force-stopping ONLY Lima instance $name; no physical power-cut claim."
+  limactl stop --force "$name";;
+ d3-verify)
+  limactl start "$name"
+  limactl shell "$name" bash "$root/scripts/arm64-vm/guest-d3.sh" verify "$root" "$profile";;
+ d3-export) limactl shell "$name" bash "$root/scripts/arm64-vm/guest-d3.sh" export "$root" "$profile";;
  create) limactl start --name "$name" --arch=aarch64 --vm-type=vz --cpus=4 --memory="$mem" --disk=16 template:debian;;
  run) limactl shell "$name" bash "$root/scripts/arm64-vm/guest-run.sh" "$root" "$profile";;
  stop) limactl stop "$name";;
