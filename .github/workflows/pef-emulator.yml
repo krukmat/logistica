@@ -14,6 +14,7 @@ on:
       - 'scenarios/**'
       - 'package.json'
       - 'scripts/lab/**'
+      - 'scripts/arm64-vm/**'
       - 'docs/contracts/**'
       - '.github/workflows/pef-emulator.yml'
   workflow_dispatch:
@@ -74,6 +75,31 @@ jobs:
         run: npm run emulate
       - name: Loopback connectivity lab
         run: npm run lab:loopback
+
+  arm64-isa:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup native ARM64 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: ARM64 Core test suite
+        run: npm test
+      - name: ARM64 ISA golden parity and journal
+        run: |
+          mkdir -p "$RUNNER_TEMP/pef-arm64-data"
+          npm run arm64:profile -- --profile r28s-1g --require-arm64 \
+            --base-dir "$RUNNER_TEMP/pef-arm64-data" --output "$RUNNER_TEMP/pef-arm64-isa.json"
+      - name: Upload ARM64 evidence (not constrained 1GiB guest)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pef-arm64-isa-unconstrained
+          path: ${{ runner.temp }}/pef-arm64-isa.json
+          if-no-files-found: warn
 
   netns-lab:
     runs-on: ubuntu-latest

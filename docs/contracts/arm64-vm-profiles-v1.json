@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "kind": "PEF_ARM64_VM_PROFILES_V1",
+  "scope": "GUEST_ARM64_ONLY_NOT_ROCKCHIP",
+  "runtimeNodeMin": 20,
+  "profiles": {
+    "r28s-1g": {
+      "cpus": 4,
+      "memoryMiB": 1024,
+      "diskGiB": 16
+    },
+    "r28s-768m": {
+      "cpus": 4,
+      "memoryMiB": 768,
+      "diskGiB": 16
+    },
+    "r28s-512m": {
+      "cpus": 4,
+      "memoryMiB": 512,
+      "diskGiB": 16
+    }
+  },
+  "physicalPortsOnCandidate": 2,
+  "hardwareValidated": false
+}
