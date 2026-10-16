@@ -41,14 +41,18 @@ function open(dir,sessionId){
  return openEdgeService({dir,identity,sessionId,ports:createScriptedWanPorts({
    primary:{link:true,upstream:false},backup:{link:true,upstream:false}}),...options});
 }
+function bootId(){return fs.readFileSync("/proc/sys/kernel/random/boot_id","utf8").trim();}
+function pidStart(pid){const raw=fs.readFileSync("/proc/"+pid+"/stat","utf8");return raw.split(") ").pop().trim().split(/\\s+/)[19];}
 function inspect(dir){
  const file=path.join(dir,"prepared.json");
  if(!fs.existsSync(file))throw Error("D3_NOT_PREPARED");
  const manifest=JSON.parse(fs.readFileSync(file,"utf8"));
  if(manifest.kind!=="PEF_ARM64_D3_PREPARED_V1"||manifest.stage!=="OPEN_WRITER"||
    manifest.expected!==count||manifest.sha256!==hash(expected()))throw Error("D3_MANIFEST_BAD");
- const live=fs.existsSync("/proc/"+manifest.pid+"/cmdline")&&
-   fs.readFileSync("/proc/"+manifest.pid+"/cmdline","utf8").includes("pef-arm64-d3.js");
+ const sameBoot=bootId()===manifest.bootId;
+ const live=sameBoot&&fs.existsSync("/proc/"+manifest.pid+"/cmdline")&&
+   fs.readFileSync("/proc/"+manifest.pid+"/cmdline","utf8").includes("pef-arm64-d3.js")&&
+   pidStart(manifest.pid)===manifest.pidStart;
  return {manifest,writerStillLive:live};
 }
 function writer({dir,profile}){
@@ -65,7 +69,7 @@ function writer({dir,profile}){
    if(!ack.accepted||!ack.fsyncCompleted)throw Error("D3_UNSAFE_ACK:"+r.receiptId);
  }
  syncJson(path.join(dir,"prepared.json"),{kind:"PEF_ARM64_D3_PREPARED_V1",stage:"OPEN_WRITER",
-  runId:randomUUID(),pid:process.pid,expected:count,sha256:hash(receipts),
+  runId:randomUUID(),pid:process.pid,bootId:bootId(),pidStart:pidStart(process.pid),expected:count,sha256:hash(receipts),
   guest,physicalValidated:false,vmPowerLossVerified:false});
  process.stdout.write(JSON.stringify({kind:"PEF_ARM64_D3_READY",status:"OPEN_WRITER",pid:process.pid,
   accepted:count,readyForForceStop:true,physicalValidated:false})+"\n");
