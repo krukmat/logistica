@@ -162,6 +162,27 @@ async function submitReceipt(){
   }catch(err){message(String(err.message||err),true);}
   finally{busy=false;if(current)render(current,currentLab,currentMode);}
 }
+async function importArm64Comparison(file){
+ const output=$("arm64-comparison-evidence");
+ if(!file){output.textContent="D4 NOT_RUN · selecciona un informe local";return;}
+ if(file.size>131072){output.textContent="Informe rechazado: límite 128 KiB";return;}
+ try{
+   const r=JSON.parse(await file.text());
+   if(!r||r.kind!=="PEF_ARM64_VIRTUAL_FIT_COMPARISON_V1"||r.schemaVersion!==1||
+      !["r28s-1g","r28s-768m","r28s-512m"].includes(r.profile)||
+      !Array.isArray(r.checks)||r.checks.length!==7||
+      r.limits?.deviceBackend!=="BACKEND_NOT_IMPLEMENTED"||
+      r.limits?.procurementApproved!==false||r.limits?.physicalPowercutValidated!==false)
+     throw Error("D4_INVALID_IMPORT");
+   output.textContent=JSON.stringify({
+     title:"PEF ARM64 · INFORME LOCAL NO AUTENTICADO",
+     profile:r.profile,status:r.status,virtualVerdict:r.verdict,
+     importedFromLocalFile:file.name,checks:r.checks,
+     physicalHardwareApproved:false,reportIntegrityIndependentlyVerified:false,
+     limitations:r.limits
+   },null,2);
+ }catch(err){output.textContent="Informe rechazado: "+String(err.message||err);}
+}
 function bind(){
   $("mode-sim").addEventListener("click",()=>dispatch({command:"mode",mode:"sim"}));
   $("mode-lab").addEventListener("click",()=>dispatch({command:"mode",mode:"lab"}));
@@ -182,6 +203,7 @@ function bind(){
   $("golden-traces").addEventListener("click",()=>labAction("goldenTraces"));
   $("device-preflight").addEventListener("click",()=>labAction("devicePreflight"));
   $("hardware-screening").addEventListener("click",()=>labAction("hardwareScreening"));
+  $("arm64-comparison-file").addEventListener("change",e=>importArm64Comparison(e.target.files?.[0]));
   $("workload-start").addEventListener("click",()=>labAction("workloadStart"));
   $("workload-stop").addEventListener("click",()=>labAction("workloadStop"));
   $("workload-crash").addEventListener("click",()=>labAction("workloadCrash"));

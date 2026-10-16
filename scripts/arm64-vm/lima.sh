@@ -8,7 +8,7 @@ name="pef-$profile";root="$(cd "$(dirname "$0")/../.." && pwd)"
 case "$action" in
  load) limactl shell "$name" bash "$root/scripts/arm64-vm/guest-load.sh" "$root" "$profile";;
  d4-compare) limactl shell "$name" bash "$root/scripts/arm64-vm/guest-compare.sh" "$root" "$profile";;
- d4-export) limactl shell "$name" cat ".local/share/pef-arm64-lab/$profile-comparison.json";;
+ d4-export) limactl shell "$name" bash -c 'cat "$HOME/.local/share/pef-arm64-lab/$1-comparison.json"' _ "$profile";;
  d3-prepare) limactl shell "$name" bash "$root/scripts/arm64-vm/guest-d3.sh" prepare "$root" "$profile";;
  d3-force-stop)
   limactl shell "$name" bash "$root/scripts/arm64-vm/guest-d3.sh" inspect "$root" "$profile"

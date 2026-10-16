@@ -374,3 +374,15 @@ test("W1.10.C2 dashboard screens evidence-grounded candidates and measures only 
  assert.equal(run.lab.hardwareCandidates.lastEvidence.status,"LAB_PASS_PHYSICAL_BLOCKED");
  assert.ok(run.lab.history.some(x=>x.action==="hardware-screening"));
 }));
+
+
+test("D4 control panel offers read-only ARM64 guest evidence import without physical GO",()=>withPanel(async({url})=>{
+ const html=await(await fetch(url)).text(),client=await(await fetch(url+"dashboard.js")).text();
+ assert.ok(html.includes('id="arm64-comparison-file"'));
+ assert.ok(html.includes('id="arm64-comparison-evidence"'));
+ assert.ok(html.includes("no certifican hardware físico"));
+ assert.ok(client.includes("PEF_ARM64_VIRTUAL_FIT_COMPARISON_V1"));
+ assert.ok(client.includes("file.text()"));
+ assert.ok(client.includes("reportIntegrityIndependentlyVerified:false"));
+ assert.ok(client.includes("physicalHardwareApproved:false"));
+}));
