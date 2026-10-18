@@ -34,3 +34,7 @@ Likewise the foundation's 72h sizing scenario and `REQ-STA-02` bounded store-and
 - Event loss, false ACK, replay corruption or priority-reserve failure appears in the smaller workload.
 
 **Next action:** inventory the existing standalone Edge, cloud/mock and logistics receiver, then implement a single **M1 end-to-end evidence flow** without replacing the shared journal or inventing a new simulator.
+
+## M1 proof strategy — documentary and video evidence
+
+[M1 evidence-by-design plan](30-m1-evidence-design.md) specifies one canonical autonomous runner, generated JSON + NDJSON + Markdown, SHA256 manifest, read-only visual evidence viewer, optional Playwright WebM recording of the same run, CI verification and non-certification labels. **Planning only; M1 scenario/video not implemented yet.** Most important prerequisite: connect autonomous Core `sync()` to the existing Cloud mock *in the same test run* without pretending Cloud Lite is real.
