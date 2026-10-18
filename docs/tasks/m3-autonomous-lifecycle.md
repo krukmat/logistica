@@ -61,3 +61,7 @@ Existe el ejemplo [systemd](../../ops/systemd/pef-m3-headless.service.example) *
 4. El `flock` sobre FD de directorio se probó solamente en Linux CI; el Mac usa arranque Node sin exclusión de kernel. No hay credenciales, arranque Linux ni despliegue de production provisionados.
 
 **Siguiente bloque:** M3.3 configuración transaccional y M3.4 rollback/safe-mode con nuevas pruebas, sin comprar hosting.
+
+## Cierre de laboratorio y CI — 2026-10-18
+
+**M3.1 + M3.2 CLOSED (LAB-ONLY)**. [CI #39149664097](https://github.com/krukmat/logistica/actions/runs/39149664097) SUCCESS: 152/152 ARM64, 151 pass + 1 platform skip x64, netns/prehardware PASS; `m3-autonomous-lifecycle-39149664097` JSON artifact. Linux wrapper `flock` contention, SIGKILL + durable reopen, bounded restart budget and dashboard HTTP trigger PASS. [Audit](../audit/m3-boot-supervision-2026-10-18.md). No physical appliance/system boot certification or general kernel fencing without wrapper.
