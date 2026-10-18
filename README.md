@@ -186,3 +186,5 @@ Run `npm run traces:check` for four pinned Product Core scenarios; `npm run trac
 **ARM64 VM D1/D2.1:** native ARM64 CI checks the shared Core, Golden Traces, fsync/reopen and RSS; Apple M5 Lima guest can test a real 1GiB VM limit via bash scripts/arm64-vm/lima.sh create r28s-1g followed by run r28s-1g. Hardware unverified. See docs/26-arm64-virtual-device-lab.md.
 
 **W1.10.D3/D4 (2026-10-16):** Virtual ARM64 forced-stop protocol and dashboard JSON comparison implemented; 123/123 ARM64 CI tests, 2k receipts validated on unconstrained runner. For actual 1GiB VM evidence run `bash scripts/arm64-vm/lima.sh d3-prepare r28s-1g`, `d3-force-stop`, `d3-verify`, then `run`, `load`, `d4-compare` and `d4-export`. Do not infer physical powercut/NIC performance. [Audit](docs/audit/w1.10-d3-d4-virtual-arm64-2026-10-16.md).
+
+**ARM64 constrained guest result (operator, 2026-10-18):** D3/D4 virtual comparison 7/7 PASS on 972MiB reported VM (2,000 events, 53.11MiB process RSS). Research can advance to guest-wide memory/72h offline durability and topology; physical device remains BLOCKED. [Audit](docs/audit/w1.10-d3-d4-mac-1g-2026-10-18.md).

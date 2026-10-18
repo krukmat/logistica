@@ -16,7 +16,7 @@ Guest installs Debian Node >=20 with apt if necessary, runs npm test, pinned Gol
 
 CI ubuntu-24.04-arm runs native ARM64 but is NOT a 1GiB VM, so must return LAB_PASS_PROFILE_NOT_ENFORCED. It verifies ISA compatibility and actual shared Core results, not CPU equivalence with Cortex-A53.
 
-D2.2 guest-only Linux namespaces coupled to shared Core route adapter is IMPLEMENTED and user-run VM terminal log reports VM_NETNS_LAB_PASS (2026-10-16). D3 abrupt virtual reboot, D4 UI comparison and real device validation remain pending. The two native Ethernet ports of the target board cannot be falsely described as physical dual WAN plus LAN without additional interfaces.
+D2.2 guest-only Linux namespaces coupled to shared Core route adapter was operator-reported PASS on 2026-10-16. D3/D4 operator-supplied constrained-1GiB VM comparison was later reported PASS on 2026-10-18; see audit. Physical device validation remains pending. The two native Ethernet ports of the target board cannot be falsely described as physical dual WAN plus LAN without additional interfaces.
 
 D2.2 now provides an ARM64 Linux VM-only adapter, 3 temporary veth logical paths (WAN A, WAN B, LAN), Core-controlled real namespace route writes/readback, failover from WAN A to WAN B, local-only, then recovery. Root operations apply only inside VM namespaces; no host default route changes. Do not confuse three virtual paths with the R28S's two physical Ethernet ports.
 
@@ -65,3 +65,7 @@ D4 output remains blocked if any evidence file is missing/inconsistent. Host/loc
 ## D3/D4 CI closure — 2026-10-16
 
 [Audit](audit/w1.10-d3-d4-virtual-arm64-2026-10-16.md) · [CI SUCCESS #38964168864](https://github.com/krukmat/logistica/actions/runs/38964168864). 123/123 ARM64 tests, D3 process SIGKILL with live journal, 2,000/2,000 D4 synthetic receipts retained. **No Lima force-stop executed on the operator Mac in this change.**
+
+## D3/D4 1 GiB Mac operator comparison — 2026-10-18
+
+[Evidence interpretation and next E phase](audit/w1.10-d3-d4-mac-1g-2026-10-18.md). The supplied D4 summary reports **7/7 PASS** with 972 MiB guest memory, 53.11 MiB Node RSS, 2,000 virtual receipts and 2,302.74 receipts/s on Apple ARM64 virtual CPUs. D3 force-stop recovery is **self-reported** rather than independently attested. This closes the initial D3/D4 *operator laboratory* acceptance only; does not validate full guest memory, 72h offline retention, powercut, hardware, or a complete two-WAN-plus-LAN device.
