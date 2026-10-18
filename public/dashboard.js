@@ -201,6 +201,39 @@ async function importArm64E5(file){
   },null,2);
  }catch(e){output.textContent="E5 rechazado: "+String(e.message||e);}
 }
+async function importArm64F1(file){
+ const output=$("arm64-f1-evidence");
+ if(!file){output.textContent="F1 NOT_RUN";return;}
+ if(file.size>262144){output.textContent="F1 rechazado: tamaño excesivo";return;}
+ try{
+  const r=JSON.parse(await file.text());
+  if(r.kind!=="PEF_F1_JOURNAL_INDEX_SCALE_V1"||r.schemaVersion!==1||
+     !["smoke","full"].includes(r.mode)||!Array.isArray(r.stages)||r.stages.length>3||
+     r.safety?.procurementApproved!==false||r.safety?.physicalValidated!==false||
+     r.safety?.full518400EventsTested!==false)
+    throw Error("F1_INVALID_IMPORT");
+  output.textContent=JSON.stringify({source:"INFORME LOCAL NO AUTENTICADO",profile:r.profile,
+   status:r.status,mode:r.mode,ok:r.ok,stages:r.stages,
+   error:r.error,physicalValidated:false,retention72hProven:false},null,2);
+ }catch(e){output.textContent="F1 rechazado: "+String(e.message||e);}
+}
+async function importArm64F2(file){
+ const output=$("arm64-f2-evidence");
+ if(!file){output.textContent="F2 NOT_RUN";return;}
+ if(file.size>262144){output.textContent="F2 rechazado: tamaño excesivo";return;}
+ try{
+  const r=JSON.parse(await file.text());
+  if(r.kind!=="PEF_F2_72H_RETENTION_POLICY_V1"||r.schemaVersion!==1||
+     r.decision?.procurementApproved!==false||
+     r.decision?.proposedPhysical72hAcceptance!==false||
+     r.decision?.changeProductionJournalConfigAuthorized!==false)
+    throw Error("F2_INVALID_IMPORT");
+  output.textContent=JSON.stringify({source:"PROYECCIÓN LOCAL NO AUTENTICADA",profile:r.profile,
+   status:r.status,projections:r.projections,checks:r.checks,
+   currentEdge100MiBCapBlocks72h:r.decision.currentEdge100MiBCapBlocks72h,
+   actual72hValidated:false,procurementApproved:false},null,2);
+ }catch(e){output.textContent="F2 rechazado: "+String(e.message||e);}
+}
 function bind(){
   $("mode-sim").addEventListener("click",()=>dispatch({command:"mode",mode:"sim"}));
   $("mode-lab").addEventListener("click",()=>dispatch({command:"mode",mode:"lab"}));
@@ -228,6 +261,8 @@ function bind(){
   $("hardware-screening").addEventListener("click",()=>labAction("hardwareScreening"));
   $("arm64-comparison-file").addEventListener("change",e=>importArm64Comparison(e.target.files?.[0]));
   $("arm64-e5-file").addEventListener("change",e=>importArm64E5(e.target.files?.[0]));
+  $("arm64-f1-file").addEventListener("change",e=>importArm64F1(e.target.files?.[0]));
+  $("arm64-f2-file").addEventListener("change",e=>importArm64F2(e.target.files?.[0]));
   $("workload-start").addEventListener("click",()=>labAction("workloadStart"));
   $("workload-stop").addEventListener("click",()=>labAction("workloadStop"));
   $("workload-crash").addEventListener("click",()=>labAction("workloadCrash"));

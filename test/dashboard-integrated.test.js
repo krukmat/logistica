@@ -406,3 +406,14 @@ test("E5 dashboard imports only local fail-closed research artifact, no hardware
  assert.match(script,/purchasedOrDeviceApproved:false/);
  assert.match(script,/file\.text\(\)/);
 }));
+
+
+test("F1/F2 dashboard locally imports explicit virtual reports without 72h or device claims",()=>withPanel(async({url})=>{
+ const html=await(await fetch(url)).text(),script=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["arm64-f1-file","arm64-f2-file","arm64-f1-evidence","arm64-f2-evidence"])
+  assert.ok(html.includes('id="'+id+'"'));
+ assert.ok(script.includes("PEF_F1_JOURNAL_INDEX_SCALE_V1"));
+ assert.ok(script.includes("PEF_F2_72H_RETENTION_POLICY_V1"));
+ assert.ok(script.includes("retention72hProven:false"));
+ assert.ok(script.includes("actual72hValidated:false"));
+}));
