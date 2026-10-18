@@ -31,7 +31,11 @@
     "m1:evidence:verify-video": "node bin/pef-m1-video.js --verify",
     "m3:supervise": "node bin/pef-m3-supervisor.js",
     "m3:evidence": "node bin/pef-m3-evidence.js",
-    "m3:recovery": "node bin/pef-m3-recovery.js"
+    "m3:recovery": "node bin/pef-m3-recovery.js",
+    "m3:bundle": "node bin/pef-m3-bundle.js",
+    "m3:bundle:verify": "node bin/pef-m3-bundle.js --verify",
+    "m3:bundle:video": "node bin/pef-m3-bundle.js --video",
+    "m3:bundle:verify-video": "node bin/pef-m3-bundle.js --verify-video"
   },
   "license": "UNLICENSED",
   "devDependencies": {

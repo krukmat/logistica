@@ -5,6 +5,7 @@ const {spawn}=require("node:child_process");
 const {timingSafeEqual}=require("node:crypto");
 const {createM3PolicyStore,normalize}=require("./m3-policy-store.js");
 const {validateEdgeConfig}=require("./edge-config.js");
+const {evaluateM3Diagnostics}=require("../core/m3-diagnostics.js");
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 function createManagedEdge({configFile,token,maxRestarts=2,restartDelayMs=180,
  healthIntervalMs=500,healthFailures=3,onEvent=()=>{}}={}){
@@ -21,11 +22,13 @@ function createManagedEdge({configFile,token,maxRestarts=2,restartDelayMs=180,
   maxRestarts,restartDelayMs,healthIntervalMs,healthFailures}});
  let policy=policyStore.snapshot().policy;
  let child=null,readyUrl=null,phase="NEW",restartCount=0,misses=0,safeModeReason=null;
- let changing=false;
+ let changing=false,operationalEvents=[];
  let stopping=false,started=false,restarting=false,healthTimer=null,exitPromise=null;
  const report=(type,details={})=>{const event={kind:"PEF_M3_LIFECYCLE_V1",
    type,at:new Date().toISOString(),phase,...details,
    scope:"SOFTWARE_LAB_ONLY",physicalValidated:false};
+  operationalEvents.push({type:event.type,at:event.at,phase:event.phase,reason:details.reason});
+  if(operationalEvents.length>64)operationalEvents.shift();
   onEvent(event);return event;};
  function status(){return {kind:"PEF_M3_MANAGER_STATUS_V1",phase,pid:child?.pid||null,
   url:readyUrl,restartCount,missedReadinessChecks:misses,backend:cfg.backend,
@@ -34,6 +37,7 @@ function createManagedEdge({configFile,token,maxRestarts=2,restartDelayMs=180,
   recoveryMode:phase==="SAFE_MODE"?"LOCAL_OPERATOR_REQUIRED":"AUTONOMOUS",
   remoteMutationAllowed:false,
   physicalValidated:false,cloudRequired:false,dashboardRequired:false};}
+ function diagnostics(){return evaluateM3Diagnostics(status(),operationalEvents);}
  const cleanupTimer=()=>{if(healthTimer){clearInterval(healthTimer);healthTimer=null;}};
  function resetHealthTimer(){
   cleanupTimer();
@@ -215,7 +219,7 @@ function createManagedEdge({configFile,token,maxRestarts=2,restartDelayMs=180,
    return {ok:false,status:"SAFE_MODE",error:"M3_LOCAL_RECOVERY_FAILED"};
   }
  }
- return {start,stop,status,crashForLab,applyPolicy,recoverLocal};
+ return {start,stop,status,diagnostics,crashForLab,applyPolicy,recoverLocal};
 
 }
 module.exports={createManagedEdge};

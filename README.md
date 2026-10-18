@@ -200,3 +200,17 @@ Run `npm run traces:check` for four pinned Product Core scenarios; `npm run trac
 **M3.1–M3.2 (2026-10-18):** supervisor headless `npm run m3:supervise -- --config /abs/edge.json` y smoke `npm run m3:evidence` con SIGKILL, restart/receipt fsync y límites de reintentos; Linux `scripts/m3/linux-locked-supervisor.sh` añade exclusión kernel `flock` entre instancias cooperantes, solo probada en CI. Dashboard → Laboratorio integrado → prueba M3; [Task y límites](docs/tasks/m3-autonomous-lifecycle.md). Cualquier despliegue físico sigue BLOCKED; Cloud Lite pagado aplazado.
 
 **M3.3/M3.4 LAB PASS:** `npm run m3:recovery` prueba política del supervisor con transacciones fsynced, revisión last-known-good, rollback por falla de health y SAFE_MODE tras reinicios repetidos con recuperación local. Panel integrado, [CI #39154660415](https://github.com/krukmat/logistica/actions/runs/39154660415), [tareas y límites](docs/tasks/m3-config-safe-mode.md). No cubre identidad firmada ni OTA física; M3.5/3.6 pendientes.
+
+## M3.5–M3.6 — Diagnósticos y evidencia integral de laboratorio
+
+El mismo supervisor M3 ofrece fase, revisión, presupuesto de reinicio, causa de SAFE_MODE y eventos redactados sin revelar credenciales. El Control Panel expone Laboratorio integrado → M3.5–M3.6, con el Edge real. Un único recorrido headless produce report.json, trace.ndjson, summary.md, m3-operations.html y un manifiesto SHA256 verificable.
+
+```bash
+npm run m3:bundle
+npm run m3:bundle:verify -- artifacts/m3/<run-dir>
+# Vídeo opcional; instalar Playwright/Chromium antes
+npm run m3:bundle:video -- artifacts/m3/<run-dir>
+npm run m3:bundle:verify-video -- artifacts/m3/<run-dir>
+```
+
+El vídeo es una reproducción de los registros del mismo ensayo, NO un dispositivo filmado. Requiere ejecución opt-in en CI (m3_video=true) para certificar el artefacto audiovisual. La prueba no demuestra powercut, configuraciones firmadas, Cloud Lite ni hardware. [Tareas y DoD](docs/tasks/m3-operations-evidence.md).

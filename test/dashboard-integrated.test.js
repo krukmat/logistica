@@ -457,3 +457,18 @@ test("M3.3/4 dashboard calls real managed Edge config, rollback and safe-mode te
  assert.equal(result.lab.m3Recovery.physicalValidated,false);
  assert.equal(result.lab.m3Recovery.remoteRecoveryAllowed,false);
 }));
+
+test("M3.5/6 dashboard invokes real diagnostics through HTTP",()=>withPanel(async({url,call})=>{
+ const html=await (await fetch(url)).text();
+ const js=await (await fetch(url+"dashboard.js")).text();
+ assert.ok(html.includes('id="m3-operations-smoke"'));
+ assert.ok(html.includes('id="m3-operations-evidence"'));
+ assert.match(js,/labAction\("m3Operations"\)/);
+ const changed=await call({command:"lab",action:"m3Operations"});
+ assert.equal(changed.result.ok,true);
+ assert.equal(changed.result.diagnosticSnapshots.length,4);
+ assert.equal(changed.result.diagnosticSnapshots[2].phase,"SAFE_MODE");
+ assert.equal(changed.result.diagnosticSnapshots[3].phase,"RUNNING");
+ assert.equal(changed.lab.m3Operations.physicalValidated,false);
+ assert.equal(changed.lab.m3Operations.remoteRecoveryAllowed,false);
+}));

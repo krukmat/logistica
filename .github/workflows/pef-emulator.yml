@@ -24,6 +24,11 @@ on:
         required: false
         type: boolean
         default: false
+      m3_video:
+        description: 'Record same-run M3 evidence WebM (opt-in)'
+        required: false
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -107,6 +112,19 @@ jobs:
         with:
           name: m3-transactional-recovery-${{ github.run_id }}
           path: ${{ runner.temp }}/pef-m3-recovery.json
+          if-no-files-found: error
+      - name: M3.5/M3.6 single-run technical proof and independent verifier
+        run: |
+          npm run m3:bundle -- --output-root "$RUNNER_TEMP/pef-m3-operations"
+          bundle="$(find "$RUNNER_TEMP/pef-m3-operations" -mindepth 1 -maxdepth 1 -type d | head -1)"
+          test -n "$bundle"
+          npm run m3:bundle:verify -- "$bundle"
+      - name: Upload M3 operations evidence (software lab, no video)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m3-operations-evidence-${{ github.run_id }}
+          path: ${{ runner.temp }}/pef-m3-operations
           if-no-files-found: error
       - name: Deterministic scenarios
         run: npm run emulate
@@ -310,4 +328,38 @@ jobs:
         with:
           name: m1-e2e-video-${{ github.run_id }}
           path: ${{ runner.temp }}/pef-m1
+          if-no-files-found: error
+
+  m3-video-milestone:
+    if: (github.event_name == 'workflow_dispatch' && inputs.m3_video == true) || contains(github.event.head_commit.message, '[m3-video]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact triggering commit
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install optional Playwright
+        run: npm install --no-audit --no-fund
+      - name: Install Chromium only on milestone
+        run: npx playwright install --with-deps chromium
+      - name: Produce and verify real M3 operation evidence
+        run: |
+          npm run m3:bundle -- --output-root "$RUNNER_TEMP/pef-m3-video"
+          bundle="$(find "$RUNNER_TEMP/pef-m3-video" -mindepth 1 -maxdepth 1 -type d | head -1)"
+          test -n "$bundle"
+          npm run m3:bundle:verify -- "$bundle"
+          echo "M3_BUNDLE=$bundle" >> "$GITHUB_ENV"
+      - name: Record same-run HTML-derived WebM
+        run: |
+          npm run m3:bundle:video -- "$M3_BUNDLE"
+          npm run m3:bundle:verify-video -- "$M3_BUNDLE"
+      - name: Upload M3 report, trace and WebM
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m3-operations-video-${{ github.run_id }}
+          path: ${{ runner.temp }}/pef-m3-video
           if-no-files-found: error

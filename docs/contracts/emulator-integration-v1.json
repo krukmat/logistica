@@ -390,6 +390,36 @@
       "implementation": "src/runtime/m3-process-manager.js",
       "test": "test/dashboard-integrated.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "M3.5",
+      "mode": "lab",
+      "title": "Operational supervisor diagnostics from real managed Edge",
+      "controlIds": [
+        "m3-operations-smoke",
+        "m3-operations-evidence"
+      ],
+      "actions": [
+        "m3Operations"
+      ],
+      "implementation": "src/core/m3-diagnostics.js",
+      "test": "test/dashboard-integrated.test.js",
+      "hardwareValidated": false
+    },
+    {
+      "task": "M3.6",
+      "mode": "lab",
+      "title": "Single-run supervisor recovery evidence and optional video",
+      "controlIds": [
+        "m3-operations-smoke",
+        "m3-operations-evidence"
+      ],
+      "actions": [
+        "m3Operations"
+      ],
+      "implementation": "src/runtime/m3-operations-bundle.js",
+      "test": "test/m3-operations.test.js",
+      "hardwareValidated": false
     }
   ]
 }

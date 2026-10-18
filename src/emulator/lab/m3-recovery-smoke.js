@@ -16,7 +16,14 @@ async function runM3RecoverySmoke(){
  fs.writeFileSync(file,JSON.stringify(cfg),{mode:0o600});
  const manager=createManagedEdge({configFile:file,token,maxRestarts:1,
   restartDelayMs:150,healthIntervalMs:500,healthFailures:3,onEvent:e=>events.push(e.type)});
- const checks={};
+ const checks={},diagnosticSnapshots=[];
+ const capture=(stage,phase)=>{
+  const d=manager.diagnostics();
+  if(d.phase!==phase||d.kind!=="PEF_M3_OPERATIONAL_DIAGNOSTICS_V1"||
+    d.physicalValidated!==false||d.remoteRecoveryAllowed!==false||
+    JSON.stringify(d).includes(token))throw Error("M3_DIAGNOSTICS_INVALID:"+stage);
+  diagnosticSnapshots.push({stage,...d});
+ };
  const check=(id,v)=>{checks[id]=Boolean(v);if(!v)throw Error("M3_RECOVERY_GATE_FAILED:"+id);};
  const get=async(route,body)=>{
   const s=manager.status(),response=await fetch(s.url+route,{
@@ -31,12 +38,14 @@ async function runM3RecoverySmoke(){
  }
  try{
   await manager.start();
+  capture("INITIAL","RUNNING");
   const r=await get("workloads/receipts",{receiptId:"M3-REC-1",packageId:"BOX-REC-1"});
   check("RECEIPT_DURABLE",r.http===201&&r.fsyncCompleted===true);
   const before=manager.status(),oldPid=before.pid;
   const p={...before.policy,restartDelayMs:230};
   const commit=await manager.applyPolicy({expectedRevision:1,revision:2,policy:p});
   check("CONFIG_COMMITTED",commit.ok===true&&commit.revision===2&&manager.status().policyRevision===2);
+  capture("CONFIG_COMMITTED","RUNNING");
   const stale=await manager.applyPolicy({expectedRevision:1,revision:3,policy:p});
   check("STALE_REVISION_REJECTED",stale.error==="M3_REVISION_CONFLICT"&&manager.status().phase==="RUNNING");
   const reject=await manager.applyPolicy({expectedRevision:2,revision:3,
@@ -50,16 +59,18 @@ async function runM3RecoverySmoke(){
   manager.crashForLab();
   await until(()=>manager.status().phase==="SAFE_MODE");
   check("SAFE_MODE_ON_RESTART_EXHAUSTION",manager.status().safeModeReason==="RESTART_BUDGET_EXHAUSTED");
+  capture("SAFE_MODE","SAFE_MODE");
   const denied=await manager.recoverLocal({operatorToken:"wrong"});
   check("UNAUTHORIZED_LOCAL_RECOVERY_BLOCKED",denied.error==="M3_LOCAL_OPERATOR_AUTH_REQUIRED");
   const recovery=await manager.recoverLocal({operatorToken:token});
   check("AUTHENTICATED_LOCAL_RECOVERY",recovery.ok===true&&manager.status().phase==="RUNNING");
+  capture("LOCAL_RECOVERED","RUNNING");
   const recovered=await get("state");
   check("RECEIPT_SURVIVED_SAFE_MODE",recovered.receipts?.length===1);
   check("REVISION_SURVIVED_CRASH",manager.status().policyRevision===2);
   return {kind:"PEF_M3_RECOVERY_SMOKE_V1",ok:true,status:"LAB_PASS",
    checks,revision:manager.status().policyRevision,safeModeObserved:true,
-   recoveredLocally:true,events,physicalValidated:false,cloudReal:false,
+   recoveredLocally:true,events,diagnosticSnapshots,physicalValidated:false,cloudReal:false,
    kernelFlockOnMac:false,configScope:"SUPERVISOR_POLICY_ONLY"};
  }finally{await manager.stop();fs.rmSync(dir,{recursive:true,force:true});}
 }

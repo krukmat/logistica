@@ -27,12 +27,13 @@ const CAPABILITIES=Object.freeze([
   "workload-admission","node-worker-process","bounded-supervisor","ipc-health","offline-worker-receipts",
   "ci-linux-supervised-worker","autonomous-edge-host","boot-reopen-without-dashboard",
   "predevice-port-conformance","golden-trace-parity","safe-device-integration-preflight",
-  "hardware-candidate-screening","m3-headless-lifecycle","m3-policy-safe-recovery"
+  "hardware-candidate-screening","m3-headless-lifecycle","m3-policy-safe-recovery",
+  "m3-operational-diagnostics","m3-same-run-evidence"
 ]);
 const IDENTITY=Object.freeze({siteId:"demo-site",deviceId:"demo-edge",configRevision:"cfg-demo-1"});
 function createDashboardLab({tmpParent=os.tmpdir()}={}){
   let dir=null,edge=null,cloud=null,history=[],route=null,revision=0,closed=false,busy=false;
-  let cloudAvailable=true,profile="normal",lastResult=null,wan=null,boot=null,supervisor=null,autonomousEvidence=null,m3Evidence=null,m3RecoveryEvidence=null,predeviceEvidence=null,goldenTraceEvidence=null,devicePreflightEvidence=null,candidateEvidence=null;
+  let cloudAvailable=true,profile="normal",lastResult=null,wan=null,boot=null,supervisor=null,autonomousEvidence=null,m3Evidence=null,m3RecoveryEvidence=null,m3OperationsEvidence=null,predeviceEvidence=null,goldenTraceEvidence=null,devicePreflightEvidence=null,candidateEvidence=null;
   function guard(){if(closed)throw Error("LAB_CLOSED");}
   function start(next="normal"){
     if(!["normal","pressure"].includes(next))throw Error("UNSUPPORTED_LAB_PROFILE");
@@ -40,7 +41,7 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
     if(edge)edge.close();
     if(dir)fs.rmSync(dir,{recursive:true,force:true});
     dir=fs.mkdtempSync(path.join(tmpParent,"pef-visual-lab-"));
-    profile=next;history=[];lastResult=null;route=null;revision=0;cloudAvailable=true;autonomousEvidence=null;m3Evidence=null;m3RecoveryEvidence=null;predeviceEvidence=null;goldenTraceEvidence=null;devicePreflightEvidence=null;candidateEvidence=null;
+    profile=next;history=[];lastResult=null;route=null;revision=0;cloudAvailable=true;autonomousEvidence=null;m3Evidence=null;m3RecoveryEvidence=null;m3OperationsEvidence=null;predeviceEvidence=null;goldenTraceEvidence=null;devicePreflightEvidence=null;candidateEvidence=null;
     wan={primary:{link:true,upstream:true},backup:{link:true,upstream:true}};
     const proofKey=randomBytes(32);
     cloud=createLabCloudReplica({siteId:IDENTITY.siteId,deviceId:IDENTITY.deviceId,
@@ -103,6 +104,9 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
       m3Recovery:{kind:"PEF_M3_RECOVERY_SMOKE_V1",scope:"SOFTWARE_LAB_ONLY",
         lastEvidence:m3RecoveryEvidence,policyScope:"SUPERVISOR_POLICY_ONLY",
         physicalValidated:false,remoteRecoveryAllowed:false},
+      m3Operations:{kind:"PEF_M3_OPERATIONS_LAB_V1",scope:"SOFTWARE_LAB_ONLY",
+        lastEvidence:m3OperationsEvidence,physicalValidated:false,
+        remoteRecoveryAllowed:false,videoAvailableHere:false},
       workloads:{entries:supervisor?.list()||[],budgets:supervisor?.limits()||{},
         reserved:supervisor?.usage()||{},runtime:"NODE_PROCESS_ONLY",
         actualLimitsEnforced:false,linuxIsolationValidated:false,
@@ -144,6 +148,9 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
         case "m3Recovery":
           m3RecoveryEvidence=await runM3RecoverySmoke();
           return emit("m3-config-safe-mode",m3RecoveryEvidence);
+        case "m3Operations":
+          m3OperationsEvidence=await runM3RecoverySmoke();
+          return emit("m3-operations-diagnostics",m3OperationsEvidence);
         case "workloadStart":
           return emit("workload-start",await supervisor.start(demoManifest(),{
             trusted:true,offline:edge.status().network.connectivity==="LOCAL_ONLY"
