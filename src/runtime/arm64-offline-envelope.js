@@ -75,7 +75,7 @@ async function runOfflineEnvelope({profile="r28s-1g",count=1000,payloadKiB=1,bas
   status:safe?"BOUNDED_FSYNC_REOPEN_PASS_72H_NOT_TESTED":"E2_BOUNDED_EXPERIMENT_FAILED",
   profile,guest,model,measured,
   decisions:{projected72h:EVENTS,maxConfiguredLabJournalBytes:100*1024*1024,
-    currentJournalUsesWholeFileReadOnReopen:true,requiresMemoryScalingTest:true,
+    currentJournalUsesWholeFileReadOnReopen:false,currentJournalIndexesAllRecordsInMemory:true,requiresMemoryScalingTest:true,
     seventyTwoHourOfflineAcceptance:false},
   limits:{physicalValidated:false,sdCardEnduranceVerified:false,powerCutValidated:false,
    cleanupTemporaryData:true,procurementApproved:false}};
