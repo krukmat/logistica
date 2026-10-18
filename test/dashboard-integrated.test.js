@@ -417,3 +417,13 @@ test("F1/F2 dashboard locally imports explicit virtual reports without 72h or de
  assert.ok(script.includes("retention72hProven:false"));
  assert.ok(script.includes("actual72hValidated:false"));
 }));
+
+
+test("M1 dashboard read-only report + trace import labels synthetic WAN/cloud and never authenticates physical evidence",()=>withPanel(async({url})=>{
+ const html=await(await fetch(url)).text(),js=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["m1-report-file","m1-trace-file","m1-evidence"])
+  assert.ok(html.includes('id="'+id+'"'));
+ assert.match(js,/M1_IMPORT_NOT_SAME_RUN_OR_UNSAFE/);
+ assert.match(js,/SHA256 NOT VERIFIED IN BROWSER/);
+ assert.match(js,/physicalValidated/);
+}));

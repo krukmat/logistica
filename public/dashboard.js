@@ -234,6 +234,31 @@ async function importArm64F2(file){
    actual72hValidated:false,procurementApproved:false},null,2);
  }catch(e){output.textContent="F2 rechazado: "+String(e.message||e);}
 }
+const m1Import={report:null,trace:null};
+async function importM1Evidence(which,file){
+ const output=$("m1-evidence");
+ if(!file){m1Import[which]=null;output.textContent="M1 NOT_IMPORTED";return;}
+ if(file.size>262144){output.textContent="M1 FILE TOO LARGE";return;}
+ try{
+  const data=await file.text();
+  const value=which==="report"?JSON.parse(data):data.trim().split("\n").map(x=>JSON.parse(x));
+  m1Import[which]=value;
+  const r=m1Import.report,t=m1Import.trace;
+  if(!r||!t){output.textContent="M1: carga report.json y trace.ndjson";return;}
+  if(r.kind!=="PEF_M1_END_TO_END_EVIDENCE_V1"||r.schemaVersion!==1||
+     r.limits?.physicalValidated!==false||r.limits?.realCloudValidated!==false||
+     !Array.isArray(t)||t.length!==7||
+     t.some((x,i)=>x.runId!==r.runId||x.sequence!==i+1||x.id!==r.checks?.[i]?.id||
+       x.pass!==r.checks[i].pass))
+    throw Error("M1_IMPORT_NOT_SAME_RUN_OR_UNSAFE");
+  output.textContent=JSON.stringify({
+   source:"IMPORTED LOCAL FILES, SHA256 NOT VERIFIED IN BROWSER",
+   runId:r.runId,commit:r.commit,status:r.status,ok:r.ok,
+   stages:t.map(x=>({id:x.id,pass:x.pass,detail:x.data||x.error})),
+   limits:r.limits
+  },null,2);
+ }catch(e){m1Import[which]=null;output.textContent="M1 rechazado: "+String(e.message||e);}
+}
 function bind(){
   $("mode-sim").addEventListener("click",()=>dispatch({command:"mode",mode:"sim"}));
   $("mode-lab").addEventListener("click",()=>dispatch({command:"mode",mode:"lab"}));
@@ -263,6 +288,8 @@ function bind(){
   $("arm64-e5-file").addEventListener("change",e=>importArm64E5(e.target.files?.[0]));
   $("arm64-f1-file").addEventListener("change",e=>importArm64F1(e.target.files?.[0]));
   $("arm64-f2-file").addEventListener("change",e=>importArm64F2(e.target.files?.[0]));
+  $("m1-report-file").addEventListener("change",e=>importM1Evidence("report",e.target.files?.[0]));
+  $("m1-trace-file").addEventListener("change",e=>importM1Evidence("trace",e.target.files?.[0]));
   $("workload-start").addEventListener("click",()=>labAction("workloadStart"));
   $("workload-stop").addEventListener("click",()=>labAction("workloadStop"));
   $("workload-crash").addEventListener("click",()=>labAction("workloadCrash"));
