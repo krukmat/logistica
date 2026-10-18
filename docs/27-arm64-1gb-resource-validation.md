@@ -67,3 +67,7 @@ CLI evidence from the guest is stored under `~/.local/share/pef-arm64-lab/{r28s-
 ## Decision
 
 **R28S 1GiB remains candidate for low-cost Core-only POC, not approved for procurement or 72h offline production.** Next gating risks: on-disk index growth, true workload concurrency, flash endurance, route ownership and verified delivered cost. Keep `device` blocked until physical acceptance.
+
+## CI verification — 2026-10-18
+
+[Run #39135843686](https://github.com/krukmat/logistica/actions/runs/39135843686) **SUCCESS**: ARM64 135/135 passed, emulator 134/135 passed + 1 intended ARM-only skip, netns PASS, prehardware handoff PASS. [Audit](audit/w1.10-e1-e5-2026-10-18.md). Guest 1GiB E1/E2/E5 still requires actual Mac run; unchanged physical gates.
