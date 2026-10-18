@@ -12,6 +12,8 @@ function verifyVideo(dir){
   manifest.sha256!==sha(video)||manifest.bytes!==video.length||
   video.length<16384||!video.subarray(0,4).equals(Buffer.from([0x1a,0x45,0xdf,0xa3]))||
   manifest.source!=="SAME_RUN_EVIDENCE_HTML_PLAYWRIGHT"||
+  JSON.stringify(manifest.framesFromStages)!==JSON.stringify(
+    fs.readFileSync(path.join(dir,"trace.ndjson"),"utf8").trim().split("\n").map(x=>JSON.parse(x).id))||
   manifest.physicalValidated!==false||manifest.realCloudValidated!==false)
    throw Error("M1_VIDEO_INTEGRITY_OR_SCOPE_FAILED");
  return {kind:"PEF_M1_VIDEO_VERIFIED_V1",ok:true,runId:base.runId,

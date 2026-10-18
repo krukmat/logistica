@@ -65,9 +65,9 @@ async function runM1Scenario({runId=randomUUID()}={}){
  async function step(id,fn){
   const start=performance.now();
   try{const data=await fn();trace.push({runId,sequence:trace.length+1,id,pass:true,
-   durationMs:Math.round((performance.now()-start)*100)/100,data});}
+   recordedAt:new Date().toISOString(),durationMs:Math.round((performance.now()-start)*100)/100,data});}
   catch(e){trace.push({runId,sequence:trace.length+1,id,pass:false,
-   durationMs:Math.round((performance.now()-start)*100)/100,error:String(e.message||e)});throw e;}
+   recordedAt:new Date().toISOString(),durationMs:Math.round((performance.now()-start)*100)/100,error:String(e.message||e)});throw e;}
  }
  try{
   await step("M1_01_AUTONOMOUS_EDGE_RUNNING",async()=>{
