@@ -22,7 +22,8 @@
     "arm64:compare": "node bin/pef-arm64-compare.js",
     "arm64:e1": "node bin/pef-arm64-e1.js",
     "arm64:e2": "node bin/pef-arm64-e2.js",
-    "arm64:e5": "node bin/pef-arm64-e5.js"
+    "arm64:e5": "node bin/pef-arm64-e5.js",
+    "arm64:f1": "node bin/pef-arm64-f1.js"
   },
   "license": "UNLICENSED"
 }
