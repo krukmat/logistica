@@ -86,3 +86,7 @@ Do not produce a fabricated demo MP4 or claim CI success before the real runner 
 ## Implementation state — 2026-10-18
 
 M1.1/1.2 integrated in `src/runtime/autonomous-edge.js` with loopback/token-gated virtual-only `/lab/sync` and faults; full real autonomous process E2E runner in `src/runtime/m1-scenario.js`. M1.3 report/trace/manifest/SHA256 and verifier implemented; M1.4 main CI uploads technical bundle; M1.5 static HTML timeline and opt-in Playwright video recorder implemented, dashboard imports same run JSON+NDJSON. **Software-lab and video milestone evidence have different gates**: only declare audiovisual PASS after actual Playwright WebM workflow success. [Tasks & commands](tasks/m1-end-to-end-evidence.md).
+
+## M1.6 final laboratory gate — PASS on 2026-10-18
+
+[CI #39142671151](https://github.com/krukmat/logistica/actions/runs/39142671151) **SUCCESS** with real E2E, generated documentary bundle, independently recalculated SHA-256 hashes, and optional Playwright HTML-derived WebM. Video artefact `m1-e2e-video-39142671151` is tied to its own video-job evidence runId; the ordinary CI technical evidence is from a separate M1 run. **M1 CLOSED LAB-ONLY**, not production or device acceptance. [Audit](audit/m1-e2e-video-2026-10-18.md).

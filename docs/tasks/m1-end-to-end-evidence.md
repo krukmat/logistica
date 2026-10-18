@@ -55,3 +55,7 @@ Normal push emits `m1-technical-evidence-<github.run_id>` with report, trace, HT
 ## Exact claims / anti-claims
 
 **Proven in CI when green:** process supervisor, localhost API, fsync ACK, duplicate and conflict behavior, retained receipt after SIGKILL and new epoch, Cloud mock ambiguous ACK does not advance local cursor, valid replay and local ACK fsync. **Not proven:** real multi-WAN, hardware/flash powercut, field robustness, PKI/mTLS, any actual Cloud service, 72h offline, exact-once delivery beyond the lab. No customer/business demand evidence from this logistics technical fixture.
+
+## CI acceptance — 2026-10-18
+
+**M1.1–M1.6 CLOSED for software laboratory scope.** [Run #39142671151](https://github.com/krukmat/logistica/actions/runs/39142671151) SUCCESS: 147/147 ARM64 tests, 146 + one ARM-only skip on emulator, Linux namespaces/handoff PASS; real Playwright WebM generated and verified against **the same video-job runId as its report/trace**. Download `m1-e2e-video-39142671151` from workflow Artifacts. [Full audit](../audit/m1-e2e-video-2026-10-18.md). Physical WAN, Cloud Lite, 72h and microSD powercut remain blocked.

@@ -178,3 +178,5 @@ F1 bounded 10k/50k/100k journal index test, F2 realistic 72h retention capacity/
 ## M1 — End-to-end proof + video on the same test run (2026-10-18)
 
 M1.1/1.2 autonomous Edge + shared Core replay with explicit in-memory Cloud mock, M1.3 integrity-checked evidence bundle, M1.4 CI artifact publication and M1.5 read-only HTML/video pipeline implemented. M1.6 final gate depends on optional Playwright video capture validation. No physical device, genuine WAN or Cloud Lite. [Execution guide](tasks/m1-end-to-end-evidence.md) and [evidence design](30-m1-evidence-design.md).
+
+**M1 acceptance 2026-10-18:** end-to-end operational scenario with true localhost daemon, host-fsynced receipts, SIGKILL/reopen, Cloud mock ambiguity, replay, SHA-256 evidence, dashboard import and optional Playwright WebM complete. [CI #39142671151](https://github.com/krukmat/logistica/actions/runs/39142671151) all jobs success, [audit](audit/m1-e2e-video-2026-10-18.md). **M1.1–M1.6 CLOSED (SOFTWARE LAB ONLY)**. Next M2 real Cloud Lite; no physical certification.
