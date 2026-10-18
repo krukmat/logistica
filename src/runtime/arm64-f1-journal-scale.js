@@ -1,6 +1,7 @@
 "use strict";
 // W1.10.F1: staged, bounded index-scaling on OS journal. NO 72h/physical certification.
 const fs=require("node:fs"),path=require("node:path"),os=require("node:os");
+const {spawnSync}=require("node:child_process");
 const {performance}=require("node:perf_hooks");
 const {createFileJournal}=require("../adapters/os-file-journal.js");
 const {assessGuest}=require("./arm64-vm-profile.js");
@@ -24,7 +25,8 @@ function guard({root,journal,started,baseline,reading}){
 async function runJournalScale({profile="r28s-1g",mode="smoke",baseDir,requireConstrained=false,ack,stageCallback=()=>{}}={}){
  if(!["smoke","full"].includes(mode))throw Error("F1_UNKNOWN_MODE");
  const guest=assessGuest({profile});
- if(mode==="full"&&(!requireConstrained||ack!=="R28S_1GB_STAGED_TEST"||!guest.profileEnforced))
+ const linuxVirtualMachine=mode!=="full"||spawnSync("systemd-detect-virt",["--vm"],{timeout:2000,encoding:"utf8"}).status===0;
+ if(mode==="full"&&(!requireConstrained||ack!=="R28S_1GB_STAGED_TEST"||!guest.profileEnforced||!linuxVirtualMachine))
    throw Error("F1_FULL_REQUIRES_CONSTRAINED_VM_AND_EXPLICIT_ACK");
  if(requireConstrained&&!guest.profileEnforced)throw Error("F1_NOT_CONSTRAINED_ARM64");
  const root=baseDir||os.tmpdir();
