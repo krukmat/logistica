@@ -22,3 +22,11 @@
 ## Decisión
 
 **M3.3 y M3.4: CLOSED solo como software LAB.** No son una implementación de la administración de configuración firmada del producto, del seguro arranque físico, de rollback OS/OTA ni de recuperación remota. No servicios de pago. Próximas tareas M3.5/M3.6.
+
+## Evidencia adicional del operador — macOS, 2026-10-18
+
+El operador ejecutó `npm run m3:recovery` en su Mac local y compartió el resultado completo en la conversación; no se ha recuperado el fichero original del host ni un vídeo de esa ejecución. El informe comunicado declara `kind: PEF_M3_RECOVERY_SMOKE_V1`, `ok: true`, `status: LAB_PASS`, `revision: 2`, `safeModeObserved: true` y `recoveredLocally: true`. Los diez checks reportaron `true`: `RECEIPT_DURABLE`, `CONFIG_COMMITTED`, `STALE_REVISION_REJECTED`, `HEALTH_ROLLBACK`, `RECOVERED_RECEIPT`, `SAFE_MODE_ON_RESTART_EXHAUSTION`, `UNAUTHORIZED_LOCAL_RECOVERY_BLOCKED`, `AUTHENTICATED_LOCAL_RECOVERY`, `RECEIPT_SURVIVED_SAFE_MODE` y `REVISION_SURVIVED_CRASH`.
+
+La secuencia reportada fue `READY → CONFIG_STAGED → CONFIG_ACTIVATED → CONFIG_COMMITTED → CONFIG_STAGED → CONFIG_ACTIVATED → CONFIG_ROLLED_BACK → CHILD_EXIT → RESTART_SCHEDULED → READY → CHILD_EXIT → RESTART_BUDGET_EXHAUSTED → SAFE_MODE_ENTERED → LOCAL_RECOVERY_REQUESTED → READY → SHUTDOWN_REQUESTED → STOPPED`. Limitaciones declaradas por la prueba: `physicalValidated:false`, `cloudReal:false`, `kernelFlockOnMac:false`, `configScope:SUPERVISOR_POLICY_ONLY`.
+
+**Interpretación:** evidencia complementaria de laboratorio en macOS aportada por el operador, consistente con la CI verde [#39154660415](https://github.com/krukmat/logistica/actions/runs/39154660415); no constituye certificación de hardware, de seguridad de claves ni de full-config/OTA.
