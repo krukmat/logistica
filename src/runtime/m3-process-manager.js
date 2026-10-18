@@ -2,6 +2,8 @@
 // M3 software-lab headless supervisor. Owns real pef-edge subprocess; no dashboard/cloud.
 const fs=require("node:fs"),path=require("node:path");
 const {spawn}=require("node:child_process");
+const {timingSafeEqual}=require("node:crypto");
+const {createM3PolicyStore,normalize}=require("./m3-policy-store.js");
 const {validateEdgeConfig}=require("./edge-config.js");
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 function createManagedEdge({configFile,token,maxRestarts=2,restartDelayMs=180,
@@ -15,7 +17,11 @@ function createManagedEdge({configFile,token,maxRestarts=2,restartDelayMs=180,
   !Number.isInteger(healthIntervalMs)||healthIntervalMs<100||healthIntervalMs>10000||
   !Number.isInteger(healthFailures)||healthFailures<1||healthFailures>5)
   throw Error("M3_INVALID_RECOVERY_POLICY");
- let child=null,readyUrl=null,phase="NEW",restartCount=0,misses=0;
+ const policyStore=createM3PolicyStore({dir:cfg.storageDir,identity:cfg.identity,initialPolicy:{
+  maxRestarts,restartDelayMs,healthIntervalMs,healthFailures}});
+ let policy=policyStore.snapshot().policy;
+ let child=null,readyUrl=null,phase="NEW",restartCount=0,misses=0,safeModeReason=null;
+ let changing=false;
  let stopping=false,started=false,restarting=false,healthTimer=null,exitPromise=null;
  const report=(type,details={})=>{const event={kind:"PEF_M3_LIFECYCLE_V1",
    type,at:new Date().toISOString(),phase,...details,
@@ -24,8 +30,21 @@ function createManagedEdge({configFile,token,maxRestarts=2,restartDelayMs=180,
  function status(){return {kind:"PEF_M3_MANAGER_STATUS_V1",phase,pid:child?.pid||null,
   url:readyUrl,restartCount,missedReadinessChecks:misses,backend:cfg.backend,
   lockGuarantee:"ADVISORY_PID_ONLY_UNLESS_LINUX_FLOCK_WRAPPER",
+  policyRevision:policyStore.snapshot().revision,policy:{...policy},safeModeReason,
+  recoveryMode:phase==="SAFE_MODE"?"LOCAL_OPERATOR_REQUIRED":"AUTONOMOUS",
+  remoteMutationAllowed:false,
   physicalValidated:false,cloudRequired:false,dashboardRequired:false};}
  const cleanupTimer=()=>{if(healthTimer){clearInterval(healthTimer);healthTimer=null;}};
+ function resetHealthTimer(){
+  cleanupTimer();
+  if(phase!=="RUNNING"||stopping)return;
+  healthTimer=setInterval(()=>{void poll();},policy.healthIntervalMs);
+  healthTimer.unref?.();
+ }
+ function safeMode(reason){
+  cleanupTimer();phase="SAFE_MODE";safeModeReason=reason;
+  report("SAFE_MODE_ENTERED",{reason,restartCount});
+ }
  async function poll(){
   if(phase!=="RUNNING"||stopping||!child||!readyUrl)return;
   const ctrl=new AbortController(),t=setTimeout(()=>ctrl.abort(),400);
@@ -37,7 +56,7 @@ function createManagedEdge({configFile,token,maxRestarts=2,restartDelayMs=180,
   }catch{}finally{clearTimeout(t);}
   if(stopping||phase!=="RUNNING")return;
   misses=ok?0:misses+1;
-  if(misses>=healthFailures){
+  if(misses>=policy.healthFailures){
    phase="UNHEALTHY";report("READINESS_FAILURE",{misses});
    cleanupTimer();
    child?.kill("SIGTERM");
@@ -80,19 +99,18 @@ function createManagedEdge({configFile,token,maxRestarts=2,restartDelayMs=180,
   if(stopping){p.kill("SIGTERM");await exitPromise;return;}
   readyUrl=marker.url;phase="RUNNING";started=true;
   report("READY",{childPid:p.pid,restartCount,bootMs:Date.now()-startedAt});
-  healthTimer=setInterval(()=>{void poll();},healthIntervalMs);
-  healthTimer.unref?.();
+  resetHealthTimer();
   // Keep exit handler asynchronous; do not restart after operator shutdown.
   void exitPromise.then(async result=>{
    cleanupTimer();
    if(stopping||restarting)return;
    restarting=true;report("CHILD_EXIT",{...result,childPid:p.pid});
    while(!stopping){
-    if(restartCount>=maxRestarts){phase="HALTED";report("RESTART_BUDGET_EXHAUSTED",
-      {restartCount});break;}
+    if(restartCount>=policy.maxRestarts){report("RESTART_BUDGET_EXHAUSTED",
+      {restartCount});safeMode("RESTART_BUDGET_EXHAUSTED");break;}
     restartCount++;
     phase="RECOVERING";report("RESTART_SCHEDULED",{restartCount});
-    await wait(Math.min(3000,restartDelayMs*2**(restartCount-1)));
+    await wait(Math.min(3000,policy.restartDelayMs*2**(restartCount-1)));
     if(stopping)break;
     try{await launch();break;}
     catch(e){report("RESTART_FAILED",{error:String(e.message||e),restartCount});}
@@ -103,8 +121,8 @@ function createManagedEdge({configFile,token,maxRestarts=2,restartDelayMs=180,
  async function start(){
   if(phase!=="NEW")throw Error("M3_ALREADY_STARTED");
   try{await launch();return status();}
-  catch(e){stopping=true;phase="HALTED";report("BOOT_FAILED",{error:String(e.message||e)});
-   throw e;}
+  catch(e){report("BOOT_FAILED",{error:String(e.message||e)});
+   safeMode("BOOT_FAILED");throw e;}
  }
  async function stop(){
   if(stopping)return status();
@@ -124,6 +142,73 @@ function createManagedEdge({configFile,token,maxRestarts=2,restartDelayMs=180,
   const pid=child.pid;
   child.kill("SIGKILL");return {injected:true,pid,physicalValidated:false};
  }
- return {start,stop,status,crashForLab};
+
+ async function readinessProbe(){
+  if(!readyUrl||!child||child.exitCode!==null||child.signalCode!==null)return false;
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),850);
+  try{
+   const response=await fetch(readyUrl+"ready",{headers:{"x-pef-token":token},
+    signal:controller.signal});
+   if(response.status!==200)return false;
+   return (await response.json()).ok===true;
+  }catch{return false;}finally{clearTimeout(timer);}
+ }
+ async function applyPolicy(change,{probe=readinessProbe}={}){
+  if(phase!=="RUNNING"||stopping||changing)return {ok:false,error:"M3_CONFIG_CHANGE_BLOCKED"};
+  if(cfg.backend!=="virtual-lab")return {ok:false,error:"M3_CONFIG_DEVICE_UNAUTHORIZED"};
+  if(!change||Object.keys(change).sort().join(",")!=="expectedRevision,policy,revision")
+   return {ok:false,error:"M3_CONFIG_REQUEST_INVALID"};
+  let candidate;
+  try{candidate=normalize(change.policy);}
+  catch(e){return {ok:false,error:String(e.message||e)};}
+  changing=true;
+  const previous=policy;
+  try{
+   const staged=policyStore.stage({...change,policy:candidate});
+   report("CONFIG_STAGED",{revision:change.revision,previousRevision:change.expectedRevision});
+   policy=candidate;resetHealthTimer();
+   report("CONFIG_ACTIVATED",{revision:change.revision,scope:"SUPERVISOR_POLICY_ONLY"});
+   const ready=await probe();
+   if(ready!==true){
+    policy=previous;resetHealthTimer();
+    policyStore.rollback();
+    report("CONFIG_ROLLED_BACK",{revision:change.revision,reason:"HEALTH_CHECK_FAILED"});
+    return {ok:false,status:"ROLLED_BACK",revision:staged.revision,
+     error:"M3_CONFIG_HEALTH_CHECK_FAILED",physicalValidated:false};
+   }
+   const committed=policyStore.commit();
+   report("CONFIG_COMMITTED",{revision:committed.revision});
+   return {ok:true,status:"COMMITTED",revision:committed.revision,
+    policy:{...committed.policy},physicalValidated:false};
+  }catch(e){
+   // Commit after rename but before parent fsync can have an uncertain outcome.
+   // Do NOT claim rollback/commit on an ambiguous durable write.
+   safeMode("CONFIG_TRANSACTION_UNCERTAIN");
+   report("CONFIG_TRANSACTION_FAILED",{error:String(e.message||e)});
+   return {ok:false,status:"SAFE_MODE",error:"M3_CONFIG_TRANSACTION_UNCERTAIN",
+    physicalValidated:false};
+  }finally{changing=false;}
+ }
+ async function recoverLocal({operatorToken}={}){
+  if(phase!=="SAFE_MODE"||stopping)return {ok:false,error:"M3_NOT_IN_SAFE_MODE"};
+  const provided=typeof operatorToken==="string"?Buffer.from(operatorToken):Buffer.alloc(0);
+  const expected=Buffer.from(token);
+  if(provided.length!==expected.length||!timingSafeEqual(provided,expected))
+   return {ok:false,error:"M3_LOCAL_OPERATOR_AUTH_REQUIRED"};
+  if(child&&child.exitCode===null&&child.signalCode===null)
+   return {ok:false,error:"M3_ACTIVE_PROCESS_REQUIRES_MANUAL_INSPECTION"};
+  safeModeReason=null;restartCount=0;phase="RECOVERING";
+  report("LOCAL_RECOVERY_REQUESTED",{authorizedLocally:true});
+  try{
+   await launch();
+   return {ok:true,status:"RECOVERED",revision:policyStore.snapshot().revision,
+    physicalValidated:false};
+  }catch(e){
+   safeMode("LOCAL_RECOVERY_FAILED");
+   return {ok:false,status:"SAFE_MODE",error:"M3_LOCAL_RECOVERY_FAILED"};
+  }
+ }
+ return {start,stop,status,crashForLab,applyPolicy,recoverLocal};
+
 }
 module.exports={createManagedEdge};
