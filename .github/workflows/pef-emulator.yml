@@ -87,7 +87,7 @@ jobs:
         with:
           node-version: '22'
       - name: ARM64 guest shell syntax check (no kernel operations on CI)
-        run: bash -n scripts/arm64-vm/lima.sh scripts/arm64-vm/guest-run.sh scripts/arm64-vm/guest-network-lab.sh scripts/arm64-vm/guest-d3.sh scripts/arm64-vm/guest-load.sh scripts/arm64-vm/guest-compare.sh
+        run: bash -n scripts/arm64-vm/lima.sh scripts/arm64-vm/guest-run.sh scripts/arm64-vm/guest-network-lab.sh scripts/arm64-vm/guest-d3.sh scripts/arm64-vm/guest-load.sh scripts/arm64-vm/guest-compare.sh scripts/arm64-vm/guest-e1-e2.sh
       - name: ARM64 Core test suite
         run: npm test
       - name: ARM64 ISA golden parity and journal
@@ -114,6 +114,22 @@ jobs:
           name: pef-arm64-2k-load-no-memory-cap
           path: ${{ runner.temp }}/pef-arm64-load-unconstrained.json
           if-no-files-found: warn
+      - name: E1 read-only ARM64 guest resource observation (CI RAM not constrained)
+        run: node bin/pef-arm64-e1.js --profile r28s-1g --output "$RUNNER_TEMP/pef-e1-guest-ci.json"
+      - name: E2 bounded ARM64 fsync/reopen and 72h capacity projection
+        run: |
+          node bin/pef-arm64-e2.js --profile r28s-1g --count 1200 --payload-kib 1 \
+            --base-dir "$RUNNER_TEMP/pef-arm64-data" --output "$RUNNER_TEMP/pef-e2-bounded-ci.json"
+      - name: Upload E1-E2 ARM64 evidence (CI not 1GiB)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pef-e1-e2-arm64-ci-unconstrained
+          path: |
+            ${{ runner.temp }}/pef-e1-guest-ci.json
+            ${{ runner.temp }}/pef-e2-bounded-ci.json
+          if-no-files-found: warn
+
   netns-lab:
     runs-on: ubuntu-latest
     timeout-minutes: 10
