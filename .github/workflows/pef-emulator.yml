@@ -87,7 +87,7 @@ jobs:
         with:
           node-version: '22'
       - name: ARM64 guest shell syntax check (no kernel operations on CI)
-        run: bash -n scripts/arm64-vm/lima.sh scripts/arm64-vm/guest-run.sh scripts/arm64-vm/guest-network-lab.sh scripts/arm64-vm/guest-d3.sh scripts/arm64-vm/guest-load.sh scripts/arm64-vm/guest-compare.sh scripts/arm64-vm/guest-e1-e2.sh scripts/arm64-vm/guest-e5.sh
+        run: bash -n scripts/arm64-vm/lima.sh scripts/arm64-vm/guest-run.sh scripts/arm64-vm/guest-network-lab.sh scripts/arm64-vm/guest-d3.sh scripts/arm64-vm/guest-load.sh scripts/arm64-vm/guest-compare.sh scripts/arm64-vm/guest-e1-e2.sh scripts/arm64-vm/guest-e5.sh scripts/arm64-vm/guest-f1-f2.sh
       - name: ARM64 Core test suite
         run: npm test
       - name: ARM64 ISA golden parity and journal
@@ -120,6 +120,29 @@ jobs:
         run: |
           node bin/pef-arm64-e2.js --profile r28s-1g --count 1200 --payload-kib 1 \
             --base-dir "$RUNNER_TEMP/pef-arm64-data" --output "$RUNNER_TEMP/pef-e2-bounded-ci.json"
+      - name: F1 staged journal index smoke (NOT constrained to 1 GiB)
+        run: node bin/pef-arm64-f1.js --mode smoke --profile r28s-1g --base-dir "$RUNNER_TEMP/pef-arm64-data" --output "$RUNNER_TEMP/pef-f1-smoke.json"
+      - name: E2 additional 4KiB sample for F2 projection
+        run: |
+          node bin/pef-arm64-e2.js --profile r28s-1g --count 800 --payload-kib 4 \
+            --base-dir "$RUNNER_TEMP/pef-arm64-data" --output "$RUNNER_TEMP/pef-e2-4k-ci.json"
+      - name: F2 project 72h data and expose product 100MiB gap (NOT proven retention)
+        run: |
+          node bin/pef-arm64-f2.js --profile r28s-1g \
+            --f1 "$RUNNER_TEMP/pef-f1-smoke.json" \
+            --e2-small "$RUNNER_TEMP/pef-e2-bounded-ci.json" \
+            --e2-large "$RUNNER_TEMP/pef-e2-4k-ci.json" \
+            --output "$RUNNER_TEMP/pef-f2-projection.json"
+      - name: F1/F2 ARM64 CI artifacts, no 1GiB or 72h certification
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pef-f1-f2-arm64-ci-unconstrained
+          path: |
+            ${{ runner.temp }}/pef-f1-smoke.json
+            ${{ runner.temp }}/pef-e2-4k-ci.json
+            ${{ runner.temp }}/pef-f2-projection.json
+          if-no-files-found: warn
       - name: Upload E1-E2 ARM64 evidence (CI not 1GiB)
         if: always()
         uses: actions/upload-artifact@v4
