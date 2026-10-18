@@ -29,7 +29,8 @@
     "m1:evidence:verify": "node bin/pef-m1-evidence.js --verify",
     "m1:evidence:video": "node bin/pef-m1-video.js",
     "m1:evidence:verify-video": "node bin/pef-m1-video.js --verify",
-    "m3:supervise": "node bin/pef-m3-supervisor.js"
+    "m3:supervise": "node bin/pef-m3-supervisor.js",
+    "m3:evidence": "node bin/pef-m3-evidence.js"
   },
   "license": "UNLICENSED",
   "devDependencies": {

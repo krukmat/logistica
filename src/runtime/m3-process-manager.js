@@ -9,7 +9,7 @@ function createManagedEdge({configFile,token,maxRestarts=2,restartDelayMs=180,
  if(typeof configFile!=="string"||!path.isAbsolute(configFile)||!fs.statSync(configFile).isFile()||
     fs.lstatSync(configFile).isSymbolicLink())throw Error("M3_CONFIG_FILE_REQUIRED");
  const cfg=validateEdgeConfig(JSON.parse(fs.readFileSync(configFile,"utf8")));
- if(typeof token!=="string"||token.length<24||/\s/.test(token))throw Error("M3_OPERATOR_TOKEN_REQUIRED");
+ if(typeof token!=="string"||token.length<24||token.length>256||/\s/.test(token))throw Error("M3_OPERATOR_TOKEN_REQUIRED");
  if(!Number.isInteger(maxRestarts)||maxRestarts<0||maxRestarts>5||
   !Number.isInteger(restartDelayMs)||restartDelayMs<100||restartDelayMs>10000||
   !Number.isInteger(healthIntervalMs)||healthIntervalMs<100||healthIntervalMs>10000||
@@ -109,12 +109,13 @@ function createManagedEdge({configFile,token,maxRestarts=2,restartDelayMs=180,
  async function stop(){
   if(stopping)return status();
   stopping=true;cleanupTimer();phase="STOPPING";report("SHUTDOWN_REQUESTED");
+  let graceful=true;
   if(child&&child.exitCode===null&&child.signalCode===null){
    child.kill("SIGTERM");
    await Promise.race([exitPromise,wait(2500)]);
-   if(child.exitCode===null&&child.signalCode===null){child.kill("SIGKILL");await exitPromise;}
+   if(child.exitCode===null&&child.signalCode===null){graceful=false;child.kill("SIGKILL");await exitPromise;}
   }
-  phase="STOPPED";report("STOPPED",{graceful:true});
+  phase="STOPPED";report("STOPPED",{graceful});
   return status();
  }
  function crashForLab(){

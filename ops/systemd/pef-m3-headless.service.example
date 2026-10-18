@@ -1,0 +1,24 @@
+# M3.1 REFERENCE ONLY - do not install or enable without separate host qualification.
+# Lab Linux host with Node >=20, bash, util-linux flock.
+# Replace placeholders; run as nonroot dedicated account, with an external secret
+# injected by an approved credentials mechanism (never in a committed file).
+# Not qualified on R28S, macOS, production boot, or actual LAN/WAN.
+[Unit]
+Description=PEF M3 autonomous Edge software lab
+After=local-fs.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=pef-lab
+WorkingDirectory=/absolute/pef/logistica
+EnvironmentFile=/run/pef-lab/edge-token.env
+ExecStart=/usr/bin/bash /absolute/pef/logistica/scripts/m3/linux-locked-supervisor.sh /absolute/pef-lab/edge.json
+Restart=no
+TimeoutStopSec=8
+KillMode=control-group
+NoNewPrivileges=yes
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

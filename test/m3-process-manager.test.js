@@ -77,3 +77,26 @@ test("M3.2 Linux kernel flock holds one supervisor across lifetime and releases 
   fs.rmSync(dir,{recursive:true,force:true});
  }
 });
+
+test("M3.2 restart budget is finite: second SIGKILL halts after one permitted restart",async()=>{
+ const dir=dirPrefix(),file=config(dir),token="bounded-m3-test-secret-token-123456";
+ const manager=createManagedEdge({configFile:file,token,maxRestarts:1,restartDelayMs:120,
+  healthIntervalMs:1000});
+ const wait=ms=>new Promise(r=>setTimeout(r,ms));
+ try{
+  const before=await manager.start();
+  assert.equal(before.phase,"RUNNING");
+  manager.crashForLab();
+  let after=null;
+  for(let i=0;i<100;i++){
+   const s=manager.status();
+   if(s.phase==="RUNNING"&&s.pid!==before.pid){after=s;break;}
+   await wait(35);
+  }
+  assert.ok(after,"M3 did not restart the first crash");
+  manager.crashForLab();
+  for(let i=0;i<100&&manager.status().phase!=="HALTED";i++)await wait(35);
+  assert.equal(manager.status().phase,"HALTED","Must not restart infinitely");
+  assert.equal(manager.status().restartCount,1);
+ }finally{await manager.stop();fs.rmSync(dir,{recursive:true,force:true});}
+});

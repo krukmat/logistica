@@ -90,6 +90,15 @@ jobs:
           name: m1-technical-evidence-${{ github.run_id }}
           path: ${{ runner.temp }}/pef-m1
           if-no-files-found: error
+      - name: M3 actual headless restart and durable receipt evidence
+        run: npm run m3:evidence -- --output "$RUNNER_TEMP/pef-m3-lifecycle.json"
+      - name: Upload M3 headless lifecycle evidence (software lab only)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m3-autonomous-lifecycle-${{ github.run_id }}
+          path: ${{ runner.temp }}/pef-m3-lifecycle.json
+          if-no-files-found: error
       - name: Deterministic scenarios
         run: npm run emulate
       - name: Loopback connectivity lab
