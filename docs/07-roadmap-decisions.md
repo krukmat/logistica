@@ -174,3 +174,7 @@ F1 bounded 10k/50k/100k journal index test, F2 realistic 72h retention capacity/
 ## Product-first priority shift after F1/F2 (2026-10-18)
 
 **W1.10.G journal-index redesign: DEFERRED**, not canceled and not physical qualification. Verified 100k events under 1GiB Lima, but standalone 100MiB journal caps offline endurance to an estimated 11.49h (1KiB) / 3.35h (4KiB) at 2 events/s; **72h remains BLOCKED**. Prioritize **M1 end-to-end local-only → sync/reconcile; M2 minimal real Cloud Lite; M3 headless trust/recovery; M4 Property/Host overlays; M5 repeatable deployment/pilot economics**. Full multi-WAN ownership remains external-router dependent for low-cost Core-only candidate. [Decision and tasks](29-mvp-priorities-after-f1.md).
+
+## M1 — End-to-end proof + video on the same test run (2026-10-18)
+
+M1.1/1.2 autonomous Edge + shared Core replay with explicit in-memory Cloud mock, M1.3 integrity-checked evidence bundle, M1.4 CI artifact publication and M1.5 read-only HTML/video pipeline implemented. M1.6 final gate depends on optional Playwright video capture validation. No physical device, genuine WAN or Cloud Lite. [Execution guide](tasks/m1-end-to-end-evidence.md) and [evidence design](30-m1-evidence-design.md).

@@ -82,3 +82,7 @@ Do not produce a fabricated demo MP4 or claim CI success before the real runner 
 - `GATE_M1_SCOPE`: neither Cloud Lite real backend nor certified physical WAN, flash powerloss, secure OTA, 72h, PKI/mTLS or purchased hardware is claimed. Those remain M2/M3/device tasks.
 
 **Desired outcome:** concise technical proof suitable for review, plus one demonstrative clip whose assertions can be checked against the downloadable artifacts.
+
+## Implementation state — 2026-10-18
+
+M1.1/1.2 integrated in `src/runtime/autonomous-edge.js` with loopback/token-gated virtual-only `/lab/sync` and faults; full real autonomous process E2E runner in `src/runtime/m1-scenario.js`. M1.3 report/trace/manifest/SHA256 and verifier implemented; M1.4 main CI uploads technical bundle; M1.5 static HTML timeline and opt-in Playwright video recorder implemented, dashboard imports same run JSON+NDJSON. **Software-lab and video milestone evidence have different gates**: only declare audiovisual PASS after actual Playwright WebM workflow success. [Tasks & commands](tasks/m1-end-to-end-evidence.md).
