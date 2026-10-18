@@ -11,7 +11,7 @@ const evidence=()=>({
    measured:{payloadKiB:1,acked:2000,recovered:2000,reopenReadMode:"STREAMING_64K",reopenMs:15,fsyncAppendMs:{p95:2}},model:{eventCount:518400,estimatedJournalGiB:0.61},
    decisions:{seventyTwoHourOfflineAcceptance:false},limits:{physicalValidated:false}},
  e2Large:{kind:"PEF_E2_OFFLINE_STORAGE_ENVELOPE_V1",ok:true,profile:"r28s-1g",
-   measured:{payloadKiB:4,acked:1000,recovered:1000,reopenReadMode:"STREAMING_64K"},model:{eventCount:518400,estimatedJournalGiB:2.2},
+   measured:{payloadKiB:4,acked:1000,recovered:1000,reopenReadMode:"STREAMING_64K",reopenMs:17,fsyncAppendMs:{p95:2.5}},model:{eventCount:518400,estimatedJournalGiB:2.2},
    decisions:{seventyTwoHourOfflineAcceptance:false},limits:{physicalValidated:false}}
 });
 test("E4 prioritizes existing router, never invents USB NIC or 3 native Ethernet",()=>{
