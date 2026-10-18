@@ -19,6 +19,7 @@
       <div class="mode-switch" role="group" aria-label="Modo de prueba">
         <button id="mode-sim" class="primary" type="button">Simulación lógica</button>
         <button id="mode-lab" class="secondary" type="button">Laboratorio integrado · W1.9.O</button>
+        <button id="open-arm64-lab" class="secondary" type="button">ARM64 Virtual Lab</button>
         <span id="mode-description" class="micro">Tiempo lógico · datos en memoria</span>
       </div>
       <section class="regions" aria-label="Estados independientes">
@@ -62,6 +63,14 @@
       </div>
       <section class="panel lab-panel" id="lab-panel" hidden>
         <div class="panel-heading"><div><h3>Laboratorio integrado: WAN + journal + Cloud mock</h3><p>Ejecuta el Core de integración con fsync real del SO en un directorio temporal seguro.</p></div><span class="chip">LAB • NO NIC / NO ROOT</span></div>
+        <div class="lab-detail" id="arm64-lab-panel">
+          <h4>W1.10.D4 — ARM64 Virtual Hardware Lab</h4>
+          <p class="micro">Importa el JSON de comparación generado en la VM ARM64 de 1 GB. Informe local no autenticado: no valida Rockchip, microSD, WAN físicas ni cortes eléctricos.</p>
+          <label for="arm64-comparison-file" class="select-label">Informe ARM64 (JSON)
+            <input id="arm64-comparison-file" type="file" accept=".json,application/json"/>
+          </label>
+          <pre id="arm64-comparison-evidence" role="status" aria-live="polite">D4 NOT_RUN · importe el informe de VM</pre>
+        </div>
         <div class="lab-grid">
           <div class="lab-stat"><span>Identidad lab / sitio</span><strong id="lab-identity">—</strong></div>
           <div class="lab-stat"><span>Sesión de arranque</span><strong id="lab-session">—</strong></div>
@@ -107,12 +116,7 @@
           <p class="micro">Solo Seeed Studio NUEVO: LinkStar H28K 39,90 USD pero mínimo 50 uds.; placa reRouter CM4 45 USD + módulo 62,50 USD (más extras); H68K 99 USD agotado. Ningún PEF completo, nuevo y comprable por unidad bajo el objetivo de 60 € está acreditado.</p>
           <button id="hardware-screening" class="secondary" type="button">Evaluar candidatos y observaciones</button>
           <pre id="hardware-screening-evidence">Sin ejecución · hardware NOT_RUN</pre>
-          <h4>W1.10.D4 — ARM64 Virtual Hardware Lab · comparación</h4>
-          <p class="micro">Importa el JSON de comparación generado en la VM de 1 GB. Solo se lee localmente en este navegador; los informes no están autenticados y no certifican hardware físico, microSD ni 2 WAN + LAN reales.</p>
-          <label for="arm64-comparison-file" class="select-label">Informe ARM64 (JSON)
-            <input id="arm64-comparison-file" type="file" accept=".json,application/json"/>
-          </label>
-          <pre id="arm64-comparison-evidence" role="status" aria-live="polite">D4 NOT_RUN · informe de VM pendiente</pre>
+
         </div>
         <div class="lab-detail" id="standalone-edge-panel">
           <h4>T — Edge Service autónomo · pre-hardware</h4>

@@ -186,6 +186,11 @@ async function importArm64Comparison(file){
 function bind(){
   $("mode-sim").addEventListener("click",()=>dispatch({command:"mode",mode:"sim"}));
   $("mode-lab").addEventListener("click",()=>dispatch({command:"mode",mode:"lab"}));
+  $("open-arm64-lab").addEventListener("click",async()=>{
+    if(busy)return;
+    await dispatch({command:"mode",mode:"lab"});
+    if(currentMode==="lab")$("arm64-lab-panel").scrollIntoView({behavior:"smooth",block:"start"});
+  });
   $("lab-sample").addEventListener("click",()=>labAction("sample"));
   $("lab-restart").addEventListener("click",()=>labAction("restart"));
   $("lab-compact").addEventListener("click",()=>labAction("compact"));

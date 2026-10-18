@@ -386,3 +386,14 @@ test("D4 control panel offers read-only ARM64 guest evidence import without phys
  assert.ok(client.includes("reportIntegrityIndependentlyVerified:false"));
  assert.ok(client.includes("physicalHardwareApproved:false"));
 }));
+
+
+test("D4 prominent ARM64 button navigates to first dedicated integrated-lab block",()=>withPanel(async({url})=>{
+ const html=await(await fetch(url)).text(),client=await(await fetch(url+"dashboard.js")).text();
+ assert.ok(html.includes('id="open-arm64-lab"'));
+ assert.ok(html.includes('id="arm64-lab-panel"'));
+ assert.ok(html.indexOf('id="arm64-lab-panel"')<html.indexOf('id="predevice-panel"'));
+ assert.equal((html.match(/id="arm64-comparison-file"/g)||[]).length,1);
+ assert.ok(client.includes('$("arm64-lab-panel").scrollIntoView'));
+ assert.ok(client.includes('await dispatch({command:"mode",mode:"lab"})'));
+}));
