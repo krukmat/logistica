@@ -70,4 +70,8 @@ CLI evidence from the guest is stored under `~/.local/share/pef-arm64-lab/{r28s-
 
 ## CI verification — 2026-10-18
 
-[Run #39135843686](https://github.com/krukmat/logistica/actions/runs/39135843686) **SUCCESS**: ARM64 135/135 passed, emulator 134/135 passed + 1 intended ARM-only skip, netns PASS, prehardware handoff PASS. [Audit](audit/w1.10-e1-e5-2026-10-18.md). Guest 1GiB E1/E2/E5 still requires actual Mac run; unchanged physical gates.
+[Run #39135843686](https://github.com/krukmat/logistica/actions/runs/39135843686) **SUCCESS**: ARM64 135/135 passed, emulator 134/135 passed + 1 intended ARM-only skip, netns PASS, prehardware handoff PASS. [Audit](audit/w1.10-e1-e5-2026-10-18.md). Guest 1GiB E1/E2/E5 operator run has since been reported PASS via user-pasted E5 comparator JSON (6/6) on 2026-10-18. See [operator evidence](audit/w1.10-e5-mac-1g-2026-10-18.md); raw child evidence was not independently checked and physical gates remain unchanged.
+
+## Operator E5 closure — 2026-10-18
+
+The operator shared `CORE_ONLY_1GB_VIRTUAL_RESEARCH_COMPLETE`, `ok:true` with **6/6 gate checks PASS** on the named 1GiB Lima profile. This closes virtual software research **only**. See [E5 audit](audit/w1.10-e5-mac-1g-2026-10-18.md) for exact checks, non-attestation scope, unchanged limitations, and proposed F1–F3 next gates. No 72h retention or board endorsement.
