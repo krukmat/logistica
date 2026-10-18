@@ -18,6 +18,12 @@ on:
       - 'docs/contracts/**'
       - '.github/workflows/pef-emulator.yml'
   workflow_dispatch:
+    inputs:
+      m1_video:
+        description: 'Record M1 evidence video for this run'
+        required: false
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -252,3 +258,38 @@ jobs:
           name: pef-prehardware-gate
           path: ${{ runner.temp }}/pef-prehardware-gate.json
           if-no-files-found: warn
+
+  m1-video-milestone:
+    # Browser only on explicit workflow dispatch or milestone commit.
+    if: (github.event_name == 'workflow_dispatch' && inputs.m1_video == true) || contains(github.event.head_commit.message, '[m1-video]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact triggering commit
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned optional Playwright library
+        run: npm install --no-audit --no-fund
+      - name: Install browser only in opt-in milestone job
+        run: npx playwright install --with-deps chromium
+      - name: Produce real standalone M1 evidence and verify
+        run: |
+          npm run m1:evidence -- --output-root "$RUNNER_TEMP/pef-m1"
+          bundle="$(find "$RUNNER_TEMP/pef-m1" -mindepth 1 -maxdepth 1 -type d | head -1)"
+          test -n "$bundle"
+          npm run m1:evidence:verify -- "$bundle"
+          echo "M1_BUNDLE=$bundle" >> "$GITHUB_ENV"
+      - name: Record evidence-derived WebM and verify source runId + digest
+        run: |
+          npm run m1:evidence:video -- --dir "$M1_BUNDLE"
+          npm run m1:evidence:verify-video -- "$M1_BUNDLE"
+      - name: Upload single-run report, HTML, trace and WebM
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m1-e2e-video-${{ github.run_id }}
+          path: ${{ runner.temp }}/pef-m1
+          if-no-files-found: error
