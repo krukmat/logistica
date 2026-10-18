@@ -9,8 +9,8 @@ El diseño no autoriza administración remota, control del sistema operativo ni 
 
 | Task | Subtasks (máx. dos niveles) | Entregable y condición de cierre | Estado |
 | --- | --- | --- | --- |
-| M3.5 Diagnóstico | M3.5.1 proyección pura de estado/causa/presupuesto; M3.5.2 snapshots de fases y dashboard HTTP | Core sin IO ni secretos; Edge real muestra RUNNING → commit → SAFE_MODE → recuperación, con tests y CI PASS | IMPLEMENTED / CI PENDING |
-| M3.6 Evidencia y vídeo | M3.6.1 artefacto técnico canónico con hashes; M3.6.2 HTML + WebM Playwright opt-in, runId y SHA256 verificables | Bundle de una sola sesión, gate negativo ante corrupción y vídeo de esa misma sesión validado en CI | IMPLEMENTED / CI+VIDEO PENDING |
+| M3.5 Diagnóstico | M3.5.1 proyección pura de estado/causa/presupuesto; M3.5.2 snapshots de fases y dashboard HTTP | Core sin IO ni secretos; Edge real muestra RUNNING → commit → SAFE_MODE → recuperación, con tests y CI PASS | CLOSED LAB — CI #39157645016 PASS |
+| M3.6 Evidencia y vídeo | M3.6.1 artefacto técnico canónico con hashes; M3.6.2 HTML + WebM Playwright opt-in, runId y SHA256 verificables | Bundle de una sola sesión, gate negativo ante corrupción y vídeo de esa misma sesión validado en CI | CLOSED LAB — video verificado CI #39157645016 |
 
 ### Contratos
 
@@ -56,3 +56,7 @@ En GitHub Actions, workflow_dispatch → m3_video=true produce m3-operations-vid
 4. Auditoría registra hashes, run ID, límites y fallos restantes sin declarar dispositivo apto para producción.
 
 **No demostrado:** arranque físico, firma PKI/OTA, Cloud Lite real, recuperación remota, apagón/flash powercut, NIC físicas, garantía 72 h o garantía de lock kernel del Mac. M4 puede diseñarse sin convertir M3 en producto certificado.
+
+## Cierre — 2026-10-18
+
+**M3.5 + M3.6 CLOSED exclusivamente en software/laboratorio.** [CI #39157645016](https://github.com/krukmat/logistica/actions/runs/39157645016): ARM64 160/160 PASS; Linux x64 159 PASS, 1 platform skip, 0 FAIL; network namespace, prehardware handoff, bundle técnico y captura Playwright WebM SUCCESS. El vídeo del job verificado corresponde al runId `d36cb47e-db36-4ee8-a0b9-7bfff1135310` (3.314.918 bytes, SHA256 `1890cf6529b79d1f27fef50325fd24282335c983dac7ff201c6477fd8f5772dd`). [Auditoría y límites](../audit/m3-operations-2026-10-18.md). No es prueba de dispositivo ni configuración firmada.

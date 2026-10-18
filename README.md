@@ -199,7 +199,7 @@ Run `npm run traces:check` for four pinned Product Core scenarios; `npm run trac
 
 **M3.1–M3.2 (2026-10-18):** supervisor headless `npm run m3:supervise -- --config /abs/edge.json` y smoke `npm run m3:evidence` con SIGKILL, restart/receipt fsync y límites de reintentos; Linux `scripts/m3/linux-locked-supervisor.sh` añade exclusión kernel `flock` entre instancias cooperantes, solo probada en CI. Dashboard → Laboratorio integrado → prueba M3; [Task y límites](docs/tasks/m3-autonomous-lifecycle.md). Cualquier despliegue físico sigue BLOCKED; Cloud Lite pagado aplazado.
 
-**M3.3/M3.4 LAB PASS:** `npm run m3:recovery` prueba política del supervisor con transacciones fsynced, revisión last-known-good, rollback por falla de health y SAFE_MODE tras reinicios repetidos con recuperación local. Panel integrado, [CI #39154660415](https://github.com/krukmat/logistica/actions/runs/39154660415), [tareas y límites](docs/tasks/m3-config-safe-mode.md). No cubre identidad firmada ni OTA física; M3.5/3.6 pendientes.
+**M3.3/M3.4 LAB PASS:** `npm run m3:recovery` prueba política del supervisor con transacciones fsynced, revisión last-known-good, rollback por falla de health y SAFE_MODE tras reinicios repetidos con recuperación local. Panel integrado, [CI #39154660415](https://github.com/krukmat/logistica/actions/runs/39154660415), [tareas y límites](docs/tasks/m3-config-safe-mode.md). No cubre identidad firmada ni OTA física; M3.5/3.6 se cierran sólo en laboratorio.
 
 ## M3.5–M3.6 — Diagnósticos y evidencia integral de laboratorio
 
@@ -214,3 +214,5 @@ npm run m3:bundle:verify-video -- artifacts/m3/<run-dir>
 ```
 
 El vídeo es una reproducción de los registros del mismo ensayo, NO un dispositivo filmado. Requiere ejecución opt-in en CI (m3_video=true) para certificar el artefacto audiovisual. La prueba no demuestra powercut, configuraciones firmadas, Cloud Lite ni hardware. [Tareas y DoD](docs/tasks/m3-operations-evidence.md).
+
+**M3 LAB CLOSED (2026-10-18):** [CI #39157645016](https://github.com/krukmat/logistica/actions/runs/39157645016) SUCCESS, ARM64 160/160 PASS, Linux x64 159 PASS + 1 platform skip, todos los gates de laboratorio y vídeo WebM same-run verificados. [Auditoría M3.5–M3.6](docs/audit/m3-operations-2026-10-18.md). Siguiente: M4 Property/Host con el Core común; M2 Cloud Lite remoto sigue DEFERRED por presupuesto.

@@ -44,3 +44,9 @@ Likewise the foundation's 72h sizing scenario and `REQ-STA-02` bounded store-and
 At current budget, **do not execute the paid/hosted M2 Cloud Lite path**. Remote hosted Cloud Lite (registry, authenticated durable ingest, desired config and fleet access) stays **DEFERRED / PRODUCT REQUIREMENT OPEN**, not dropped from long-term architecture or claimed complete. Existing in-process Cloud mock and any optional locally hosted zero-new-cost test remain admissible for development, but are **not a remote backend**. Do not buy or trial a VPS, managed DB, paid SaaS or paid DNS for M2.
 
 Reprioritize after M1: **M3 autonomous operations → M4 Property/Host overlay proof → M5 reproducible installation & pilot plan**. Implement only the software/lab portions that require no paid external resources; any physical procurement is separately gated. This budget rule supersedes the earlier near-term order of M2 ahead of M3. [Roadmap](07-roadmap-decisions.md).
+
+## M3 software-lab acceptance — 2026-10-18
+
+M3.1–M3.6 están **CLOSED sólo para laboratorio** (incluye configuración transaccional, SAFE_MODE, diagnósticos operativos, evidencias reproducibles y vídeo). [CI #39157645016](https://github.com/krukmat/logistica/actions/runs/39157645016) verifica ARM64 160/160 tests, x64 159 PASS + 1 skip, Linux namespace, prehardware gate, paquete M3 técnico y Playwright WebM de mismo runId. [Auditoría](audit/m3-operations-2026-10-18.md).
+
+**La próxima prioridad es M4**: Property PoC con un workload realmente local-capable y Host por configuración/workload del mismo Core; comparar el grado de reutilización con evidencias y sin inversiones adicionales. M5 instalación reproducible vendrá después. M2 Cloud Lite hosted sigue DEFERRED; no renunciar a su aceptación de producto futura. Ni M3 ni M4 certifican hardware, powercut, PKI o mult-WAN físico.
