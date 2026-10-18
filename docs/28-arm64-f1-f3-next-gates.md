@@ -55,3 +55,7 @@ Click **ARM64 Virtual Lab** at top and use the **F1** and **F2** report selector
 - Production physical backend remains BACKEND_NOT_IMPLEMENTED, procurementApproved=false.
 
 Next decision: read the operator F1/F2 JSON and determine whether to redesign on-disk index vs reduce offline expectations, without assuming a purchase is already approved.
+
+## CI closure — 2026-10-18
+
+[Run #39137508686](https://github.com/krukmat/logistica/actions/runs/39137508686) SUCCESS (143/143 ARM64, emulator 142 passed + 1 skipped, netns and prehardware handoff PASS). **This covers F1 100/500/1000 smoke only**, never the constrained 10k/50k/100k guest run. [Detailed audit](audit/w1.10-f1-f3-2026-10-18.md).
