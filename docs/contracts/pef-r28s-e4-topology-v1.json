@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "kind": "PEF_E4_R28S_TOPOLOGY_DECISION_V1",
+  "date": "2026-10-18",
+  "target": "NANOPI_R28S_NEW_1GB",
+  "manufacturer": "FriendlyElec",
+  "soc": "RK3528A",
+  "nativeEthernetPorts": 2,
+  "onboardWifi6": true,
+  "usbHostProven": false,
+  "usbNote": "USB-C is power/eMMC upgrade and debug UART; do not assume USB Ethernet host support",
+  "options": [
+    {
+      "id": "CORE_BEHIND_EXISTING_ROUTER",
+      "rank": 1,
+      "boardNetworkPortsUsed": 1,
+      "pefOwnsPhysicalWanSwitching": false,
+      "requiresExternalRouter": true,
+      "incrementalSwitchingBomUSD": null,
+      "status": "LOWEST_INCREMENTAL_COST_IF_EXISTING_ROUTER_HANDLES_WAN",
+      "technicalGate": "Core receipts, replay, fault awareness; WAN switching must be performed by external router via authorized integration"
+    },
+    {
+      "id": "LAN_WAN_GATEWAY_SINGLE_UPLINK",
+      "rank": 2,
+      "boardNetworkPortsUsed": 2,
+      "pefOwnsPhysicalWanSwitching": false,
+      "requiresExternalRouter": false,
+      "incrementalSwitchingBomUSD": null,
+      "status": "SINGLE_WAN_CAPABLE_DESIGN_ONLY",
+      "technicalGate": "One WAN plus LAN possible in principle; requires on-board kernel/netfilter/NAT qualification"
+    },
+    {
+      "id": "VLAN_TRUNK_WITH_MANAGED_SWITCH",
+      "rank": 3,
+      "boardNetworkPortsUsed": 2,
+      "pefOwnsPhysicalWanSwitching": true,
+      "requiresExternalManagedSwitch": true,
+      "incrementalSwitchingBomUSD": null,
+      "status": "NOT_LOWEST_COST_NO_RELIABILITY_EVIDENCE",
+      "technicalGate": "802.1Q supported by driver, isolation, loops, managed switch BOM, route verification"
+    },
+    {
+      "id": "WIFI_AS_WAN_B",
+      "rank": 4,
+      "boardNetworkPortsUsed": 2,
+      "pefOwnsPhysicalWanSwitching": true,
+      "usesOnboardWifi6": true,
+      "incrementalSwitchingBomUSD": null,
+      "status": "DRIVER_ROAMING_AND_FAILOVER_UNVERIFIED",
+      "technicalGate": "WiFi STA dual-WAN stability, auth security, roaming, latency, persistent network state"
+    },
+    {
+      "id": "USB_THIRD_NIC",
+      "rank": 5,
+      "boardNetworkPortsUsed": 2,
+      "pefOwnsPhysicalWanSwitching": true,
+      "status": "BLOCKED_USB_HOST_CAPABILITY_NOT_ESTABLISHED",
+      "technicalGate": "Do not procure USB Ethernet without proving actual host-capable port/power"
+    }
+  ],
+  "manufacturerPublishedUSD": {
+    "bareBoard": 20,
+    "caseAddition": 9,
+    "microSd32Addition": 15.99,
+    "illustrativeBoardPlusCard": 35.99,
+    "illustrativeBoardCardCase": 44.99,
+    "vatDutyShippingPowerSupply": "NOT_QUOTED",
+    "purchasableSingleUnit": "CHECKOUT_UNVERIFIED",
+    "stock": "UNCONFIRMED_OR_LEAD_TIME",
+    "url": "https://www.friendlyelec.com/index.php?path=69&product_id=320&route=product%2Fproduct"
+  },
+  "alternative": {
+    "id": "NANOPI_R3S_LTS_2GB",
+    "bareBoardUSD": 57,
+    "storagePowerShippingTaxExtra": true,
+    "url": "https://www.friendlyelec.com/index.php?limit=25&manufacturer_id=8&order=ASC&page=5&product_id=311&route=product%2Fproduct&sort=p.price"
+  },
+  "decision": "CORE_BEHIND_EXISTING_ROUTER",
+  "acceptance": "LAB_TOPOLOGY_RESEARCH_ONLY",
+  "procurementApproved": false,
+  "physicalValidated": false,
+  "completeDeviceCostVerified": false,
+  "fullTwoWanOneLanGatewayValidated": false,
+  "sourceNotes": [
+    "Vendor R28S has 2 native GbE, 1GB RAM, WiFi6, USB-C power/eMMC and UART.",
+    "WAN_A/WAN_B/LAN namespaces are logical simulation, not native NIC count.",
+    "All published USD component amounts exclude delivery, VAT/duties, PSU, and possible endurance-grade storage."
+  ]
+}
