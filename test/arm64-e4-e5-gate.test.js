@@ -23,8 +23,8 @@ test("E4 prioritizes existing router, never invents USB NIC or 3 native Ethernet
 test("E5 complete operator virtual set remains research-only not hardware or 72h qualified",()=>{
  const r=evaluate(evidence());
  assert.equal(r.ok,true,JSON.stringify(r));assert.equal(r.checks.length,5);
- assert.equal(r.limits.procurementApproved,false);
- assert.equal(r.limits.seventyTwoHoursOfflineValidated,false);
+ assert.equal(r.limitations.procurementApproved,false);
+ assert.equal(r.limitations.seventyTwoHoursOfflineValidated,false);
 });
 test("E5 does not elevate missing E1 or 4KiB or a forged D4 procurement claim",()=>{
  for(const fault of [
