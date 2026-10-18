@@ -165,3 +165,7 @@ Repositorio de trabajo: `krukmat/logistica`, rama `main`. **W1.5.A–J, W1.6.A�
 ## W1.10.E — 1GiB cost-first R28S research (2026-10-18)
 
 E1/E2 resource+offline feasibility, E3 incremental streamed journal reader, E4 choose provisional Core-behind-existing-router, E5 separate non-physical decision gate. **Status: software implementation complete, Linux ARM64 CI covered; operator Lima 1GiB E1/E2/E5 evidence pending.** Hardware procurement, 72h journal acceptance, powercut, 3-native-NIC gateway all BLOCKED. [Details](27-arm64-1gb-resource-validation.md).
+
+## W1.10.F — Core-only viability prior to physical purchase (2026-10-18)
+
+F1 bounded 10k/50k/100k journal index test, F2 realistic 72h retention capacity/model + hard 100MiB product-cap gap, F3 NEW R28S BOM and read-only external router observer. Software implementation on main; GitHub CI covers small smoke on larger-memory ARM64 only. Full 100k ARM64 **1GiB Lima operator test** and actual hardware checkout/physical test remain PENDING. Full gateway 2WAN+LAN not authorized. [Plan and commands](28-arm64-f1-f3-next-gates.md).
