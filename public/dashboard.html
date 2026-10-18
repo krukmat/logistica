@@ -148,6 +148,10 @@
           <p class="micro">Ejecuta un servicio HTTP separado del Control Panel, con el Core compartido, proceso supervisado, journal con fsync y reinicio con recuperación. Es un test <strong>lab-only</strong>, no un appliance Linux instalado.</p>
           <button id="edge-autonomous-smoke" type="button" class="secondary">Probar arranque autónomo y reapertura</button>
           <pre id="edge-autonomous-evidence">Sin ejecución</pre>
+          <h4>M3.1–M3.2 — Ciclo autónomo y exclusión de escritores</h4>
+          <p class="micro">Prueba servicio REAL separado, SIGKILL, reinicio automático con recibo fsynced y parada limpia; WAN sintética y Cloud no requerido. Kernel flock únicamente probado en Linux CI, NO en el Mac.</p>
+          <button id="m3-lifecycle-smoke" type="button" class="secondary">Ejecutar prueba M3 headless</button>
+          <pre id="m3-lifecycle-evidence">M3 NOT_RUN · Linux flock CI-only</pre>
         </div>
         <div class="lab-detail workload-panel" id="workload-panel">
           <h4>S — Workload Runtime · proceso local (NO sandbox)</h4>

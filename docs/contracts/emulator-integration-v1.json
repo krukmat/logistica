@@ -357,6 +357,23 @@
       "implementation": "src/runtime/device-candidate-screen.js",
       "test": "test/device-candidate-screen.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "M3.1-M3.2",
+      "mode": "lab",
+      "title": "Real autonomous supervisor restarts Edge after process SIGKILL and retains fsynced receipt; Linux flock CI only",
+      "controlIds": [
+        "standalone-edge-panel",
+        "m3-lifecycle-smoke",
+        "m3-lifecycle-evidence"
+      ],
+      "actions": [
+        "m3Lifecycle"
+      ],
+      "implementation": "src/runtime/m3-process-manager.js",
+      "test": "test/dashboard-integrated.test.js",
+      "hardwareValidated": false,
+      "uiEvidenceUrl": "https://github.com/krukmat/logistica/actions/workflows/pef-emulator.yml"
     }
   ]
 }

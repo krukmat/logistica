@@ -427,3 +427,17 @@ test("M1 dashboard read-only report + trace import labels synthetic WAN/cloud an
  assert.match(js,/SHA256 NOT VERIFIED IN BROWSER/);
  assert.match(js,/physicalValidated/);
 }));
+
+test("M3 dashboard exercises real supervisor, SIGKILL/reopen and labels Linux kernel exclusivity CI-only",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text(),client=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["m3-lifecycle-smoke","m3-lifecycle-evidence"])assert.ok(html.includes('id="'+id+'"'));
+ assert.match(client,/labAction\("m3Lifecycle"\)/);
+ await call({command:"mode",mode:"lab"});
+ const e=await call({command:"lab",action:"m3Lifecycle"});
+ assert.equal(e.result.ok,true,JSON.stringify(e.result));
+ assert.equal(e.result.actualProcessSigkill,true);
+ assert.equal(e.result.receiptRetained,true);
+ assert.equal(e.result.stoppedGracefully,true);
+ assert.equal(e.lab.m3Lifecycle.physicalValidated,false);
+ assert.equal(e.lab.m3Lifecycle.linuxKernelLock,"CI_ONLY");
+}));
