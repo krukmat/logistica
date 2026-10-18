@@ -1,7 +1,8 @@
 "use strict";
 // Standalone host, NOT the dashboard. Exact shared Core and OS-journal backend.
 const http=require("node:http");
-const {timingSafeEqual}=require("node:crypto");
+const {timingSafeEqual,randomBytes}=require("node:crypto");
+const {createLabCloudReplica}=require("../emulator/lab/cloud-replay.js");
 const {validateEdgeConfig}=require("./edge-config.js");
 const {acquireEdgeLock}=require("./single-writer.js");
 const {createVirtualWanPorts}=require("../adapters/virtual-wan-ports.js");
@@ -23,7 +24,7 @@ function createAutonomousEdgeHost({config,token,workloadDriver}={}){
     throw Error("EDGE_OPERATOR_TOKEN_REQUIRED");
   const lock=acquireEdgeLock(cfg.storageDir);
   let engine=null,supervisor=null,ports=null,server=null,interval=null,closed=false;
-  let lastSample=null,lastFault=null,samples=0,operating=false,started=false,port=null;
+  let lastSample=null,lastFault=null,samples=0,operating=false,started=false,port=null,labCloud=null;
   const secret=Buffer.from(token,"utf8");
   const isAuthorized=req=>{
     const received=req.headers["x-pef-token"];
@@ -40,7 +41,8 @@ function createAutonomousEdgeHost({config,token,workloadDriver}={}){
       simulatedRoutes:cfg.backend==="virtual-lab"?ports.snapshot():null,
       remoteCloudConnected:false,transportProvisioned:false,
       physicalWanValidated:false,powerCutValidated:false,hardwareValidated:false,
-      dashboardRequired:false,scope:"LAB_ONLY_NOT_DEVICE"};
+      dashboardRequired:false,scope:"LAB_ONLY_NOT_DEVICE",
+      labCloud:labCloud?{...labCloud.status(),available:runtime.network.selectedWan!==null,provisioned:false}:null};
   }
   async function sample(){
     if(operating||closed)return {ok:false,error:"EDGE_SAMPLE_BUSY"};
@@ -110,6 +112,29 @@ function createAutonomousEdgeHost({config,token,workloadDriver}={}){
         send(res,200,{ok:true,simulation:result});return;
       }catch(e){send(res,400,{ok:false,error:e.message});return;}
     }
+    // Explicitly virtual-only, loopback-and-token guarded Cloud MOCK.
+    // No physical WAN or real cloud transport is provisioned by these endpoints.
+    if(pathname==="/lab/cloud/fault"&&cfg.backend==="virtual-lab"){
+      if(Object.keys(body).length!==1||!["drop-next-ack","forge-next-ack"].includes(body.fault)){
+        send(res,400,{ok:false,error:"INVALID_LAB_CLOUD_FAULT"});return;
+      }
+      if(body.fault==="drop-next-ack")labCloud.dropNextDurableAck();
+      else labCloud.forgeNextAck();
+      send(res,200,{ok:true,kind:"PEF_LAB_CLOUD_FAULT",fault:body.fault,cloudMockOnly:true});
+      return;
+    }
+    if(pathname==="/lab/sync"&&cfg.backend==="virtual-lab"){
+      if(Object.keys(body).length!==0){send(res,400,{ok:false,error:"INVALID_LAB_SYNC_BODY"});return;}
+      if(engine.status().network.selectedWan===null){
+        send(res,409,{ok:false,error:"CLOUD_UNAVAILABLE",cloudMockOnly:true});return;
+      }
+      try{
+        const result=await engine.sync(labCloud,16,{timeoutMs:250,maxAttempts:1});
+        send(res,result.status==="SYNC_OK"?200:409,{ok:result.status==="SYNC_OK",
+          result,cloudMockOnly:true,realCloudProvisioned:false});
+      }catch(e){send(res,503,{ok:false,error:String(e.message||e),cloudMockOnly:true});}
+      return;
+    }
     if(pathname==="/lab/sample"&&cfg.backend==="virtual-lab"){
       const outcome=await sample();
       send(res,outcome.ok?200:503,outcome);return;
@@ -128,6 +153,9 @@ function createAutonomousEdgeHost({config,token,workloadDriver}={}){
     if(started)throw Error("ALREADY_LISTENING");
     try{
       ports=cfg.backend==="virtual-lab"?createVirtualWanPorts(cfg.wan):null;
+      labCloud=cfg.backend==="virtual-lab"?createLabCloudReplica({
+        siteId:cfg.identity.siteId,deviceId:cfg.identity.deviceId,
+        allowedRevisions:[cfg.identity.configRevision],proofKey:randomBytes(32)}):null;
       const boot=openLabBoot({dir:cfg.storageDir,identity:cfg.identity});
       const opening=openRuntimeBackend(cfg.backend,{dir:cfg.storageDir,identity:boot.identity,
         sessionId:boot.sessionId,journalOptions:cfg.journal,
