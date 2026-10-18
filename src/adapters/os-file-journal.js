@@ -1,9 +1,11 @@
 "use strict";
 // OS file-journal adapter for portable PEF Core; host OS fsync lab evidence only: fsync through the host OS, not physical power-loss certification.
 // A SINGLE writer must own the file. No automatic repair/compaction on corrupted tails.
+// E3 streaming parser reduces reopen transient memory; retained Map still grows with backlog.
 const fs=require("node:fs");
 const path=require("node:path");
 const {createHash,randomUUID}=require("node:crypto");
+const {StringDecoder}=require("node:string_decoder");
 function digest(kind,id,payload,category){
   return createHash("sha256").update(JSON.stringify({kind,id,payload,category})).digest("hex");
 }
@@ -14,7 +16,7 @@ function createFileJournal({dir,capacityBytes=1024*1024,controlReserveBytes,fsOp
   if(controlReserveBytes===undefined)controlReserveBytes=Math.min(4096,Math.floor(capacityBytes/4));
   if(!Number.isSafeInteger(controlReserveBytes)||controlReserveBytes<0||controlReserveBytes>=capacityBytes)
     throw Error("INVALID_CONTROL_RESERVE");
-  if(!fsOps||["statSync","realpathSync","openSync","closeSync","readFileSync","writeSync","fsyncSync","renameSync","unlinkSync"].some(k=>typeof fsOps[k]!=="function"))throw Error("INVALID_JOURNAL_FS_PORT");
+  if(!fsOps||["statSync","realpathSync","openSync","closeSync","readSync","writeSync","fsyncSync","renameSync","unlinkSync"].some(k=>typeof fsOps[k]!=="function"))throw Error("INVALID_JOURNAL_FS_PORT");
   if(!fsOps.statSync(dir).isDirectory())throw Error("JOURNAL_DIR_NOT_DIRECTORY");
   const file=path.join(fsOps.realpathSync(dir),"pef-journal.ndjson");
   const flags=fs.constants.O_RDWR|fs.constants.O_CREAT|fs.constants.O_APPEND|(fs.constants.O_NOFOLLOW||0);
@@ -24,12 +26,12 @@ function createFileJournal({dir,capacityBytes=1024*1024,controlReserveBytes,fsOp
   const signed=(kind,id,payload,category)=>({recordSchemaVersion:1,kind,id,payload,category,sha256:digest(kind,id,payload,category)});
   function checkOpen(){if(closed)throw Error("JOURNAL_CLOSED");}
   function load(){
-    const raw=fsOps.readFileSync(file);
     entries.clear();acked.clear();refs.clear();legacyRecords=0;
-    size=raw.length;
+    size=fsOps.statSync(file).size;
     if(size>capacityBytes)throw Error("JOURNAL_OVER_CAPACITY");
-    if(size&&!raw.toString("utf8").endsWith("\n"))throw Error("JOURNAL_UNSAFE_TAIL");
-    for(const line of raw.toString("utf8").split("\n").filter(Boolean)){
+    // Stream the validated file in fixed chunks rather than holding file Buffer + split string + Map.
+    // The event index itself is still O(number of retained events); 72h remains unqualified.
+    const acceptLine=(line)=>{
       let record;
       try{record=JSON.parse(line);}catch{throw Error("JOURNAL_CORRUPT_JSON");}
       if(record&&record.recordSchemaVersion!==undefined&&record.recordSchemaVersion!==1)
@@ -51,7 +53,28 @@ function createFileJournal({dir,capacityBytes=1024*1024,controlReserveBytes,fsOp
            entries.has(record.id)||refs.has(record.id))throw Error("JOURNAL_BAD_COMPACTED_REF");
         refs.set(record.id,{digest:record.payload,category:record.category});
       }
-    }
+    };
+    const decoder=new StringDecoder("utf8"),buffer=Buffer.allocUnsafe(64*1024);
+    let pending="",seen=0;
+    const reader=fsOps.openSync(file,fs.constants.O_RDONLY|(fs.constants.O_NOFOLLOW||0));
+    try{
+      while(true){
+        const n=fsOps.readSync(reader,buffer,0,buffer.length,null);
+        if(!n)break;
+        seen+=n;
+        if(seen>capacityBytes)throw Error("JOURNAL_OVER_CAPACITY");
+        pending+=decoder.write(buffer.subarray(0,n));
+        let newline;
+        while((newline=pending.indexOf("\n"))!==-1){
+          const line=pending.slice(0,newline);
+          pending=pending.slice(newline+1);
+          if(line)acceptLine(line);
+        }
+      }
+      pending+=decoder.end();
+      if(pending)throw Error("JOURNAL_UNSAFE_TAIL");
+      if(seen!==size)throw Error("JOURNAL_SIZE_CHANGED");
+    }finally{fsOps.closeSync(reader);}
   }
   try{load();}catch(err){fsOps.closeSync(fd);throw err;}
   function write(record,{useControlReserve=false}={}){
