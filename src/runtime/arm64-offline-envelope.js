@@ -18,6 +18,8 @@ function modelBacklog({hours=72,rate=2,payloadKiB=1,averageRecordBytes}={}){
   estimatedJournalGiB:estimatedJournalBytes===null?null:Math.round(estimatedJournalBytes/(1024**3)*1000)/1000,
   estimatedJournalBytes,assumesAllEventsStoredWithoutCloudAck:true,projectedNotMeasured:true};
 }
+function percentile(data,p){if(!data.length)return null;const v=[...data].sort((a,b)=>a-b);
+ return Math.round(v[Math.min(v.length-1,Math.ceil(v.length*p/100)-1)]*1000)/1000;}
 async function runOfflineEnvelope({profile="r28s-1g",count=1000,payloadKiB=1,baseDir,requireConstrained=false}={}){
  if(!Number.isSafeInteger(count)||count<1||count>MAX||![1,4].includes(payloadKiB))
   throw Error("E2_BOUNDED_TEST_INVALID");
@@ -30,7 +32,7 @@ async function runOfflineEnvelope({profile="r28s-1g",count=1000,payloadKiB=1,bas
    throw Error("E2_DISK_HEADROOM_INSUFFICIENT");
  const dir=fs.mkdtempSync(path.join(parent,"pef-e2-offline-"));
  let journal=null,error=null,acked=0,recovered=0,bytes=0,reopenMs=null;
- let peak=process.memoryUsage().rss;const start=performance.now(),monitor=setInterval(()=>{
+ let peak=process.memoryUsage().rss;const fsyncLatencies=[];const start=performance.now(),monitor=setInterval(()=>{
   peak=Math.max(peak,process.memoryUsage().rss);
  },10);
  try{
@@ -38,7 +40,9 @@ async function runOfflineEnvelope({profile="r28s-1g",count=1000,payloadKiB=1,bas
   const payload={schemaVersion:1,siteId:"test",deviceId:"r28s-vm",
    payload:"X".repeat(payloadKiB*1024),category:"O1"};
   for(let i=0;i<count;i++){
+   const writeAt=performance.now();
    const res=journal.append({eventId:"e2-"+i,category:"O1",payload});
+   fsyncLatencies.push(performance.now()-writeAt);
    if(!res.ack||!res.fsyncCompleted)throw Error("E2_NOT_DURABLE:"+i+":"+res.error);
    acked++;
    if(i%100===0){peak=Math.max(peak,process.memoryUsage().rss);
@@ -61,7 +65,10 @@ async function runOfflineEnvelope({profile="r28s-1g",count=1000,payloadKiB=1,bas
   bytesPerEvent:acked&&bytes?Math.round(bytes/acked*100)/100:null,
   reopenMs,elapsedMs:Math.round((performance.now()-start)*100)/100,
   sampledPeakProcessRssMiB:Math.round(peak/1048576*100)/100,
-  storageLimitBytes:CAPACITY,error};
+  storageLimitBytes:CAPACITY,error,
+  fsyncAppendMs:{p50:percentile(fsyncLatencies,50),p95:percentile(fsyncLatencies,95),
+   p99:percentile(fsyncLatencies,99),max:fsyncLatencies.length?Math.max(...fsyncLatencies):null},
+  reopenReadMode:"STREAMING_64K"};
  const model=modelBacklog({hours:72,rate:2,payloadKiB,averageRecordBytes:measured.bytesPerEvent});
  const safe=error===null&&acked===count&&recovered===count;
  return {kind:"PEF_E2_OFFLINE_STORAGE_ENVELOPE_V1",ok:safe,

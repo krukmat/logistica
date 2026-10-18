@@ -191,8 +191,8 @@ async function importArm64E5(file){
   const r=JSON.parse(await file.text());
   if(r?.kind!=="PEF_W1_10_E5_VIRTUAL_HARDWARE_GATE_V1"||
      r.schemaVersion!==1||!Array.isArray(r.checks)||r.checks.length!==5||
-     r.limits?.deviceBackend!=="BACKEND_NOT_IMPLEMENTED"||
-     r.limits?.procurementApproved!==false||r.limits?.physicalValidated!==false)
+     r.limitations?.deviceBackend!=="BACKEND_NOT_IMPLEMENTED"||
+     r.limitations?.procurementApproved!==false||r.limitations?.physicalValidated!==false)
     throw Error("E5_INVALID_IMPORT");
   output.textContent=JSON.stringify({
    label:"E5 INFORME LOCAL NO AUTENTICADO",profile:r.profile,

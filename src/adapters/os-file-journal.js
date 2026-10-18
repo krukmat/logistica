@@ -124,7 +124,7 @@ function createFileJournal({dir,capacityBytes=1024*1024,controlReserveBytes,fsOp
     eventId:e.id,payload:e.payload,category:e.category,sha256:e.sha256,
     cloudAcked:acked.has(e.id)
   }));};
-  const status=()=>{checkOpen();return {kind:"PEF_OS_FILE_JOURNAL",recordSchemaVersion:1,legacyRecords,bytesUsed:size,capacityBytes,controlReserveBytes,regularWriteLimitBytes:capacityBytes-controlReserveBytes,events:entries.size+refs.size,retainedEvents:entries.size,compactedRefs:refs.size,cloudAcked:acked.size+refs.size,pending:entries.size-acked.size,unsafe,hardwareValidated:false,powerCutValidated:false};};
+  const status=()=>{checkOpen();return {kind:"PEF_OS_FILE_JOURNAL",recordSchemaVersion:1,legacyRecords,reopenReadMode:"STREAMING_64K",bytesUsed:size,capacityBytes,controlReserveBytes,regularWriteLimitBytes:capacityBytes-controlReserveBytes,events:entries.size+refs.size,retainedEvents:entries.size,compactedRefs:refs.size,cloudAcked:acked.size+refs.size,pending:entries.size-acked.size,unsafe,hardwareValidated:false,powerCutValidated:false};};
   // Rewrites are atomic on the current filesystem: stage/fsync/rename/fsync directory.
   // Single-writer laboratory contract: no cross-process lock or hardware power-loss guarantee.
   function compact({testHook}={}){

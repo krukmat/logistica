@@ -28,3 +28,10 @@ test("E2 bounded OS journal fsync + normal reopen preserves all receipts, not 72
  assert.ok(r.model.estimatedJournalGiB>r.model.rawPayloadGiB);
  assert.equal(r.limits.physicalValidated,false);
 });
+
+test("E2 reports measured fsync p95 and bounded reader identity",async()=>{
+ const r=await runOfflineEnvelope({count:12,payloadKiB:4});
+ assert.equal(r.ok,true);assert.ok(r.measured.fsyncAppendMs.p95>=0);
+ assert.ok(r.measured.fsyncAppendMs.p99>=r.measured.fsyncAppendMs.p95);
+ assert.equal(r.measured.reopenReadMode,"STREAMING_64K");
+});
