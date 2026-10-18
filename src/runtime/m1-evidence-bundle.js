@@ -2,7 +2,8 @@
 const fs=require("node:fs"),path=require("node:path");
 const {createHash,randomUUID}=require("node:crypto");
 const {runM1Scenario}=require("./m1-scenario.js");
-const NAMES=["report.json","trace.ndjson","summary.md"];
+const {renderViewer}=require("./m1-evidence-viewer.js");
+const NAMES=["report.json","trace.ndjson","summary.md","m1-evidence.html"];
 const IDS=["M1_01_AUTONOMOUS_EDGE_RUNNING","M1_02_VIRTUAL_WAN_LOCAL_ONLY",
  "M1_03_OFFLINE_RECEIPT_FSYNC","M1_04_IDEMPOTENCY_AND_CONFLICT",
  "M1_05_SIGKILL_RECOVER_REOPEN","M1_06_RECONNECT_AND_AMBIGUOUS_ACK",
@@ -71,7 +72,8 @@ async function createBundle({outputRoot=path.resolve("artifacts/m1")}={}){
  const parts={
   "report.json":json(report),
   "trace.ndjson":trace.map(x=>JSON.stringify(x)).join("\n")+"\n",
-  "summary.md":summarize(report)
+  "summary.md":summarize(report),
+  "m1-evidence.html":renderViewer(report,trace)
  };
  const descriptors=[];
  for(const name of NAMES){
