@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "kind": "PEF_F3_SINGLE_UNIT_NEW_HARDWARE_BOM_V1",
+  "date": "2026-10-18",
+  "intendedArchitecture": "CORE_SIDECAR_BEHIND_EXISTING_ROUTER",
+  "quantity": 1,
+  "currency": "USD_VENDOR_LISTING_ONLY_NO_CONVERSION",
+  "vendor": {
+    "name": "FriendlyElec",
+    "officialProductUrl": "https://www.friendlyelec.com/index.php?limit=20&manufacturer_id=8&order=DESC&page=4&product_id=320&route=product%2Fproduct&sort=p.price",
+    "listedInStock": true,
+    "oneUnitCartButtonDisplayed": true,
+    "checkedOutToSpain": false,
+    "shippingSpainQuoted": false,
+    "taxDutiesIncluded": false
+  },
+  "required": [
+    {
+      "item": "NanoPi R28S 1GB bare board NEW",
+      "qty": 1,
+      "vendorUsd": 20,
+      "availability": "VENDOR_LISTED_IN_STOCK"
+    },
+    {
+      "item": "Boot and durable journal storage",
+      "qty": 1,
+      "offeredVendorOption": "SanDisk Ultra 32GB microSD vendor listing",
+      "optionUsd": 15.99,
+      "enduranceQualified": false,
+      "mustChooseMediaBeforePurchase": true
+    },
+    {
+      "item": "Power 5V 2A non-PD USB-C",
+      "qty": 1,
+      "priceUsd": null,
+      "accessoryIncluded": false,
+      "needsVendorOrExistingVerifiedSupply": true,
+      "currentInputSpecVerified": true
+    },
+    {
+      "item": "Internet LAN Ethernet cable",
+      "qty": 1,
+      "priceUsd": null,
+      "existingCableMayBeUsed": true
+    },
+    {
+      "item": "Existing dual WAN capable router",
+      "qty": 1,
+      "priceUsd": null,
+      "assumesAlreadyOwned": true,
+      "routerModelAndDualWanSupportVerified": false
+    }
+  ],
+  "optional": [
+    {
+      "item": "Matching metal case",
+      "qty": 1,
+      "vendorUsd": 9
+    }
+  ],
+  "alternative": {
+    "item": "NanoPi R3S-LTS 2GB bare board NEW",
+    "vendorUsd": 57,
+    "defaultNotSelected": true,
+    "source": "https://www.friendlyelec.com/index.php?limit=25&manufacturer_id=8&order=ASC&page=5&product_id=311&route=product%2Fproduct&sort=p.price"
+  },
+  "scenarios": [
+    {
+      "id": "R28S_WITH_VENDOR_32GB_SD_NO_CASE",
+      "listedComponentsUsd": 35.99,
+      "deliveredTotalUsd": null
+    },
+    {
+      "id": "R28S_WITH_VENDOR_32GB_SD_AND_CASE",
+      "listedComponentsUsd": 44.99,
+      "deliveredTotalUsd": null
+    }
+  ],
+  "unknowns": [
+    "Power supply and cable final price",
+    "Suitable high-endurance microSD vs vendor Ultra",
+    "Shipping to Spain",
+    "VAT/duties/handling",
+    "Vendor one-unit payment/fulfillment checkout",
+    "Exact existing dual WAN router model capabilities",
+    "Maintenance and replacements"
+  ],
+  "portInventory": {
+    "nativeGigabitEthernet": 2,
+    "additionalHostUSB_ETH": false,
+    "additionalHostUSB_ETHVerified": false,
+    "fullTwoWanPlusLanProven": false,
+    "externalRouterOwnsFailover": true,
+    "physicalWanSwitchingByPEF": false
+  },
+  "acceptance": {
+    "vendorListingVerified": true,
+    "singleUnitDeliveredCostVerified": false,
+    "completeBOM": false,
+    "procurementApproved": false,
+    "physicalValidated": false,
+    "boardBootImageAndKernelVerified": false,
+    "deviceBackend": "BACKEND_NOT_IMPLEMENTED"
+  }
+}
