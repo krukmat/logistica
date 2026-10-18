@@ -190,7 +190,7 @@ async function importArm64E5(file){
  try{
   const r=JSON.parse(await file.text());
   if(r?.kind!=="PEF_W1_10_E5_VIRTUAL_HARDWARE_GATE_V1"||
-     r.schemaVersion!==1||!Array.isArray(r.checks)||r.checks.length!==5||
+     r.schemaVersion!==1||!Array.isArray(r.checks)||r.checks.length!==6||
      r.limitations?.deviceBackend!=="BACKEND_NOT_IMPLEMENTED"||
      r.limitations?.procurementApproved!==false||r.limitations?.physicalValidated!==false)
     throw Error("E5_INVALID_IMPORT");

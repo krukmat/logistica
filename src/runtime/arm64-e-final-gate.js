@@ -21,6 +21,9 @@ function evaluate({profile="r28s-1g",d4,e1,e2Small,e2Large}={}){
   {sampled:e2Small?.measured?.acked??0,projectedGiB:e2Small?.model?.estimatedJournalGiB??null});
  add("E5_E2_4K_STORAGE",e2ok(e2Large,4),
   {sampled:e2Large?.measured?.acked??0,projectedGiB:e2Large?.model?.estimatedJournalGiB??null});
+ add("E5_E3_CHUNKED_JOURNAL_REOPEN",e2Small?.measured?.reopenReadMode==="STREAMING_64K"&&
+    e2Large?.measured?.reopenReadMode==="STREAMING_64K",
+    {streamingParser:true,indexMemoryStillLinear:true});
  add("E5_E4_COST_FIRST_TOPOLOGY",topology.decision==="CORE_BEHIND_EXISTING_ROUTER"&&
     topology.nativeEthernetPorts===2&&topology.procurementApproved===false,
     {decision:topology.decision,physicalDualWanPlusLan:false});

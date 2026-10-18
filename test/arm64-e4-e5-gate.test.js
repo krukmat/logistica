@@ -8,10 +8,10 @@ const evidence=()=>({
  e1:{kind:"PEF_E1_GUEST_RESOURCE_ENVELOPE_V1",ok:true,profile:"r28s-1g",
    guest:{profileEnforced:true},probe:{provisionalMemoryHeadroomOk:true,anyOomKilled:false,minAvailableMiB:160}},
  e2Small:{kind:"PEF_E2_OFFLINE_STORAGE_ENVELOPE_V1",ok:true,profile:"r28s-1g",
-   measured:{payloadKiB:1,acked:2000,recovered:2000},model:{eventCount:518400,estimatedJournalGiB:0.61},
+   measured:{payloadKiB:1,acked:2000,recovered:2000,reopenReadMode:"STREAMING_64K"},model:{eventCount:518400,estimatedJournalGiB:0.61},
    decisions:{seventyTwoHourOfflineAcceptance:false},limits:{physicalValidated:false}},
  e2Large:{kind:"PEF_E2_OFFLINE_STORAGE_ENVELOPE_V1",ok:true,profile:"r28s-1g",
-   measured:{payloadKiB:4,acked:1000,recovered:1000},model:{eventCount:518400,estimatedJournalGiB:2.2},
+   measured:{payloadKiB:4,acked:1000,recovered:1000,reopenReadMode:"STREAMING_64K"},model:{eventCount:518400,estimatedJournalGiB:2.2},
    decisions:{seventyTwoHourOfflineAcceptance:false},limits:{physicalValidated:false}}
 });
 test("E4 prioritizes existing router, never invents USB NIC or 3 native Ethernet",()=>{
@@ -22,7 +22,7 @@ test("E4 prioritizes existing router, never invents USB NIC or 3 native Ethernet
 });
 test("E5 complete operator virtual set remains research-only not hardware or 72h qualified",()=>{
  const r=evaluate(evidence());
- assert.equal(r.ok,true,JSON.stringify(r));assert.equal(r.checks.length,5);
+ assert.equal(r.ok,true,JSON.stringify(r));assert.equal(r.checks.length,6);
  assert.equal(r.limitations.procurementApproved,false);
  assert.equal(r.limitations.seventyTwoHoursOfflineValidated,false);
 });
