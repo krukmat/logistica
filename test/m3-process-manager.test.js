@@ -95,8 +95,8 @@ test("M3.2 restart budget is finite: second SIGKILL halts after one permitted re
   }
   assert.ok(after,"M3 did not restart the first crash");
   manager.crashForLab();
-  for(let i=0;i<100&&manager.status().phase!=="HALTED";i++)await wait(35);
-  assert.equal(manager.status().phase,"HALTED","Must not restart infinitely");
+  for(let i=0;i<100&&manager.status().phase!=="SAFE_MODE";i++)await wait(35);
+  assert.equal(manager.status().phase,"SAFE_MODE","Must not restart infinitely");
   assert.equal(manager.status().restartCount,1);
  }finally{await manager.stop();fs.rmSync(dir,{recursive:true,force:true});}
 });
