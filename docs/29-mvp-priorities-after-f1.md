@@ -38,3 +38,9 @@ Likewise the foundation's 72h sizing scenario and `REQ-STA-02` bounded store-and
 ## M1 proof strategy — documentary and video evidence
 
 [M1 evidence-by-design plan](30-m1-evidence-design.md) specifies one canonical autonomous runner, generated JSON + NDJSON + Markdown, SHA256 manifest, read-only visual evidence viewer, optional Playwright WebM recording of the same run, CI verification and non-certification labels. **Planning only; M1 scenario/video not implemented yet.** Most important prerequisite: connect autonomous Core `sync()` to the existing Cloud mock *in the same test run* without pretending Cloud Lite is real.
+
+## Decision — zero new cloud spend (2026-10-18)
+
+At current budget, **do not execute the paid/hosted M2 Cloud Lite path**. Remote hosted Cloud Lite (registry, authenticated durable ingest, desired config and fleet access) stays **DEFERRED / PRODUCT REQUIREMENT OPEN**, not dropped from long-term architecture or claimed complete. Existing in-process Cloud mock and any optional locally hosted zero-new-cost test remain admissible for development, but are **not a remote backend**. Do not buy or trial a VPS, managed DB, paid SaaS or paid DNS for M2.
+
+Reprioritize after M1: **M3 autonomous operations → M4 Property/Host overlay proof → M5 reproducible installation & pilot plan**. Implement only the software/lab portions that require no paid external resources; any physical procurement is separately gated. This budget rule supersedes the earlier near-term order of M2 ahead of M3. [Roadmap](07-roadmap-decisions.md).
