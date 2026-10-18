@@ -464,6 +464,7 @@ test("M3.5/6 dashboard invokes real diagnostics through HTTP",()=>withPanel(asyn
  assert.ok(html.includes('id="m3-operations-smoke"'));
  assert.ok(html.includes('id="m3-operations-evidence"'));
  assert.match(js,/labAction\("m3Operations"\)/);
+ await call({command:"mode",mode:"lab"});
  const changed=await call({command:"lab",action:"m3Operations"});
  assert.equal(changed.result.ok,true);
  assert.equal(changed.result.diagnosticSnapshots.length,4);
