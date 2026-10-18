@@ -120,7 +120,10 @@ function createManagedEdge({configFile,token,maxRestarts=2,restartDelayMs=180,
  }
  async function start(){
   if(phase!=="NEW")throw Error("M3_ALREADY_STARTED");
-  try{await launch();return status();}
+  try{
+   if(policyStore.snapshot().recoveredStage)
+    report("INTERRUPTED_CONFIG_ROLLED_BACK",{revision:policyStore.snapshot().revision});
+   await launch();return status();}
   catch(e){report("BOOT_FAILED",{error:String(e.message||e)});
    safeMode("BOOT_FAILED");throw e;}
  }
@@ -161,6 +164,9 @@ function createManagedEdge({configFile,token,maxRestarts=2,restartDelayMs=180,
   let candidate;
   try{candidate=normalize(change.policy);}
   catch(e){return {ok:false,error:String(e.message||e)};}
+  const current=policyStore.snapshot();
+  if(change.expectedRevision!==current.revision||change.revision!==current.revision+1)
+   return {ok:false,error:"M3_REVISION_CONFLICT",revision:current.revision};
   changing=true;
   const previous=policy;
   try{
@@ -168,7 +174,8 @@ function createManagedEdge({configFile,token,maxRestarts=2,restartDelayMs=180,
    report("CONFIG_STAGED",{revision:change.revision,previousRevision:change.expectedRevision});
    policy=candidate;resetHealthTimer();
    report("CONFIG_ACTIVATED",{revision:change.revision,scope:"SUPERVISOR_POLICY_ONLY"});
-   const ready=await probe();
+   let ready=false;
+   try{ready=await probe();}catch{ready=false;}
    if(ready!==true){
     policy=previous;resetHealthTimer();
     policyStore.rollback();
