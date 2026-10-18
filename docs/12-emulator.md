@@ -232,3 +232,7 @@ La puerta antes de hardware es el tercer job `prehardware-gate` que exige éxito
 ## M3.1–M3.2 — Supervisor externo y exclusión Linux de laboratorio
 
 La acción M3 en el **Laboratorio integrado** ejecuta `runM3LifecycleSmoke` y reproduce arranque del Edge independiente del dashboard, registro de recibo con fsync local durante WAN virtual offline, `SIGKILL` del proceso hijo, reintento del supervisor, reapertura y cierre ordenado. El estado es `SOFTWARE_LAB_ONLY`, y la comprobación de `flock` kernel está confinada a Linux CI, no al Mac. No se instala ningún servicio ni se cambia WAN host. [Guía M3](tasks/m3-autonomous-lifecycle.md).
+
+## M3.3–M3.4 — Transacción de supervisor y SAFE_MODE
+
+El panel **Laboratorio integrado → M3.3–M3.4** activa `m3Recovery` y lanza un Edge autónomo real aislado. Prueba COMMIT con verificación de salud, rechazo stale revision, ROLLBACK, segundo SIGKILL → SAFE_MODE y recuperación local autenticada. No actúa sobre el daemon existente del usuario ni su WAN; ver [guía](tasks/m3-config-safe-mode.md) y [auditoría CI](audit/m3-config-safe-mode-2026-10-18.md).
