@@ -80,7 +80,10 @@ function createAutonomousEdgeHost({config,token,workloadDriver}={}){
     }
     if(!isAuthorized(req)){send(res,403,{ok:false,error:"OPERATOR_TOKEN_REQUIRED"});return;}
     if(req.method==="GET"&&pathname==="/ready"){
-      const s=state();send(res,s.storage.unsafe?503:200,{ok:!s.storage.unsafe,kind:"PEF_EDGE_LAB_READINESS",
+      const s=state();
+      const workloadsReady=!cfg.workload.enabled||s.workloads.some(w=>w.workloadId==="pef-receiver"&&w.state==="RUNNING");
+      const ready=!s.storage.unsafe&&s.runtimeHealth==="HEALTHY"&&workloadsReady;
+      send(res,ready?200:503,{ok:ready,kind:"PEF_EDGE_LAB_READINESS",
         storage:s.storage.unsafe?"UNSAFE":"READY",workloads:s.workloads.map(w=>({id:w.workloadId,state:w.state})),
         hardwareValidated:false});return;
     }
