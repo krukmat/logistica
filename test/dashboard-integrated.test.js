@@ -441,3 +441,19 @@ test("M3 dashboard exercises real supervisor, SIGKILL/reopen and labels Linux ke
  assert.equal(e.lab.m3Lifecycle.physicalValidated,false);
  assert.equal(e.lab.m3Lifecycle.linuxKernelLock,"CI_ONLY");
 }));
+
+test("M3.3/4 dashboard calls real managed Edge config, rollback and safe-mode test",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text();
+ const js=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["m3-recovery-smoke","m3-recovery-evidence"])
+  assert.ok(html.includes('id="'+id+'"'));
+ assert.match(js,/labAction\("m3Recovery"\)/);
+ await call({command:"mode",mode:"lab"});
+ const result=await call({command:"lab",action:"m3Recovery"});
+ assert.equal(result.result.status,"LAB_PASS",JSON.stringify(result.result));
+ assert.equal(result.result.revision,2);
+ assert.equal(result.result.checks.HEALTH_ROLLBACK,true);
+ assert.equal(result.result.checks.SAFE_MODE_ON_RESTART_EXHAUSTION,true);
+ assert.equal(result.lab.m3Recovery.physicalValidated,false);
+ assert.equal(result.lab.m3Recovery.remoteRecoveryAllowed,false);
+}));

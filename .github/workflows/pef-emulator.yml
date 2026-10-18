@@ -99,6 +99,15 @@ jobs:
           name: m3-autonomous-lifecycle-${{ github.run_id }}
           path: ${{ runner.temp }}/pef-m3-lifecycle.json
           if-no-files-found: error
+      - name: M3 transactional revision, fail-closed rollback and safe-mode evidence
+        run: npm run m3:recovery -- --output "$RUNNER_TEMP/pef-m3-recovery.json"
+      - name: Upload M3 configuration / safe-mode evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m3-transactional-recovery-${{ github.run_id }}
+          path: ${{ runner.temp }}/pef-m3-recovery.json
+          if-no-files-found: error
       - name: Deterministic scenarios
         run: npm run emulate
       - name: Loopback connectivity lab

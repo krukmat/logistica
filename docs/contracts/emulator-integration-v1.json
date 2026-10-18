@@ -374,6 +374,22 @@
       "test": "test/dashboard-integrated.test.js",
       "hardwareValidated": false,
       "uiEvidenceUrl": "https://github.com/krukmat/logistica/actions/workflows/pef-emulator.yml"
+    },
+    {
+      "task": "M3.3-M3.4",
+      "mode": "lab",
+      "title": "Supervisor policy staged/fsynced revisions, real-Edge health check, rollback and authenticated local safe-mode recovery",
+      "controlIds": [
+        "standalone-edge-panel",
+        "m3-recovery-smoke",
+        "m3-recovery-evidence"
+      ],
+      "actions": [
+        "m3Recovery"
+      ],
+      "implementation": "src/runtime/m3-process-manager.js",
+      "test": "test/dashboard-integrated.test.js",
+      "hardwareValidated": false
     }
   ]
 }

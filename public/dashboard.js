@@ -102,6 +102,7 @@ function renderIntegrated(lab){
   setText("receipt-count",accepted+" recepciones locales · "+cloudAcked+" confirmadas en Cloud mock");
   $("edge-autonomous-evidence").textContent=JSON.stringify(lab.standaloneEdge,null,2);
   $("m3-lifecycle-evidence").textContent=JSON.stringify(lab.m3Lifecycle,null,2);
+  $("m3-recovery-evidence").textContent=JSON.stringify(lab.m3Recovery,null,2);
   $("predevice-evidence").textContent=JSON.stringify(lab.predevice,null,2);
   $("golden-traces-evidence").textContent=JSON.stringify(lab.goldenTraces,null,2);
   $("device-preflight-evidence").textContent=JSON.stringify(lab.devicePreflight,null,2);
@@ -282,6 +283,7 @@ function bind(){
   $("receive-package").addEventListener("click",submitReceipt);
   $("edge-autonomous-smoke").addEventListener("click",()=>labAction("autonomousSmoke"));
   $("m3-lifecycle-smoke").addEventListener("click",()=>labAction("m3Lifecycle"));
+  $("m3-recovery-smoke").addEventListener("click",()=>labAction("m3Recovery"));
   $("predevice-conformance").addEventListener("click",()=>labAction("predeviceConformance"));
   $("golden-traces").addEventListener("click",()=>labAction("goldenTraces"));
   $("device-preflight").addEventListener("click",()=>labAction("devicePreflight"));
