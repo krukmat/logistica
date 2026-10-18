@@ -10,12 +10,14 @@ function evaluate({profile="r28s-1g",d4,e1,e2Small,e2Large}={}){
     d4.limits?.procurementApproved===false,{source:"operator imported D4",deviceAttested:false});
  add("E5_E1_FULL_GUEST_PROBE",e1?.kind==="PEF_E1_GUEST_RESOURCE_ENVELOPE_V1"&&
     e1.ok===true&&e1.profile===profile&&e1.guest?.profileEnforced===true&&
-    e1.probe?.provisionalMemoryHeadroomOk===true&&e1.probe?.anyOomKilled===false,
+    e1.probe?.provisionalMemoryHeadroomOk===true&&e1.probe?.oomDeltaKnown===true&&e1.probe?.anyOomKilled===false,
     {minAvailableMiB:e1?.probe?.minAvailableMiB??null,
      fullWorkloadIsolationTested:false});
  const e2ok=(r,k)=>r?.kind==="PEF_E2_OFFLINE_STORAGE_ENVELOPE_V1"&&
     r.ok===true&&r.profile===profile&&r.measured?.payloadKiB===k&&
-    r.measured?.acked===r.measured?.recovered&&r.model?.eventCount===518400&&
+    r.measured?.acked>=1000&&r.measured?.acked===r.measured?.recovered&&
+    Number.isFinite(r.measured?.fsyncAppendMs?.p95)&&Number.isFinite(r.measured?.reopenMs)&&
+    Number.isFinite(r.model?.estimatedJournalGiB)&&r.model?.eventCount===518400&&
     r.decisions?.seventyTwoHourOfflineAcceptance===false&&r.limits?.physicalValidated===false;
  add("E5_E2_1K_STORAGE",e2ok(e2Small,1),
   {sampled:e2Small?.measured?.acked??0,projectedGiB:e2Small?.model?.estimatedJournalGiB??null});
