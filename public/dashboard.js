@@ -183,6 +183,24 @@ async function importArm64Comparison(file){
    },null,2);
  }catch(err){output.textContent="Informe rechazado: "+String(err.message||err);}
 }
+async function importArm64E5(file){
+ const output=$("arm64-e5-evidence");
+ if(!file){output.textContent="E5 NOT_RUN · selecciona un JSON local";return;}
+ if(file.size>131072){output.textContent="Informe E5 demasiado grande";return;}
+ try{
+  const r=JSON.parse(await file.text());
+  if(r?.kind!=="PEF_W1_10_E5_VIRTUAL_HARDWARE_GATE_V1"||
+     r.schemaVersion!==1||!Array.isArray(r.checks)||r.checks.length!==5||
+     r.limits?.deviceBackend!=="BACKEND_NOT_IMPLEMENTED"||
+     r.limits?.procurementApproved!==false||r.limits?.physicalValidated!==false)
+    throw Error("E5_INVALID_IMPORT");
+  output.textContent=JSON.stringify({
+   label:"E5 INFORME LOCAL NO AUTENTICADO",profile:r.profile,
+   status:r.status,verdict:r.verdict,checks:r.checks,
+   purchasedOrDeviceApproved:false,limitations:r.limitations
+  },null,2);
+ }catch(e){output.textContent="E5 rechazado: "+String(e.message||e);}
+}
 function bind(){
   $("mode-sim").addEventListener("click",()=>dispatch({command:"mode",mode:"sim"}));
   $("mode-lab").addEventListener("click",()=>dispatch({command:"mode",mode:"lab"}));
@@ -209,6 +227,7 @@ function bind(){
   $("device-preflight").addEventListener("click",()=>labAction("devicePreflight"));
   $("hardware-screening").addEventListener("click",()=>labAction("hardwareScreening"));
   $("arm64-comparison-file").addEventListener("change",e=>importArm64Comparison(e.target.files?.[0]));
+  $("arm64-e5-file").addEventListener("change",e=>importArm64E5(e.target.files?.[0]));
   $("workload-start").addEventListener("click",()=>labAction("workloadStart"));
   $("workload-stop").addEventListener("click",()=>labAction("workloadStop"));
   $("workload-crash").addEventListener("click",()=>labAction("workloadCrash"));

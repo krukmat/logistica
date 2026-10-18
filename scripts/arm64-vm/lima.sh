@@ -6,6 +6,8 @@ case "$profile" in r28s-1g) mem="1";; r28s-768m) mem="0.75";; r28s-512m) mem="0.
 command -v limactl >/dev/null || { echo "Install Lima with brew install lima" >&2;exit 78; }
 name="pef-$profile";root="$(cd "$(dirname "$0")/../.." && pwd)"
 case "$action" in
+ e5) limactl shell "$name" bash "$root/scripts/arm64-vm/guest-e5.sh" evaluate "$root" "$profile";;
+ e5-export) limactl shell "$name" bash "$root/scripts/arm64-vm/guest-e5.sh" export "$root" "$profile";;
  e1) limactl shell "$name" bash "$root/scripts/arm64-vm/guest-e1-e2.sh" e1 "$root" "$profile";;
  e2) limactl shell "$name" bash "$root/scripts/arm64-vm/guest-e1-e2.sh" e2 "$root" "$profile";;
  e1-export) limactl shell "$name" bash "$root/scripts/arm64-vm/guest-e1-e2.sh" e1-export "$root" "$profile";;

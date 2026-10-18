@@ -397,3 +397,12 @@ test("D4 prominent ARM64 button navigates to first dedicated integrated-lab bloc
  assert.ok(client.includes('$("arm64-lab-panel").scrollIntoView'));
  assert.ok(client.includes('await dispatch({command:"mode",mode:"lab"})'));
 }));
+
+
+test("E5 dashboard imports only local fail-closed research artifact, no hardware GO",()=>withPanel(async({url})=>{
+ const html=await(await fetch(url)).text(),script=await(await fetch(url+"dashboard.js")).text();
+ assert.match(html,/id="arm64-e5-file"/);assert.match(html,/id="arm64-e5-evidence"/);
+ assert.match(script,/PEF_W1_10_E5_VIRTUAL_HARDWARE_GATE_V1/);
+ assert.match(script,/purchasedOrDeviceApproved:false/);
+ assert.match(script,/file\.text\(\)/);
+}));
