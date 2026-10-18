@@ -71,6 +71,19 @@ jobs:
           name: pef-c2-hardware-screening
           path: ${{ runner.temp }}/pef-c2-candidates.json
           if-no-files-found: warn
+      - name: M1 canonical headless evidence from real autonomous daemon
+        run: |
+          npm run m1:evidence -- --output-root "$RUNNER_TEMP/pef-m1"
+          bundle="$(find "$RUNNER_TEMP/pef-m1" -mindepth 1 -maxdepth 1 -type d | head -1)"
+          test -n "$bundle"
+          npm run m1:evidence:verify -- "$bundle"
+      - name: Upload M1 evidence; source is autonomous OS journal, Cloud mocked
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m1-technical-evidence-${{ github.run_id }}
+          path: ${{ runner.temp }}/pef-m1
+          if-no-files-found: error
       - name: Deterministic scenarios
         run: npm run emulate
       - name: Loopback connectivity lab
