@@ -161,3 +161,7 @@ Repositorio de trabajo: `krukmat/logistica`, rama `main`. **W1.5.A–J, W1.6.A�
 **C2 cost-priority correction (2026-10-15, supersedes prior shortlist):** the prior R5S/RPi4/MT3000 expensive screening candidates are rejected for the minimum logistics MVP. Provisional ≤60 EUR *complete unit* target (not priced/approved): HP T620 refurb 24 EUR baseline, Dell Wyse 5070 refurb 54 EUR, Orange Pi R1 Plus LTS 59 EUR secondary listing. Phase one physical POC is local-first Edge node behind existing router, not an asserted three-port dual-WAN gateway. Core policy unchanged, dual-WAN field acceptance blocked. [Screen](25-hardware-screening.md).
 
 **C2 Seeed-only NEW restriction (2026-10-15; supersedes all earlier HP, Dell and other-vendor shortlists):** low-cost H28K technically interesting USD39.90 but MOQ50, CM4+carrier USD107.50 components-only, H68K USD99 out of stock. No credible single-unit delivered EUR60 full PEF quote today. [Current list](25-hardware-screening.md). No relaxation of durability/PKI/routing physical gates and no hardware purchase authorized.
+
+## W1.10.E — 1GiB cost-first R28S research (2026-10-18)
+
+E1/E2 resource+offline feasibility, E3 incremental streamed journal reader, E4 choose provisional Core-behind-existing-router, E5 separate non-physical decision gate. **Status: software implementation complete, Linux ARM64 CI covered; operator Lima 1GiB E1/E2/E5 evidence pending.** Hardware procurement, 72h journal acceptance, powercut, 3-native-NIC gateway all BLOCKED. [Details](27-arm64-1gb-resource-validation.md).
