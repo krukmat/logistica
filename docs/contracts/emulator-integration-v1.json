@@ -420,6 +420,22 @@
       "implementation": "src/runtime/m3-operations-bundle.js",
       "test": "test/m3-operations.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "M4.1",
+      "mode": "lab",
+      "title": "Property local alert/ack durable workflow across autonomous Edge restart and mock replay",
+      "controlIds": [
+        "property-overlay-panel",
+        "m4-property-smoke",
+        "m4-property-evidence"
+      ],
+      "actions": [
+        "propertySmoke"
+      ],
+      "implementation": "src/core/property-incidents.js",
+      "test": "test/property-overlay.test.js",
+      "hardwareValidated": false
     }
   ]
 }

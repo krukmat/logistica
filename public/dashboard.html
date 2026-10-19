@@ -161,6 +161,15 @@
           <button id="m3-operations-smoke" type="button" class="secondary">Ejecutar diagnóstico y demo integral</button>
           <pre id="m3-operations-evidence">M3.5/M3.6 NOT_RUN · vídeo sólo bajo captura opcional</pre>
         </div>
+        <div class="lab-detail" id="property-overlay-panel">
+          <h4>M4.1 — Property: alerta local y ACK operativo</h4>
+          <p class="micro">Ejecuta un Edge HTTP autónomo con <code>pef-property</code> supervisado,
+            alertas e incidencias O1/fsync en el mismo Journal y una WAN sintética inicialmente
+            desconectada. Comprueba rechazo, idempotencia, ACK, reapertura y replay a Cloud mock.
+            <strong>LAB_ONLY</strong>; sin sensores físicos, red real, hardware ni sandbox Mac.</p>
+          <button id="m4-property-smoke" type="button" class="secondary">Probar Property offline → ACK → reinicio → replay</button>
+          <pre id="m4-property-evidence">M4.1 NOT_RUN · sin certificación de dispositivo</pre>
+        </div>
         <div class="lab-detail workload-panel" id="workload-panel">
           <h4>S — Workload Runtime · proceso local (NO sandbox)</h4>
           <p class="micro">Workload permitido: <code>pef-receiver</code>. El Core valida su manifest, recursos y política offline; el supervisor inicia un proceso Node aislado sólo por proceso. <strong>CPU/RAM, filesystem y red todavía no están aislados por Linux</strong>.</p>

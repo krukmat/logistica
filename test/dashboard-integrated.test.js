@@ -473,3 +473,17 @@ test("M3.5/6 dashboard invokes real diagnostics through HTTP",()=>withPanel(asyn
  assert.equal(changed.lab.m3Operations.physicalValidated,false);
  assert.equal(changed.lab.m3Operations.remoteRecoveryAllowed,false);
 }));
+
+test("M4.1 dashboard HTTP invokes real Property Edge offline ACK/restart/replay",()=>withPanel(async({url,call})=>{
+ const html=await (await fetch(url)).text(),js=await (await fetch(url+"dashboard.js")).text();
+ assert.match(html,/id="m4-property-smoke"/);
+ assert.match(js,/labAction\("propertySmoke"\)/);
+ await call({command:"mode",mode:"lab"});
+ const result=await call({command:"lab",action:"propertySmoke"});
+ assert.equal(result.httpStatus,200);
+ assert.equal(result.result.status,"LAB_PASS",JSON.stringify(result.result));
+ assert.equal(result.result.checks.RESTART_RESTORES_INCIDENT,true);
+ assert.equal(result.result.checks.MOCK_REPLAY,true);
+ assert.equal(result.lab.property.lastEvidence.status,"LAB_PASS");
+ assert.equal(result.lab.property.physicalValidated,false);
+}));
