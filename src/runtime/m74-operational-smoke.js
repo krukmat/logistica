@@ -12,7 +12,7 @@ async function runM74OperationalSmoke(){
   const recovery=await runM3RecoverySmoke();
   checks.M3_RECOVERY_REUSED=recovery.ok&&recovery.checks?.AUTHENTICATED_LOCAL_RECOVERY===true;
   log=createM74OperationsLedger({dir:root,identity,operatorToken:token});
-  const corr=randomUUID(),when=Date.now();
+  const corr=randomUUID();let when=Date.now();
   const record=(type,severity,actor="SYSTEM",opts={})=>
    log.append({type,correlationId:corr,atMillis:when++,severity,actor},opts);
   checks.READY_DURABLE=record("READY","INFO").fsyncCompleted;
