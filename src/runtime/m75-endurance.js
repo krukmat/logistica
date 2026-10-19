@@ -12,7 +12,7 @@ async function runM75ShortSoak({cycles=2}={}){
   const t=performance.now(),r=await runM64CloudLiteMatrix();
   if(!r.ok||r.status!=="LAB_PASS"||r.assertions!==15||
      !Object.values(r.checks).every(Boolean)||
-     !Object.values(r.profiles).every(x=>Object.values(x).every(Boolean))
+     !Object.values(r.profiles).every(x=>Object.values(x).every(Boolean)))
     throw Error("M75_CLOUD_LITE_FAULT_CYCLE_FAILED:"+i);
   durations.push(Math.round(performance.now()-t));passed++;
   events+=r.observed.at(-1)?.remoteEvents||0;
