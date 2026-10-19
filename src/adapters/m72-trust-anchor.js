@@ -78,7 +78,8 @@ function guardSignedActivation({root,current,version,digest,mode,authorization})
   previousVersion:current.previousVersion,previousHash:current.previousHash
  }:null;
  const next=nextSecureState(currentSecure,authorization,trust.rootId);
- return {...next,permit:authorization,lastKnownGood:mode!=="upgrade"};
+ return {...next,permit:authorization,lastKnownGood:mode!=="upgrade",
+  previousKnownGood:mode==="upgrade"?current?.secure?.lastKnownGood===true:false};
 }
 function verifySignedInstall(root,state){
  const trust=readTrust(root);
