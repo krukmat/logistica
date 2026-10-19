@@ -1,6 +1,6 @@
 # M4.2 — Host overlay sobre Site Operations
 
-**Fecha:** 2026-10-19 · **Branch:** main · **Estado:** M4.2.1 DOCUMENTED; M4.2.2/M4.2.3 IMPLEMENTED — validación CI de commit final pendiente.
+**Fecha:** 2026-10-19 · **Branch:** main · **Estado:** M4.2.1–M4.2.3 CLOSED — SOFTWARE LAB ONLY, CI #39216398340 SUCCESS.
 
 ## Hipótesis de uso y alcance
 
@@ -23,12 +23,12 @@ Alojamiento pequeño/camping: el personal registra una incidencia local de una u
 | M4.2.1.a | Caso representativo Host offline | Contrato OPEN/ACK con estados | M4.1 | DOCUMENTED |
 | M4.2.1.b | IDs y esquema durables | Identidad, evento inmutable, rechazo y fsync definidos | M4.2.1.a | DOCUMENTED |
 | M4.2.1.c | Commonality preliminar | Clasificación CONFIG/MODULE/RESOURCE sin porcentajes inventados | M4.2.1.b | DOCUMENTED |
-| M4.2.2.a | Site Operations compartido | Property permanece compatible bit a bit en tipos/IDs/campos; Host usa el mismo motor | M4.2.1 | IMPLEMENTED — CI pending |
-| M4.2.2.b | Perfil Host allowlisted | Config Host / proceso y API local controlada | M4.2.2.a | IMPLEMENTED — CI pending |
-| M4.2.2.c | Admission/health/recursos | Rechazos before-start y no false kernel isolation | M4.2.2.b | IMPLEMENTED — CI pending |
-| M4.2.3.a | E2E real Host | HTTP → Supervisor/IPC → journal fsync → reopen → replay | M4.2.2 | IMPLEMENTED — CI pending |
-| M4.2.3.b | Negativos | Token, invalidez, conflictos, out-of-budget, ausencia del proceso, sin WAN | M4.2.3.a | IMPLEMENTED — CI pending |
-| M4.2.3.c | Dashboard, CLI y CI | `m4Host`, HTTP/UI test, ARM64/x64, auditoría | M4.2.3.b | IMPLEMENTED — CI pending |
+| M4.2.2.a | Site Operations compartido | Property permanece compatible bit a bit en tipos/IDs/campos; Host usa el mismo motor | M4.2.1 | CLOSED LAB |
+| M4.2.2.b | Perfil Host allowlisted | Config Host / proceso y API local controlada | M4.2.2.a | CLOSED LAB |
+| M4.2.2.c | Admission/health/recursos | Rechazos before-start y no false kernel isolation | M4.2.2.b | CLOSED LAB |
+| M4.2.3.a | E2E real Host | HTTP → Supervisor/IPC → journal fsync → reopen → replay | M4.2.2 | CLOSED LAB |
+| M4.2.3.b | Negativos | Token, invalidez, conflictos, out-of-budget, ausencia del proceso, sin WAN | M4.2.3.a | CLOSED LAB |
+| M4.2.3.c | Dashboard, CLI y CI | `hostSmoke`, HTTP/UI test, ARM64/x64, auditoría | M4.2.3.b | CLOSED LAB |
 
 ### M4.2.1.c — Distinciones frente a Property
 
@@ -58,4 +58,17 @@ REQ-LOC-01, REQ-WRK-01/02, REQ-STA-01/02, REQ-OBS-01. Change: **added**. Classif
 - La suite mantiene los casos M4.1 Property y prueba escenarios negativos adicionales: rechazo de comandos, clasificación inválida, evento en conflicto, over-budget, intent de red no autorizado y disco lleno sin false ACK.
 - El script de laboratorio CI `scripts/lab/workload-isolation-smoke.sh` copia el nuevo contrato puro al `chroot` estático del worker legacy, sin relajar cgroup, namespace, UID ni permisos; **esto no certifica aislamiento kernel Host**.
 
-**Estado de aceptación:** código/CLI/dashboard/documentación implementados; CI bajo verificación. No afirmar `CLOSED` hasta observar los gates del último commit, con referencia en [auditoría](../audit/m4-host-2026-10-19.md).
+**Estado de aceptación:** CLOSED SOFTWARE LAB ONLY — [CI #39216398340](https://github.com/krukmat/logistica/actions/runs/39216398340) SUCCESS. ARM64 171/171; x64 170 PASS + 1 skip; Linux namespace/cgroup y prehardware gate PASS. [Auditoría M4.2](../audit/m4-host-2026-10-19.md).
+
+### Ejecución local de verificación
+
+```bash
+git switch main && git pull
+npm test
+npm run m4:property
+npm run m4:host
+npm run dashboard
+# seleccionar Laboratorio integrado -> M4.2 Host
+```
+
+Cierre limitado a software: el laboratorio Linux existente sigue validando **receiver** bajo aislamiento, no Host. Los resultados Mac del nuevo comando Host aún no han sido reportados por operador. La salida CLI es `PEF_M4_HOST_SMOKE_V1` con 14 checks booleanos; no es una atestación física.

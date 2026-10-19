@@ -225,8 +225,10 @@ En el **dashboard → Laboratorio integrado → M4.1**, ejecutar la prueba para 
 
 **M4.1 LAB CLOSED:** `npm run m4:property` ejecuta el mismo escenario standalone sin dashboard y devuelve un reporte JSON con checks. [CI #39209710426](https://github.com/krukmat/logistica/actions/runs/39209710426) SUCCESS: ARM64 163/163, x64 162 PASS + 1 skip y otros gates Linux/prehádware en verde. [Auditoría](docs/audit/m4-property-2026-10-19.md). Siguiente: M4.2 Host.
 
-## M4.2 — Host (software lab; CI pendiente)
+## M4.2 — Host (CLOSED — SOFTWARE LAB ONLY)
 
 `npm run m4:host` reproduce una incidencia local de mantenimiento (`OPEN` de unidad/categoría → `ACK`) a través del Edge HTTP autónomo, workload `pef-host` y Journal compartido, durante una caída de WAN **sintética** y una sincronización posterior a Cloud mock. Alternativamente, **dashboard → Laboratorio integrado → M4.2 Host** muestra el mismo escenario y evidencias. Cualquier proceso/driver Host estático se ejecuta sin sandbox Linux; recursos reservados por política, no impuestos por kernel.
 
 **Diseño:** `src/core/site-operations.js` + `src/core/site-operation-contract.js` reemplazan la duplicación de reglas y persistencia Property/Host; la API previa `src/core/property-incidents.js` sigue funcionando sin modificar IDs/eventos Property. `src/workloads/site-operations-worker.js` sirve ambos perfiles mediante un registro estático. [Plan](docs/tasks/m4-host-overlay.md). M4.3 cuantificará reutilización; M2 Cloud Lite hosted sigue aplazado.
+
+**M4.2 LAB CLOSED:** [CI #39216398340](https://github.com/krukmat/logistica/actions/runs/39216398340) SUCCESS, ARM64 171/171, x64 170 PASS + 1 skip; Host y Property HTTP smoke regresan a verde, Linux/prehardware gates PASS. [Auditoría](docs/audit/m4-host-2026-10-19.md). No valida cgroups Host, sensores, PMS, cloud real, powercut ni dispositivo.
