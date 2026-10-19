@@ -53,6 +53,19 @@ jobs:
         run: npm run m6:registry > "$RUNNER_TEMP/pef-m61-registry-x64.json"
       - name: M6.2 local durable event ingestion x64
         run: npm run m6:ingest > "$RUNNER_TEMP/pef-m62-ingest-x64.json"
+      - name: M6.3 real Edge to Cloud Lite E2E x64
+        run: npm run m6:sync > "$RUNNER_TEMP/pef-m63-sync-x64.json"
+      - name: M6.4 full Cloud Lite failure matrix x64
+        run: npm run m6:matrix > "$RUNNER_TEMP/pef-m64-matrix-x64.json"
+      - name: Upload M6.3-M6.4 x64 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m6-cloud-lite-complete-x64
+          path: |
+            ${{ runner.temp }}/pef-m63-sync-x64.json
+            ${{ runner.temp }}/pef-m64-matrix-x64.json
+          if-no-files-found: error
       - name: Upload M6.2 x64 event ingest evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -202,6 +215,19 @@ jobs:
         run: npm run m6:registry > "$RUNNER_TEMP/pef-m61-registry-arm64.json"
       - name: M6.2 native ARM64 event ingest and fsync
         run: npm run m6:ingest > "$RUNNER_TEMP/pef-m62-ingest-arm64.json"
+      - name: M6.3 real Edge to Cloud Lite E2E ARM64
+        run: npm run m6:sync > "$RUNNER_TEMP/pef-m63-sync-arm64.json"
+      - name: M6.4 full Cloud Lite failure matrix ARM64
+        run: npm run m6:matrix > "$RUNNER_TEMP/pef-m64-matrix-arm64.json"
+      - name: Upload M6.3-M6.4 ARM64 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m6-cloud-lite-complete-arm64
+          path: |
+            ${{ runner.temp }}/pef-m63-sync-arm64.json
+            ${{ runner.temp }}/pef-m64-matrix-arm64.json
+          if-no-files-found: error
       - name: Upload M6.2 ARM64 ingest evidence
         if: always()
         uses: actions/upload-artifact@v4
