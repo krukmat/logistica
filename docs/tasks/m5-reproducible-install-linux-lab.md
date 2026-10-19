@@ -1,6 +1,6 @@
 # M5.1–M5.2 — Instalación reproducible y validación Linux sin dispositivo
 
-**Date:** 2026-10-19 · **Branch:** main · **State:** IMPLEMENTED — CI acceptance pending.
+**Date:** 2026-10-19 · **Branch:** main · **State:** M5.1 and M5.2 CLOSED — SOFTWARE LAB ONLY, CI #39232965785 SUCCESS; M5.3 BLOCKED pending hardware.
 
 ## Scope / design
 
@@ -22,12 +22,12 @@ flowchart LR
 
 | Task | Deliverable / DoD | Depends on | Status |
 | --- | --- | --- | --- |
-| M5.1.a | Curated allowlist of bin/pef-edge.js, package.json and JS in Core/adapters/runtime/emulator/workloads, versioned hash manifest and fail-closed verification | M4.4 | IMPLEMENTED |
-| M5.1.b | `install`, `verify`, `upgrade`, `rollback`, atomic active version, intact persistent journal, no arbitrary target path | M5.1.a | IMPLEMENTED |
-| M5.1.c | Idempotency and immutability, interrupted activation, extra/corrupt release denial, unauthorized rollback and nested temporary-path restriction | M5.1.b | IMPLEMENTED |
-| M5.2.a | Start actual packaged standalone Edge daemon/allowlisted worker; readiness and durable business ACK while simulated WAN is offline | M5.1 | IMPLEMENTED |
-| M5.2.b | Graceful process stop, relaunch from v2/v1 after upgrade/rollback; recover same journal with new session and preserved incident | M5.2.a | IMPLEMENTED |
-| M5.2.c | Dashboard HTTP E2E, CI Linux x64/native ARM64, artifacts and explicit service/boot/physical NOT VALIDATED evidence | M5.2.b | IMPLEMENTED — CI pending |
+| M5.1.a | Curated allowlist of bin/pef-edge.js, package.json and JS in Core/adapters/runtime/emulator/workloads, versioned hash manifest and fail-closed verification | M4.4 | CLOSED LAB |
+| M5.1.b | `install`, `verify`, `upgrade`, `rollback`, atomic active version, intact persistent journal, no arbitrary target path | M5.1.a | CLOSED LAB |
+| M5.1.c | Idempotency and immutability, interrupted activation, extra/corrupt release denial, unauthorized rollback and nested temporary-path restriction | M5.1.b | CLOSED LAB |
+| M5.2.a | Start actual packaged standalone Edge daemon/allowlisted worker; readiness and durable business ACK while simulated WAN is offline | M5.1 | CLOSED LAB |
+| M5.2.b | Graceful process stop, relaunch from v2/v1 after upgrade/rollback; recover same journal with new session and preserved incident | M5.2.a | CLOSED LAB |
+| M5.2.c | Dashboard HTTP E2E, CI Linux x64/native ARM64, artifacts and explicit service/boot/physical NOT VALIDATED evidence | M5.2.b | CLOSED LAB |
 
 ## Runbook (Mac or Linux)
 
@@ -63,4 +63,18 @@ npm run m5:install -- verify --root "$root"
 
 ## Traceability
 
-Requirement IDs: REQ-LOC-01, REQ-WRK-01/02, REQ-STA-01/02, REQ-OBS-01; Change: **added**; Classification: CORE policy / MODULE runtime installer / CONFIG release profile / RESOURCE staged manifest; Status: IMPLEMENTED, CI pending. Evidence: `test/m5-install.test.js`, `test/dashboard-integrated.test.js`, `docs/contracts/m5-install-v1.json`, `.github/workflows/pef-emulator.yml`, [audit](../audit/m5-reproducible-install-2026-10-19.md). M5.3 cannot close without hardware and must not be listed as LAB_PASS.
+Requirement IDs: REQ-LOC-01, REQ-WRK-01/02, REQ-STA-01/02, REQ-OBS-01; Change: **added**; Classification: CORE policy / MODULE runtime installer / CONFIG release profile / RESOURCE staged manifest; Status: VALIDATED / CLOSED SOFTWARE LAB ONLY in x64/ARM64 CI. Evidence: `test/m5-install.test.js`, `test/dashboard-integrated.test.js`, `docs/contracts/m5-install-v1.json`, `.github/workflows/pef-emulator.yml`, [audit](../audit/m5-reproducible-install-2026-10-19.md). M5.3 cannot close without hardware and must not be listed as LAB_PASS.
+
+## CI closure evidence (2026-10-19)
+
+[GitHub Actions #39232965785](https://github.com/krukmat/logistica/actions/runs/39232965785) **SUCCESS** at final code test commit `628f839600fb99dadf0778bec8a18662d3cdc3d7`.
+
+- ARM64 native Linux Node suite: **183/183 PASS**.
+- Linux x64 Node suite: **182 PASS, 1 platform-only skip, 0 fail**.
+- On both x64 and ARM64 the separate `npm run m5:linux` runner executed with success; artifacts: [x64](https://github.com/krukmat/logistica/actions/runs/39232965785/artifacts/12178436821) and [ARM64](https://github.com/krukmat/logistica/actions/runs/39232965785/artifacts/12177852754).
+- Dashboard HTTP → real release manager → packaged Node process → evidence verified by Node integration test on both architectures.
+- Negative tests include invalid release names, immutable version, full active-release tamper, in-flight upgrade interrupted before activation, and symlinked root/release/data denying writes outside temporary scope.
+- Existing `netns-lab` (receiver) and `Pre-hardware software handoff` remain PASS. These are **not** proof of kernel isolation for installed Property or Host and do not validate systemd boot.
+- The Mac `npm run m5:lab` result has not been reported by the operator as of this audit.
+
+**Closure definition:** release lifecycle + packaged-process continuity from Linux CI CLOSED LAB. **NOT CLOSED:** service-manager installation and real OS boot/reboot (M5.3/predevice), physical powercut, kernel quotas on installed overlays, production Trust and OS distribution selection.

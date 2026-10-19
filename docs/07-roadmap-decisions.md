@@ -216,3 +216,5 @@ El bundle M4 combina Property/Host y la matriz M4.3 **sin duplicar Core**. Prueb
 ## M5.1–M5.2 — Ciclo de release temporal en Linux prehardware (2026-10-19)
 
 Se implementa instalador de laboratorio `src/runtime/m5-install.js` con política pura Core y manifest SHA-256 (no firma), activación atómica, idempotencia y rollback conservando journal. Smoke de proceso empaquetado y UI con CI nativo x64+ARM64. **No** se instala daemon de sistema ni arranque automático ante reboot OS: readiness de proceso no constituye bootstrap de hardware. La selección de SO y control real de servicios se difiere a M5.3 según constraints. [Tasks](tasks/m5-reproducible-install-linux-lab.md), [audit](audit/m5-reproducible-install-2026-10-19.md).
+
+**M5.1/M5.2 CLOSED LAB (2026-10-19):** [CI #39232965785](https://github.com/krukmat/logistica/actions/runs/39232965785) SUCCESS. Atomic release activation and verification, loopback Edge process/failure tests, retained journal after upgrade/rollback, symlink-denial tests, CI Linux x64/ARM64, dashboard E2E. No device install, actual OS boot, provisioned service, kernel constraints for overlays or powercut. M5.3 BLOCKED hardware.
