@@ -548,6 +548,22 @@
       "implementation": "src/runtime/m56-integration-contract.js",
       "test": "test/m56-integration-contract.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "M6.1",
+      "mode": "lab",
+      "title": "Real loopback Cloud Lite device registry and fsync-durable hashed credential authentication",
+      "controlIds": [
+        "m61-registry-panel",
+        "m61-registry-run",
+        "m61-registry-evidence"
+      ],
+      "actions": [
+        "m61Registry"
+      ],
+      "implementation": "src/runtime/m61-registry-smoke.js",
+      "test": "test/m61-registry.test.js",
+      "hardwareValidated": false
     }
   ]
 }

@@ -49,6 +49,15 @@ jobs:
         run: bash -n scripts/lab/m5-systemd-smoke.sh scripts/lab/m56-systemd-kernel-smoke.sh scripts/arm64-vm/m54-lima-service.sh scripts/arm64-vm/guest-m54-service.sh
       - name: Node regression suite
         run: npm test
+      - name: M6.1 real Cloud Lite localhost HTTP registry + fsync + restart proof
+        run: npm run m6:registry > "$RUNNER_TEMP/pef-m61-registry-x64.json"
+      - name: Upload Cloud Lite registry x64 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m61-cloud-lite-registry-x64
+          path: ${{ runner.temp }}/pef-m61-registry-x64.json
+          if-no-files-found: error
       - name: M4.3 dual-overlay commonality and fault evidence (lab only)
         run: |
           node bin/pef-m4-commonality.js > "$RUNNER_TEMP/pef-m4-commonality.json"

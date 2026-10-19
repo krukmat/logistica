@@ -22,6 +22,7 @@ const {runM5InstallSmoke}=require("../runtime/m5-install-smoke.js");
 const {runM54ServiceContract}=require("../runtime/m5-systemd-unit.js");
 const {runM55IsolationContract}=require("../runtime/m5-isolation-contract.js");
 const {runM56IntegrationInspection}=require("../runtime/m56-integration-contract.js");
+const {runM61RegistrySmoke}=require("../runtime/m61-registry-smoke.js");
 const {runPredeviceConformance}=require("../runtime/predevice-conformance.js");
 const {runGoldenTraces}=require("../runtime/golden-traces.js");
 const {runDeviceIntegrationRehearsal}=require("../runtime/device-integration-rehearsal.js");
@@ -36,12 +37,12 @@ const CAPABILITIES=Object.freeze([
   "ci-linux-supervised-worker","autonomous-edge-host","boot-reopen-without-dashboard",
   "predevice-port-conformance","golden-trace-parity","safe-device-integration-preflight",
   "hardware-candidate-screening","m3-headless-lifecycle","m3-policy-safe-recovery",
-  "m3-operational-diagnostics","m3-same-run-evidence","m4-property-offline-workload","m4-host-offline-workload","m4-commonality-and-faults","m4-integrated-evidence-bundle","m5-packaged-install-rollback","m54-systemd-contract","m55-kernel-profile-plan","m56-systemd-kernel-contract"
+  "m3-operational-diagnostics","m3-same-run-evidence","m4-property-offline-workload","m4-host-offline-workload","m4-commonality-and-faults","m4-integrated-evidence-bundle","m5-packaged-install-rollback","m54-systemd-contract","m55-kernel-profile-plan","m56-systemd-kernel-contract","m61-cloud-lite-local-registry"
 ]);
 const IDENTITY=Object.freeze({siteId:"demo-site",deviceId:"demo-edge",configRevision:"cfg-demo-1"});
 function createDashboardLab({tmpParent=os.tmpdir()}={}){
   let dir=null,edge=null,cloud=null,history=[],route=null,revision=0,closed=false,busy=false;
-  let cloudAvailable=true,profile="normal",lastResult=null,wan=null,boot=null,supervisor=null,autonomousEvidence=null,m3Evidence=null,m3RecoveryEvidence=null,m3OperationsEvidence=null,propertyEvidence=null,hostEvidence=null,m43Evidence=null,m44Evidence=null,m5Evidence=null,m54Evidence=null,m55Evidence=null,m56Evidence=null,predeviceEvidence=null,goldenTraceEvidence=null,devicePreflightEvidence=null,candidateEvidence=null;
+  let cloudAvailable=true,profile="normal",lastResult=null,wan=null,boot=null,supervisor=null,autonomousEvidence=null,m3Evidence=null,m3RecoveryEvidence=null,m3OperationsEvidence=null,propertyEvidence=null,hostEvidence=null,m43Evidence=null,m44Evidence=null,m5Evidence=null,m54Evidence=null,m55Evidence=null,m56Evidence=null,m61Evidence=null,predeviceEvidence=null,goldenTraceEvidence=null,devicePreflightEvidence=null,candidateEvidence=null;
   function guard(){if(closed)throw Error("LAB_CLOSED");}
   function start(next="normal"){
     if(!["normal","pressure"].includes(next))throw Error("UNSUPPORTED_LAB_PROFILE");
@@ -49,7 +50,7 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
     if(edge)edge.close();
     if(dir)fs.rmSync(dir,{recursive:true,force:true});
     dir=fs.mkdtempSync(path.join(tmpParent,"pef-visual-lab-"));
-    profile=next;history=[];lastResult=null;route=null;revision=0;cloudAvailable=true;autonomousEvidence=null;m3Evidence=null;m3RecoveryEvidence=null;m3OperationsEvidence=null;m43Evidence=null;m44Evidence=null;m5Evidence=null;m54Evidence=null;m55Evidence=null;m56Evidence=null;propertyEvidence=null;hostEvidence=null;predeviceEvidence=null;goldenTraceEvidence=null;devicePreflightEvidence=null;candidateEvidence=null;
+    profile=next;history=[];lastResult=null;route=null;revision=0;cloudAvailable=true;autonomousEvidence=null;m3Evidence=null;m3RecoveryEvidence=null;m3OperationsEvidence=null;m43Evidence=null;m44Evidence=null;m5Evidence=null;m54Evidence=null;m55Evidence=null;m56Evidence=null;m61Evidence=null;propertyEvidence=null;hostEvidence=null;predeviceEvidence=null;goldenTraceEvidence=null;devicePreflightEvidence=null;candidateEvidence=null;
     wan={primary:{link:true,upstream:true},backup:{link:true,upstream:true}};
     const proofKey=randomBytes(32);
     cloud=createLabCloudReplica({siteId:IDENTITY.siteId,deviceId:IDENTITY.deviceId,
@@ -112,6 +113,8 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
       m3Recovery:{kind:"PEF_M3_RECOVERY_SMOKE_V1",scope:"SOFTWARE_LAB_ONLY",
         lastEvidence:m3RecoveryEvidence,policyScope:"SUPERVISOR_POLICY_ONLY",
         physicalValidated:false,remoteRecoveryAllowed:false},
+      m61Registry:{kind:"PEF_M61_CLOUD_LITE_REGISTRY_V1",scope:"LOCALHOST_AUTHENTICATED_REGISTRY",lastEvidence:m61Evidence,
+        realHttpServer:true,cloudMockReplaced:false,eventIngestionAvailable:false,physicalValidated:false},
       m56Integration:{kind:"PEF_M56_INTEGRATION_INSPECTOR_V1",scope:"CI_ROOT_KERNEL_INTEGRATION_ONLY",lastEvidence:m56Evidence,
         kernelValidatedLocally:false,realGuestRebootWithIsolation:false,physicalValidated:false},
       m55Isolation:{kind:"PEF_M55_ISOLATION_CONTRACT_V1",scope:"CI_KERNEL_ONLY",lastEvidence:m55Evidence,
@@ -172,6 +175,9 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
         case "m3Recovery":
           m3RecoveryEvidence=await runM3RecoverySmoke();
           return emit("m3-config-safe-mode",m3RecoveryEvidence);
+        case "m61Registry":
+          m61Evidence=await runM61RegistrySmoke();
+          return emit("m61-cloud-lite-local-registry",m61Evidence);
         case "m56Integration":
           m56Evidence=runM56IntegrationInspection();
           return emit("m56-systemd-kernel-contract",m56Evidence);

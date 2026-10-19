@@ -112,6 +112,7 @@ function renderIntegrated(lab){
   $("m54-systemd-evidence").textContent=JSON.stringify(lab.m54Systemd,null,2);
   $("m55-isolation-evidence").textContent=JSON.stringify(lab.m55Isolation,null,2);
   $("m56-integration-evidence").textContent=JSON.stringify(lab.m56Integration,null,2);
+  $("m61-registry-evidence").textContent=JSON.stringify(lab.m61Registry,null,2);
   $("predevice-evidence").textContent=JSON.stringify(lab.predevice,null,2);
   $("golden-traces-evidence").textContent=JSON.stringify(lab.goldenTraces,null,2);
   $("device-preflight-evidence").textContent=JSON.stringify(lab.devicePreflight,null,2);
@@ -302,6 +303,7 @@ function bind(){
   $("m54-systemd-run").addEventListener("click",()=>labAction("m54Systemd"));
   $("m55-isolation-run").addEventListener("click",()=>labAction("m55Isolation"));
   $("m56-integration-run").addEventListener("click",()=>labAction("m56Integration"));
+  $("m61-registry-run").addEventListener("click",()=>labAction("m61Registry"));
   $("predevice-conformance").addEventListener("click",()=>labAction("predeviceConformance"));
   $("golden-traces").addEventListener("click",()=>labAction("goldenTraces"));
   $("device-preflight").addEventListener("click",()=>labAction("devicePreflight"));

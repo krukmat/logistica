@@ -46,7 +46,8 @@
     "m5:linux": "node bin/pef-m5-lab.js --require-linux",
     "m5:systemd:contract": "node bin/pef-m5-systemd.js",
     "m5:integrated:contract": "node -e 'console.log(JSON.stringify(require(\"./src/runtime/m56-integration-contract.js\").runM56IntegrationInspection(),null,2))'",
-    "m5:integrated:verify": "node bin/pef-m56-verify.js"
+    "m5:integrated:verify": "node bin/pef-m56-verify.js",
+    "m6:registry": "node bin/pef-m61-registry.js"
   },
   "license": "UNLICENSED",
   "devDependencies": {

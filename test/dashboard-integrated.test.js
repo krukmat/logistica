@@ -603,3 +603,21 @@ test("M5.6 dashboard API inspects package + Linux systemd/kernel contracts witho
  assert.equal(response.result.localKernelExecution,"NOT_RUN_BLOCKED");
  assert.equal(response.lab.m56Integration.kernelValidatedLocally,false);
 }));
+
+test("M6.1 dashboard HTTP action executes actual local Cloud Lite registry, auth, restart and persistence",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text(),client=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["m61-registry-panel","m61-registry-run","m61-registry-evidence"])
+  assert.ok(html.includes('id="'+id+'"'),id);
+ assert.match(client,/labAction\("m61Registry"\)/);
+ await call({command:"mode",mode:"lab"});
+ const response=await call({command:"lab",action:"m61Registry"});
+ assert.equal(response.httpStatus,200);
+ assert.equal(response.result.status,"LAB_PASS",JSON.stringify(response.result));
+ assert.equal(response.result.checks.PERSISTED_AFTER_RESTART,true);
+ assert.equal(response.result.checks.FOREIGN_IDENTITY_DENIED,true);
+ assert.equal(response.result.credentialsExposedInEvidence,false);
+ assert.equal(response.result.actualHttpServer,true);
+ assert.equal(response.lab.m61Registry.lastEvidence.status,"LAB_PASS");
+ assert.equal(response.lab.m61Registry.cloudMockReplaced,false);
+ assert.equal(response.lab.m61Registry.eventIngestionAvailable,false);
+}));
