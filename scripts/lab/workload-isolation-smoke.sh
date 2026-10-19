@@ -169,3 +169,10 @@ console.log(JSON.stringify({kind:"PEF_M55_KERNEL_OVERLAYS_V1",status:"LAB_PASS",
  physicalValidated:false,systemServiceInstalled:false}));
 NODE
 echo "M55_BOTH_OVERLAYS=LAB_PASS"
+
+# M5.6: actual systemd unit with the packaged Linux Edge and kernel-isolated Site worker.
+# Reuse this exact temporary namespace/cgroup/rootfs; no persistent service.
+[[ "${PEF_M56_ACK:-}" == "GITHUB_HOSTED_EPHEMERAL_SERVICE_ONLY" ]] ||
+  blocked "m56 explicit hosted-only approval missing"
+timeout -k 4s 90s bash "$PEF_S3_REPO_ROOT/scripts/lab/m56-systemd-kernel-smoke.sh" \
+  "$name" "$cg" "$root" "$node_bin" "$tmpdir" "$tmpdir/host-canary"
