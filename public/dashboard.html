@@ -191,6 +191,16 @@
           <button id="m4-commonality-run" type="button" class="secondary">Ejecutar matriz M4.3 Property + Host</button>
           <pre id="m4-commonality-evidence">M4.3 NOT_RUN · sin certificación física</pre>
         </div>
+        <div class="lab-detail" id="m4-integrated-panel">
+          <h4>M4.4 — Demo integrada y paquete de evidencia</h4>
+          <p class="micro">Ejecuta Property, Host y M4.3 con los Edge autónomos reales.
+          Genera report.json, events.ndjson (aserciones, no el journal original), summary.md,
+          HTML estático, manifest.json y SHA256SUMS. Verifica hashes y coherencia.
+          Paquete temporal en la máquina del dashboard; conservar con <code>npm run m4:bundle</code>.
+          <strong>LAB_ONLY</strong>: SHA256 no es una firma, sin hardware o Cloud remoto.</p>
+          <button id="m4-integrated-run" type="button" class="secondary">Ejecutar M4.4 y verificar bundle</button>
+          <pre id="m4-integrated-evidence">M4.4 NOT_RUN · esperando ejecución</pre>
+        </div>
         <div class="lab-detail workload-panel" id="workload-panel">
           <h4>S — Workload Runtime · proceso local (NO sandbox)</h4>
           <p class="micro">Workload permitido: <code>pef-receiver</code>. El Core valida su manifest, recursos y política offline; el supervisor inicia un proceso Node aislado sólo por proceso. <strong>CPU/RAM, filesystem y red todavía no están aislados por Linux</strong>.</p>

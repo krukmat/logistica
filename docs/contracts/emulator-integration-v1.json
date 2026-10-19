@@ -468,6 +468,22 @@
       "implementation": "src/runtime/m4-commonality.js",
       "test": "test/m4-commonality.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "M4.4",
+      "mode": "lab",
+      "title": "Integrated Property Host and M4.3 SHA256 same-run evidence",
+      "controlIds": [
+        "m4-integrated-panel",
+        "m4-integrated-run",
+        "m4-integrated-evidence"
+      ],
+      "actions": [
+        "m4Integrated"
+      ],
+      "implementation": "src/runtime/m4-evidence-bundle.js",
+      "test": "test/m4-integrated.test.js",
+      "hardwareValidated": false
     }
   ]
 }

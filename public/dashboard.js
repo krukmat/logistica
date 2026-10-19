@@ -107,6 +107,7 @@ function renderIntegrated(lab){
   $("m4-property-evidence").textContent=JSON.stringify(lab.property,null,2);
   $("m4-host-evidence").textContent=JSON.stringify(lab.host,null,2);
   $("m4-commonality-evidence").textContent=JSON.stringify(lab.m4Commonality,null,2);
+  $("m4-integrated-evidence").textContent=JSON.stringify(lab.m4Integrated,null,2);
   $("predevice-evidence").textContent=JSON.stringify(lab.predevice,null,2);
   $("golden-traces-evidence").textContent=JSON.stringify(lab.goldenTraces,null,2);
   $("device-preflight-evidence").textContent=JSON.stringify(lab.devicePreflight,null,2);
@@ -292,6 +293,7 @@ function bind(){
   $("m4-property-smoke").addEventListener("click",()=>labAction("propertySmoke"));
   $("m4-host-smoke").addEventListener("click",()=>labAction("hostSmoke"));
   $("m4-commonality-run").addEventListener("click",()=>labAction("m4Commonality"));
+  $("m4-integrated-run").addEventListener("click",()=>labAction("m4Integrated"));
   $("predevice-conformance").addEventListener("click",()=>labAction("predeviceConformance"));
   $("golden-traces").addEventListener("click",()=>labAction("goldenTraces"));
   $("device-preflight").addEventListener("click",()=>labAction("devicePreflight"));
