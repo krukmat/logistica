@@ -189,6 +189,15 @@ jobs:
         run: bash -n scripts/arm64-vm/lima.sh scripts/arm64-vm/guest-run.sh scripts/arm64-vm/guest-network-lab.sh scripts/arm64-vm/guest-d3.sh scripts/arm64-vm/guest-load.sh scripts/arm64-vm/guest-compare.sh scripts/arm64-vm/guest-e1-e2.sh scripts/arm64-vm/guest-e5.sh scripts/arm64-vm/guest-f1-f2.sh
       - name: ARM64 Core test suite
         run: npm test
+      - name: M6.1 native ARM64 Cloud Lite loopback registry and restart proof
+        run: npm run m6:registry > "$RUNNER_TEMP/pef-m61-registry-arm64.json"
+      - name: Upload Cloud Lite ARM64 registry evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m61-cloud-lite-registry-arm64
+          path: ${{ runner.temp }}/pef-m61-registry-arm64.json
+          if-no-files-found: error
       - name: M4.4 ARM64 integrated lab-only bundle and SHA256 verification
         run: |
           npm run m4:bundle -- --output-root artifacts/m4-arm64-ci
