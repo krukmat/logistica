@@ -7,6 +7,7 @@ const {syncJournal}=require("./cloud-sync.js");
 const {validateIdentity,EPOCH}=require("./event-envelope.js");
 const {createLocalReceipts}=require("./local-receipts.js");
 const {createPropertyIncidents}=require("./property-incidents.js");
+const {createSiteOperations}=require("./site-operations.js");
 function createEdgeRuntime({journal,probe,applyRoute,simulatorOptions={},
                            sessionId=randomUUID(),identity,maxVolatileEvents=8}={}){
   const stable=validateIdentity(identity);
@@ -18,6 +19,7 @@ function createEdgeRuntime({journal,probe,applyRoute,simulatorOptions={},
   const controller=createConnectivityController({probe,applyRoute,simulatorOptions});
   const receipts=createLocalReceipts({journal,identity:stable});
   const property=createPropertyIncidents({journal,identity:stable});
+  const host=createSiteOperations({profile:"host",journal,identity:stable});
   const deferred=[];
   let sequence=0,closed=false,busy=false,last=null,droppedEvidence=0,lastError=null;
   function check(){if(closed)throw Error("EDGE_RUNTIME_CLOSED");}
@@ -90,11 +92,13 @@ function createEdgeRuntime({journal,probe,applyRoute,simulatorOptions={},
   function listReceipts(){check();return receipts.list();}
   function recordPropertyIncident(input){check();if(busy)throw Error("EDGE_RUNTIME_BUSY");return property.apply(input);}
   function listPropertyIncidents(){check();return property.list();}
+  function recordHostIncident(input){check();if(busy)throw Error("EDGE_RUNTIME_BUSY");return host.apply(input);}
+  function listHostIncidents(){check();return host.list();}
   function cloudAck(eventId){check();return journal.cloudAck(eventId);}
   function compact(options){check();return journal.compact(options);}
   function close(){if(closed)return;closed=true;}
   return {sample,status,cloudAck,compact,pending,sync,receivePackage,listReceipts,close,controllerTrace:()=>controller.trace(),
-    recordPropertyIncident,listPropertyIncidents,
+    recordPropertyIncident,listPropertyIncidents,recordHostIncident,listHostIncidents,
     journalPath:journal.file,observations:()=>controller.observations()};
 }
 module.exports={createEdgeRuntime};
