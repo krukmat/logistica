@@ -69,6 +69,15 @@ jobs:
           name: m4-integrated-evidence-x64
           path: artifacts/m4-ci
           if-no-files-found: error
+      - name: M5.1–M5.2 unprivileged Linux x64 packaged Edge install upgrade rollback
+        run: npm run m5:linux > "$RUNNER_TEMP/pef-m5-x64.json"
+      - name: Upload M5 Linux x64 installation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m5-install-x64-lab
+          path: ${{ runner.temp }}/pef-m5-x64.json
+          if-no-files-found: error
       - name: Pre-device port contract rehearsal
         run: npm run ports:conformance -- --output "$RUNNER_TEMP/pef-predevice-ports.json"
       - name: Upload predevice evidence
@@ -179,6 +188,15 @@ jobs:
         with:
           name: m4-integrated-evidence-arm64
           path: artifacts/m4-arm64-ci
+          if-no-files-found: error
+      - name: M5.2 native ARM64 non-privileged release/process lifecycle
+        run: npm run m5:linux > "$RUNNER_TEMP/pef-m5-arm64.json"
+      - name: Upload M5 ARM64 install evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m5-install-arm64-lab
+          path: ${{ runner.temp }}/pef-m5-arm64.json
           if-no-files-found: error
       - name: ARM64 ISA golden parity and journal
         run: |

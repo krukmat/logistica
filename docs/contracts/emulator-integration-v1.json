@@ -484,6 +484,22 @@
       "implementation": "src/runtime/m4-evidence-bundle.js",
       "test": "test/m4-integrated.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "M5.1–M5.2",
+      "mode": "lab",
+      "title": "Temporary unprivileged packaged Edge install upgrade verify rollback and Linux process recovery",
+      "controlIds": [
+        "m5-install-panel",
+        "m5-install-run",
+        "m5-install-evidence"
+      ],
+      "actions": [
+        "m5InstallLab"
+      ],
+      "implementation": "src/runtime/m5-install-smoke.js",
+      "test": "test/m5-install.test.js",
+      "hardwareValidated": false
     }
   ]
 }

@@ -201,6 +201,17 @@
           <button id="m4-integrated-run" type="button" class="secondary">Ejecutar M4.4 y verificar bundle</button>
           <pre id="m4-integrated-evidence">M4.4 NOT_RUN · esperando ejecución</pre>
         </div>
+        <div class="lab-detail" id="m5-install-panel">
+          <h4>M5.1–M5.2 — Instalación reproducible sin dispositivo</h4>
+          <p class="micro">Empaqueta el servicio Edge y arranca el proceso Node instalado,
+            comprueba un ACK fsynced, actualización v1→v2 y rollback a v1 conservando el
+            journal y la identidad. Detecta alteraciones y una interrupción antes de activar.
+            Sólo usa directorios temporales del laboratorio, sin root, systemd activo,
+            red física ni modificar servicios de Mac. <strong>LAB_ONLY</strong>.
+            Una sesión nueva del proceso NO equivale a un reinicio del sistema operativo.</p>
+          <button id="m5-install-run" type="button" class="secondary">Probar instalar → reiniciar → actualizar → rollback M5</button>
+          <pre id="m5-install-evidence">M5.1–M5.2 NOT_RUN · M5.3 hardware BLOCKED</pre>
+        </div>
         <div class="lab-detail workload-panel" id="workload-panel">
           <h4>S — Workload Runtime · proceso local (NO sandbox)</h4>
           <p class="micro">Workload permitido: <code>pef-receiver</code>. El Core valida su manifest, recursos y política offline; el supervisor inicia un proceso Node aislado sólo por proceso. <strong>CPU/RAM, filesystem y red todavía no están aislados por Linux</strong>.</p>

@@ -540,3 +540,19 @@ test("M4.4 dashboard HTTP runs one integrated Edge scenario and shows verified b
  assert.equal(response.lab.m4Integrated.lastEvidence.runId,response.result.runId);
  assert.equal(response.lab.m4Integrated.physicalValidated,false);
 }));
+
+test("M5 dashboard HTTP invokes real packaged Edge install/upgrade/rollback without physical claims",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text(),js=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["m5-install-panel","m5-install-run","m5-install-evidence"])
+   assert.ok(html.includes('id="'+id+'"'),id);
+ assert.match(js,/labAction\("m5InstallLab"\)/);
+ await call({command:"mode",mode:"lab"});
+ const res=await call({command:"lab",action:"m5InstallLab"});
+ assert.equal(res.httpStatus,200);
+ assert.equal(res.result.status,"LAB_PASS",JSON.stringify(res.result));
+ assert.equal(res.result.checks.ROLLBACK_PRESERVES_JOURNAL,true);
+ assert.equal(res.result.checks.INTERRUPTED_UPGRADE_RETAINS_ACTIVE,true);
+ assert.equal(res.result.systemdActivated,false);
+ assert.equal(res.lab.m5Install.lastEvidence.status,"LAB_PASS");
+ assert.equal(res.lab.m5Install.physicalValidated,false);
+}));
