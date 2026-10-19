@@ -23,6 +23,21 @@ function validateEnvelope(payload,eventId){
     return {ok:true,siteId:payload.siteId,deviceId:payload.deviceId,
       configRevision:payload.configRevision,eventType:"RECEIPT_REGISTERED"};
   }
+  if(["PROPERTY_ALERT_RAISED","PROPERTY_ALERT_ACKED"].includes(payload?.eventType)){
+    const isAlert=payload.eventType==="PROPERTY_ALERT_RAISED";
+    const prefix="property."+payload.deviceId+"."+payload.incidentId;
+    const valid=payload.schemaVersion===1&&ID.test(payload.siteId||"")&&
+      ID.test(payload.deviceId||"")&&REV.test(payload.configRevision||"")&&
+      RECEIPT.test(payload.incidentId||"")&&payload.localOnlyCapable===true&&
+      payload.eventId===eventId&&payload.correlationId===prefix&&
+      eventId===prefix+(isAlert?".alert":".ack")&&
+      (isAlert?(PACKAGE.test(payload.assetId||"")&&
+        ["WARNING","CRITICAL"].includes(payload.severity)):
+        (payload.assetId===undefined&&payload.severity===undefined));
+    if(!valid)return {ok:false,error:"INVALID_PROPERTY_ENVELOPE"};
+    return {ok:true,siteId:payload.siteId,deviceId:payload.deviceId,
+      configRevision:payload.configRevision,eventType:payload.eventType};
+  }
   if(!payload||payload.schemaVersion!==1||!ID.test(payload.siteId||"")||
     !ID.test(payload.deviceId||"")||!EPOCH.test(payload.sessionId||"")||
     !REV.test(payload.configRevision||"")||typeof eventId!=="string"||

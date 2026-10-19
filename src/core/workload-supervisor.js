@@ -88,6 +88,15 @@ function createWorkloadSupervisor({manager,driver,clock=()=>Date.now(),autoRecon
     try{return await x.handle.processReceipt(input);}
     catch{return {ok:false,error:"WORKLOAD_IPC_FAILURE"};}
   }
+  async function processOperation(id,operation,input){
+    ensure();const x=entries.get(id);
+    if(!x||x.state!=="RUNNING"||!x.handle||typeof x.handle.processOperation!=="function")
+      return {ok:false,error:"WORKLOAD_NOT_RUNNING"};
+    if(typeof operation!=="string"||!/^[A-Z_]{3,32}$/.test(operation))
+      return {ok:false,error:"INVALID_WORKLOAD_OPERATION"};
+    try{return await x.handle.processOperation(operation,input);}
+    catch{return {ok:false,error:"WORKLOAD_IPC_FAILURE"};}
+  }
   async function crash(id){
     ensure();const x=entries.get(id);
     if(!x||x.state!=="RUNNING"||!x.handle||typeof x.handle.injectCrash!=="function")
@@ -115,6 +124,6 @@ function createWorkloadSupervisor({manager,driver,clock=()=>Date.now(),autoRecon
     for(const id of ids)await stop(id);
     closed=true;
   }
-  return {start,reconcile,stop,list,close,processReceipt,crash,injectFault,limits:manager.limits,usage:manager.usage};
+  return {start,reconcile,stop,list,close,processReceipt,processOperation,crash,injectFault,limits:manager.limits,usage:manager.usage};
 }
 module.exports={createWorkloadSupervisor};
