@@ -308,6 +308,9 @@ jobs:
             PEF_S3_NODE="$(command -v node)" \
             PEF_S3_EVIDENCE="$RUNNER_TEMP/pef-s3-evidence.json" PEF_S34_EVIDENCE="$RUNNER_TEMP/pef-s34-evidence.json" PEF_M55_EVIDENCE="$RUNNER_TEMP/pef-m55-evidence.json" PEF_M56_EVIDENCE="$RUNNER_TEMP/pef-m56-evidence.json" \
             bash scripts/lab/workload-isolation-smoke.sh
+      - name: Independently verify M5.6 combined evidence and both kernel profiles
+        run: |
+          node bin/pef-m56-verify.js "$RUNNER_TEMP/pef-m56-evidence.json" > "$RUNNER_TEMP/pef-m56-verified.json"
       - name: Upload lab evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -319,6 +322,7 @@ jobs:
             ${{ runner.temp }}/pef-s34-evidence.json
             ${{ runner.temp }}/pef-m55-evidence.json
             ${{ runner.temp }}/pef-m56-evidence.json
+            ${{ runner.temp }}/pef-m56-verified.json
           if-no-files-found: warn
 
   m54-systemd-lab:
