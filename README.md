@@ -252,3 +252,9 @@ M4.4 es evidencia **LAB_ONLY**; SHA-256 no firma identidad y `events.ndjson` con
 **No es instalador de producto ni habilita systemd, reboot real, red física, secreto firmado ni hardware.** M5.3 sigue bloqueado hasta disponer de hardware físico; no hacer compras ni elevar un LAB_PASS a certificación.
 
 **M5.1–M5.2 CLOSED — SOFTWARE LAB ONLY:** [CI #39232965785](https://github.com/krukmat/logistica/actions/runs/39232965785) Linux x64 182 PASS +1 skip, native ARM64 183/183, `m5:linux` and dashboard E2E PASS, symlink escaping rejected. [x64 artifact](https://github.com/krukmat/logistica/actions/runs/39232965785/artifacts/12178436821) / [ARM64 artifact](https://github.com/krukmat/logistica/actions/runs/39232965785/artifacts/12177852754). Mac smoke command `npm run m5:lab`. M5.3 requires separate physical tests; no systemd/launchd activation or reboot certification.
+
+## M5.4–M5.5 — Servicio systemd + overlays Linux aislados (CI lab)
+
+`npm run m5:systemd:contract` valida el contrato de unidad offline de M5.4. En CI Linux efímero, `scripts/lab/m5-systemd-smoke.sh` inicia realmente el Edge desde un release versionado mediante systemd, verifica fsync y recuperación tras SIGKILL. Property y Host se prueban por separado en `scripts/lab/workload-isolation-smoke.sh`, con cgroups v2, netns, chroot, UID 65534 y límites CPU/RAM/PIDs **efectivos para el worker**, no para todo el Edge. [Task/runbook](docs/tasks/m5-4-5-systemd-linux-isolation.md) · [auditoría](docs/audit/m5-4-5-systemd-isolation-2026-10-19.md) · [CI #39239226280](https://github.com/krukmat/logistica/actions/runs/39239226280).
+
+El reboot total de la VM Lima ARM64 **todavía no está ejecutado**; el harness opt-in (`scripts/arm64-vm/m54-lima-service.sh`) tiene pasos `prepare/reboot/verify/cleanup` y no toca servicios del Mac. El dashboard muestra los contratos M5.4/M5.5 pero nunca activa systemd o cgroups localmente. Todo es LAB_ONLY; M5.3 hardware queda BLOCKED.

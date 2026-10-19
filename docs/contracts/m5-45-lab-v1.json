@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "kind": "PEF_M5_SERVICE_KERNEL_LAB_CONTRACT_V1",
+  "scope": "EPHEMERAL_LINUX_AND_OPT_IN_LIMA_ONLY",
+  "m54": {
+    "serviceEvidence": "PEF_M54_SYSTEMD_CI_V1",
+    "unitContract": "PEF_M54_SYSTEMD_CONTRACT_V1",
+    "vmRebootEvidence": "PEF_M54_LIMA_OS_BOOT_V1",
+    "vmRebootValidated": false,
+    "macSystemServiceInstalled": false,
+    "ciValidated": [
+      "UNIT_VERIFIED",
+      "SERVICE_STARTED",
+      "DURABLE_ALERT_ACK",
+      "SYSTEMD_SIGKILL_RESTART",
+      "JOURNAL_RECOVERED",
+      "PROPERTY_WORKER_RECOVERED"
+    ]
+  },
+  "m55": {
+    "kernelEvidence": "PEF_M55_KERNEL_OVERLAYS_V1",
+    "profiles": [
+      "property",
+      "host"
+    ],
+    "assertionsPerProfile": 13,
+    "requiredGuards": [
+      "GITHUB_HOSTED_EPHEMERAL_ONLY",
+      "root",
+      "cgroup_v2",
+      "netns",
+      "chroot",
+      "uid_65534"
+    ],
+    "storageQuotaEnforced": false,
+    "physicalValidated": false,
+    "cpuThrottlingOrOOMProvenForSiteWorkers": false
+  },
+  "requiredEmulatorActions": [
+    "m54Systemd",
+    "m55Isolation"
+  ],
+  "physicalValidated": false
+}

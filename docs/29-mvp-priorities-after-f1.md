@@ -76,3 +76,7 @@ M3.1–M3.6 están **CLOSED sólo para laboratorio** (incluye configuración tra
 **CLOSED — SOFTWARE LAB ONLY, CI #39232965785 SUCCESS:** release staging temporal versionado con hash/verify/upgrade/rollback, test Edge autónomo empaquetado y reinicio de proceso, journal retenido, rechazo de fallos y acción UI; pruebas Linux x64/ARM64 añadidas. [Tasks](tasks/m5-reproducible-install-linux-lab.md). M5.3 hardware/real OS boot/systemd/kernel cuotas/corte energético **BLOCKED**. No elegir distribución, hardware definitivo ni crear servicios de sistema antes del gate.
 
 **M5.1–M5.2 LAB closure:** [CI #39232965785](https://github.com/krukmat/logistica/actions/runs/39232965785), Linux x64 182 pass+1 skip, native ARM64 183/183, M5 package artifacts and dashboard E2E PASS. **No systemd/OS reboot, real device or kernel isolation for Property/Host certified.** M5.3 still BLOCKED hardware. [Audit](audit/m5-reproducible-install-2026-10-19.md).
+
+## M5.4–M5.5 (2026-10-19)
+
+**M5.4**: pruebas systemd reales en GitHub-hosted Linux SUCCESS, full VM Lima reboot disponible como runner operador pero **NOT_RUN**; milestone PARTIAL hasta evidencia. **M5.5** Property y Host kernel-isolated vía supervisor compartido CI **LAB_PASS 13/13 por perfil** ([CI #39239226280](https://github.com/krukmat/logistica/actions/runs/39239226280)), storage quota no enforced, Cloud mock y WAN sintética. Sigue pendiente la integración conjunta systemd+kernel en una VM persistente y la aceptación hardware M5.3. [Tasks](tasks/m5-4-5-systemd-linux-isolation.md).

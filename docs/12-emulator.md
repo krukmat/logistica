@@ -260,3 +260,7 @@ La acción `m4Commonality` en el panel integrado ejecuta `src/runtime/m4-commona
 ## M5.1/M5.2 — Instalar/actualizar/rollback en laboratorio
 
 En **Laboratorio integrado → M5**, `m5InstallLab` arranca un instalador bajo un directorio temporal aislado y prueba el paquete Edge real por HTTP, eventos O1/fsync, conservación del journal tras actualización y rollback. Reporta en `lab.m5Install.lastEvidence`: checks, plataforma, release hash, estado de servicio del sistema **no instalado**. No modifica servicios del Mac. Código: `src/runtime/m5-install.js`, `src/runtime/m5-install-smoke.js`; contrato [M5 v1](contracts/m5-install-v1.json); [plan](tasks/m5-reproducible-install-linux-lab.md). La autenticación de operador se inyecta sólo por entorno efímero durante el test; no provisiona secretos del producto.
+
+## M5.4/M5.5 — Contratos de servicio y kernel Linux
+
+Control Panel → Laboratorio integrado → **M5.4** valida el renderer real de la unidad de systemd y expone que no se activó en el Mac; **M5.5** presenta los presupuestos manifiesto Property/Host e indica que `kernelObservedHere=false`. Ambas acciones HTTP apuntan al código real de contratos, no a sistemas privilegiados del Mac. En CI `m54-systemd-lab` prueba arranque/restart systemd con Edge real, y `netns-lab` prueba los overlays aislados en kernel. [Plan](tasks/m5-4-5-systemd-linux-isolation.md) y [auditoría](audit/m5-4-5-systemd-isolation-2026-10-19.md). La VM Lima reboot permanece NOT_RUN hasta recibir evidencia de ejecución real.
