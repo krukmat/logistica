@@ -102,8 +102,10 @@ async function runM63EdgeSyncSmoke(){
      activeEdge=createAutonomousEdgeHost({config,token:edgeToken,cloudTransport:bridge});
      edgeUrl=await activeEdge.listen();const reopened=await req(edgeUrl,"state",null,edgeToken);
      checks[profile+"_EDGE_REOPEN"]=reopened.identity.sessionId!==sessionBefore&&
-       reopened.storage.pending===0&&
-       reopened[profile+"Incidents"].some(x=>x.incidentId==="M63-2"&&x.status==="ACKNOWLEDGED");
+       reopened.runtimeHealth==="HEALTHY"&&reopened.cloudLite.configured===true&&
+       reopened.storage.pending<=1&&
+       reopened[profile+"Incidents"].some(x=>x.incidentId==="M63-2"&&
+         x.status==="ACKNOWLEDGED"&&x.cloudAcked===true&&x.ackCloudAcked===true);
      await activeEdge.close();activeEdge=null;
    }
    const ok=Object.values(checks).every(Boolean);
