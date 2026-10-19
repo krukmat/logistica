@@ -4,13 +4,15 @@
 const path=require("node:path");
 const {createCloudLiteRegistryServer}=require("../src/runtime/cloud-lite-registry-server.js");
 async function main(args){
- if(args.length!==2||args[0]!=="--root"||!path.isAbsolute(args[1]))
+ if(![2,3].includes(args.length)||args[0]!=="--root"||!path.isAbsolute(args[1])||
+    (args.length===3&&args[2]!=="--enable-ingest"))
    throw Error("M61_USAGE:node bin/pef-cloud-lite.js --root /absolute/existing/private/temp/dir");
  const service=createCloudLiteRegistryServer({dir:args[1],
-   adminToken:process.env.PEF_CLOUD_LITE_ADMIN_TOKEN,port:0});
+   adminToken:process.env.PEF_CLOUD_LITE_ADMIN_TOKEN,port:0,
+   enableIngest:args[2]==="--enable-ingest"});
  const url=await service.listen();
  console.log(JSON.stringify({kind:"PEF_CLOUD_LITE_LOCAL_READY_V1",url,
-   scope:"LOOPBACK_LAB_ONLY",ingestionAvailable:false,
+   scope:"LOOPBACK_LAB_ONLY",ingestionAvailable:args[2]==="--enable-ingest",
    remoteTlsValidated:false,physicalValidated:false}));
  let stopping=false;
  function shutdown(){

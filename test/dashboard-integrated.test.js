@@ -621,3 +621,18 @@ test("M6.1 dashboard HTTP action executes actual local Cloud Lite registry, auth
  assert.equal(response.lab.m61Registry.cloudMockReplaced,false);
  assert.equal(response.lab.m61Registry.eventIngestionAvailable,false);
 }));
+
+test("M6.2 dashboard HTTP executes authenticated Cloud Lite durable ingest, replay and corrupted-log rejection",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text(),js=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["m62-ingest-panel","m62-ingest-run","m62-ingest-evidence"])
+  assert.ok(html.includes('id="'+id+'"'),id);
+ assert.match(js,/labAction\("m62Ingest"\)/);
+ await call({command:"mode",mode:"lab"});
+ const response=await call({command:"lab",action:"m62Ingest"});
+ assert.equal(response.httpStatus,200);
+ assert.equal(response.result.status,"LAB_PASS",JSON.stringify(response.result));
+ assert.equal(response.result.checks.ACK_ONLY_AFTER_FSYNC,true);
+ assert.equal(response.result.checks.IDEMPOTENT_DUPLICATE,true);
+ assert.equal(response.result.checks.REOPEN_AND_REPLAY,true);
+ assert.equal(response.lab.m62Ingest.cloudMockReplaced,false);
+}));
