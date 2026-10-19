@@ -24,6 +24,13 @@ check_service(){
     http://127.0.0.1:18791/state
 }
 case "$action" in
+ cleanup)
+  if [[ ! -f "$base/pef-m54.service" ]];then echo "M54_GUEST_NOT_PREPARED";exit 78;fi
+  sudo -n systemctl disable --now "$name" >/dev/null
+  sudo -n rm -f -- "$unit"
+  sudo -n systemctl daemon-reload
+  rm -rf -- "$base"
+  echo "M54_GUEST_CLEANUP=PASS";;
  prepare)
   command -v npm >/dev/null || exit 78
   [[ ! -e "$base" ]] || { echo "M54_GUEST_BLOCKED:existing VM test scope; no overwrite" >&2;exit 78; }

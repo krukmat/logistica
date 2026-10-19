@@ -10,7 +10,7 @@ command -v limactl >/dev/null || { echo "M54_LIMA_BLOCKED:limactl unavailable" >
 root="$(cd "$(dirname "$0")/../.." && pwd)"
 vm="pef-$profile"
 case "$action" in
- prepare|verify)
+ prepare|verify|cleanup)
   limactl shell "$vm" bash "$root/scripts/arm64-vm/guest-m54-service.sh" "$action" "$root";;
  reboot)
   # Actual guest OS shutdown/start, NOT a physical powercut. No new VM created.
@@ -19,6 +19,6 @@ case "$action" in
   limactl start "$vm"
   limactl shell "$vm" bash "$root/scripts/arm64-vm/guest-m54-service.sh" verify "$root";;
  *)
-  echo "Usage: PEF_M54_VM_ACK=EXPLICIT_LIMA_VM_SERVICE_TEST bash scripts/arm64-vm/m54-lima-service.sh prepare|reboot|verify r28s-1g" >&2
+  echo "Usage: PEF_M54_VM_ACK=EXPLICIT_LIMA_VM_SERVICE_TEST bash scripts/arm64-vm/m54-lima-service.sh prepare|reboot|verify|cleanup r28s-1g" >&2
   exit 2;;
 esac
