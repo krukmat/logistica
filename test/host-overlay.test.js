@@ -88,3 +88,33 @@ test("M4.2 standalone Host HTTP/worker/offline/reopen/mock replay",async()=>{
   assert.equal(result.physicalValidated,false);
   assert.equal(result.actualLimitsEnforced,false);
 });
+
+test("M4.2 fail-closed Host: disabled worker never accepts incident over API",async()=>{
+  const {createAutonomousEdgeHost}=require("../src/runtime/autonomous-edge.js");
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),"pef-host-disabled-"));
+  const token="test-host-operator-token-32-chars-long";
+  const cfg={schemaVersion:1,backend:"virtual-lab",identity,
+    storageDir:dir,http:{host:"127.0.0.1",port:0},sampleIntervalMs:300,
+    workload:{enabled:false,profile:"host",reconcileMs:250},
+    journal:{capacityBytes:65536,controlReserveBytes:4096},
+    wan:{primary:{link:true,upstream:false},backup:{link:true,upstream:false}}};
+  let host;
+  try{
+    host=createAutonomousEdgeHost({config:cfg,token});
+    const url=await host.listen();
+    const denied=await fetch(url+"host/incidents",{method:"POST",
+      headers:{"x-pef-token":token,"content-type":"application/json"},
+      body:JSON.stringify(incident)});
+    assert.equal(denied.status,409);
+    assert.equal((await denied.json()).error,"HOST_WORKLOAD_NOT_ACTIVE");
+    const state=await fetch(url+"state",{headers:{"x-pef-token":token}}).then(x=>x.json());
+    assert.equal(state.hostIncidents.length,0);
+    assert.equal(state.workloads.length,0);
+  }finally{if(host)await host.close();fs.rmSync(dir,{recursive:true,force:true});}
+});
+test("M4.2 process allowlist refuses arbitrary binary or unknown workload",async()=>{
+  const {createNodeProcessDriver}=require("../src/adapters/node-process-driver.js");
+  await assert.rejects(()=>createNodeProcessDriver().start(
+    {...hostManifest(),workload_id:"exec-host-shell"},{onExit:()=>{}}),
+    /WORKLOAD_BINARY_NOT_ALLOWLISTED/);
+});
