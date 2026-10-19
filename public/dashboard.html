@@ -303,6 +303,25 @@
           <button id="m72-release-run" class="secondary" type="button">Probar actualización firmada M7.2</button>
           <pre id="m72-release-evidence">M7.2 NOT_RUN · firma sólo de release software</pre>
         </div>
+        <div class="lab-detail" id="m73-mtls-panel">
+          <h4>M7.3 — TLS 1.3 mutual autenticado (local)</h4>
+          <p class="micro">Genera CA y certificados Ed25519 efímeros, autentica
+          certificados de servidor y dispositivo; valida Property/Host,
+          rechazo de CA ajena, scope del certificado y token inválido.
+          Edge opera offline sin downgrade a HTTP. La rotación prueba segundo certificado,
+          sin revocación y sin claves hardware; <strong>LAB_ONLY</strong>.</p>
+          <button id="m73-mtls-run" class="secondary" type="button">Probar Cloud Lite mTLS M7.3</button>
+          <pre id="m73-mtls-evidence">M7.3 NOT_RUN · certificados de laboratorio</pre>
+        </div>
+        <div class="lab-detail" id="m74-operations-panel">
+          <h4>M7.4 — Auditoría operacional y recuperación</h4>
+          <p class="micro">Reutiliza recuperación real M3 y registra eventos
+          correlacionados con fsync, cadena SHA256 y autorización del operador.
+          Reabre el journal, rechaza alteraciones y no vuelca secretos.
+          No concede comandos remotos de recovery; <strong>LAB_ONLY</strong>.</p>
+          <button id="m74-operations-run" class="secondary" type="button">Probar recuperación y evidencia M7.4</button>
+          <pre id="m74-operations-evidence">M7.4 NOT_RUN · auditoría durable</pre>
+        </div>
         <div class="lab-detail workload-panel" id="workload-panel">
           <h4>S — Workload Runtime · proceso local (NO sandbox)</h4>
           <p class="micro">Workload permitido: <code>pef-receiver</code>. El Core valida su manifest, recursos y política offline; el supervisor inicia un proceso Node aislado sólo por proceso. <strong>CPU/RAM, filesystem y red todavía no están aislados por Linux</strong>.</p>

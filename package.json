@@ -53,7 +53,8 @@
     "m6:sync": "node bin/pef-m63-sync.js",
     "m7:identity": "node bin/pef-m71-identity.js",
     "m7:release": "node bin/pef-m72-signed-release.js",
-    "m7:mtls": "node bin/pef-m73-mtls.js"
+    "m7:mtls": "node bin/pef-m73-mtls.js",
+    "m7:ops": "node bin/pef-m74-ops.js"
   },
   "license": "UNLICENSED",
   "devDependencies": {

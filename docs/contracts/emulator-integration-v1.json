@@ -644,6 +644,38 @@
       "implementation": "src/runtime/m72-signed-release-smoke.js",
       "test": "test/m72-signed-release.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "M7.3",
+      "mode": "lab",
+      "title": "TLS1.3 mutual certificate scoped Edge Cloud Lite authenticated reconciliation",
+      "controlIds": [
+        "m73-mtls-panel",
+        "m73-mtls-run",
+        "m73-mtls-evidence"
+      ],
+      "actions": [
+        "m73Mtls"
+      ],
+      "implementation": "src/runtime/m73-mtls-smoke.js",
+      "test": "test/m73-mtls.test.js",
+      "hardwareValidated": false
+    },
+    {
+      "task": "M7.4",
+      "mode": "lab",
+      "title": "M3 authenticated recovery with SHA256-linked durable correlated event ledger",
+      "controlIds": [
+        "m74-operations-panel",
+        "m74-operations-run",
+        "m74-operations-evidence"
+      ],
+      "actions": [
+        "m74Operations"
+      ],
+      "implementation": "src/runtime/m74-operational-smoke.js",
+      "test": "test/m74-operations.test.js",
+      "hardwareValidated": false
     }
   ]
 }

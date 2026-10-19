@@ -701,3 +701,29 @@ test("M7.2 dashboard runs trusted M5 release boot and signed health-gated rollba
  assert.equal(response.result.secureBootValidated,false);
  assert.equal(response.lab.m72Release.lastEvidence.status,"LAB_PASS");
 }));
+
+test("M7.3 dashboard HTTP runs real TLS13 mutual certificates Property and Host",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text(),client=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["m73-mtls-panel","m73-mtls-run","m73-mtls-evidence"])assert.ok(html.includes('id="'+id+'"'));
+ assert.match(client,/labAction\("m73Mtls"\)/);
+ await call({command:"mode",mode:"lab"});
+ const response=await call({command:"lab",action:"m73Mtls"});
+ assert.equal(response.httpStatus,200);
+ assert.equal(response.result.status,"LAB_PASS",JSON.stringify(response.result));
+ assert.equal(response.result.profiles.host.CERT_SCOPE_BOUND_TO_DEVICE,true);
+ assert.equal(response.result.checks.UNTRUSTED_CA_REJECTED,true);
+ assert.equal(response.result.deviceKeySameAsM71,false);
+ assert.equal(response.lab.m73Mtls.lastEvidence.status,"LAB_PASS");
+}));
+test("M7.4 dashboard HTTP produces durable authenticated M3 operational recovery audit",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text(),client=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["m74-operations-panel","m74-operations-run","m74-operations-evidence"])assert.ok(html.includes('id="'+id+'"'));
+ assert.match(client,/labAction\("m74Operations"\)/);
+ await call({command:"mode",mode:"lab"});
+ const response=await call({command:"lab",action:"m74Operations"});
+ assert.equal(response.httpStatus,200);
+ assert.equal(response.result.status,"LAB_PASS",JSON.stringify(response.result));
+ assert.equal(response.result.checks.HASH_CHAIN_TAMPER_BLOCKED,true);
+ assert.equal(response.result.checks.M3_RECOVERY_REUSED,true);
+ assert.equal(response.lab.m74Operations.lastEvidence.status,"LAB_PASS");
+}));
