@@ -95,6 +95,7 @@ function verifySignedInstall(root,state){
    p.ordinal!==sec.ordinal||p.floorOrdinal!==sec.previousFloorOrdinal||
    p.previousVersion!==sec.previousVersionAtSignature||
    p.previousDigest!==sec.previousDigestAtSignature ||
+   p.previousVersion!==state.previousVersion||p.previousDigest!==state.previousHash||
    sec.floorOrdinal!==Math.max(p.floorOrdinal,p.ordinal))
    throw Error("M72_ACTIVE_SIGNATURE_INVALID");
 }
