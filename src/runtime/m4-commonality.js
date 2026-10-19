@@ -138,9 +138,10 @@ async function storageFaults(profile){
     const identity={siteId:"fault-site",deviceId:"fault-edge",configRevision:"r1"};
     let journal=createFileJournal({dir,capacityBytes:1300,controlReserveBytes:300});
     const checks={};
+    let attempts=0;
     try{
       const ops=createSiteOperations({profile,journal,identity});
-      let rejected=null,attempts=0;
+      let rejected=null;
       for(let i=1;i<=16;i++){
         const next={...profiles[profile].open,incidentId:"S-"+i};
         const result=ops.apply(next);attempts++;
