@@ -61,3 +61,33 @@ El artifact [M4.3 en CI #39218335525](https://github.com/krukmat/logistica/actio
 | Journal tras replay | 4.079 | 3.967 | bytes, incluye registros CLOUD_ACK |
 
 El aumento de bytes tras replay es **esperado**: un cursor de Cloud ACK también se registra de forma duradera, aunque no queden eventos pendientes. Los contadores CPU de los workers antes y después **no son una serie temporal de un solo PID**; se reinició el proceso. Se trata de una muestra mínima de CI sin calentamiento, percentiles, repetición estadística, límite de memoria del dispositivo, energía ni cargas reales. Se preserva el JSON por ejecución y los métodos/campos en [task](../tasks/m4-commonality-resilience.md).
+
+
+## Operator Mac smoke — reported 2026-10-19
+
+**Provenance:** operator-provided terminal output from `npm run m4:commonality` on Mac. This is reported local evidence, **not** automatically captured/signed hardware telemetry. GitHub-hosted CI observations above remain separate. A single invocation, not a benchmark series.
+
+- `kind=PEF_M4_COMMONALITY_RESILIENCE_V1`, `status=LAB_PASS`, `ok=true`.
+- **65/65 boolean checks true**: 9 parity checks; for each profile 15 runtime checks + 8 supervisor-policy checks + 5 storage-fault checks. Both `profiles.property.passed=true` and `profiles.host.passed=true`.
+- Parity: legacy Property envelope and `originalDigest=1b0c34dbea05f1401ed46bed96e197565940f7e9d35d5e118df2eb2ad99fdc9c` maintained, old events reopened, Host/Property namespaces and identities separated; 2 retained fixture events.
+- Both profiles: real Node child crash and restart, fail-closed while down, health/retry exhaustion with synthetic process driver, injected fsync failure with no acknowledgement, offline operation, lost remote ACK and duplicate replay against Cloud mock; **0 pending after replay per profile**.
+
+| Mac observation | Property | Host | Units / interpretation |
+| --- | ---: | ---: | --- |
+| Worker RSS before crash | 42,352,640 | 42,123,264 | bytes; separate child processes |
+| Worker RSS after restart | 42,139,648 | 42,057,728 | bytes; new child processes |
+| CPU user before crash | 14,468 | 19,089 | microseconds cumulative since individual worker start |
+| CPU system before crash | 3,746 | 4,111 | microseconds cumulative |
+| HTTP ALERT/OPEN | 7.265 | 6.302 | ms, single request |
+| HTTP ACK | 6.247 | 6.318 | ms, single request |
+| Backoff observation | 44.47 | 43.03 | ms, polling observation |
+| Restart observation | 1,190.98 | 1,172.40 | ms, polling observation (not SLA) |
+| Journal before reopen | 1,647 | 1,596 | bytes |
+| Journal after Cloud mock replay | 4,079 | 3,967 | bytes; persisted CLOUD_ACK cursor records |
+| Events pending after replay | 0 | 0 | local journal pending queue |
+
+- The source selection contains **9 shared active files, 929 LOC**, **1 Property compatibility façade, 7 LOC**, **0 separate Host-specific files** and **1 unused legacy candidate, 12 LOC excluded**. Reported ratio **99.25% = 929/(929+7)** strictly for this *selected active-file sample*, including full lines in shared files; it is **not** whole-project, semantic or runtime reuse. Source SHA/size measurements follow the report's explicit methodology.
+- Manifests express policy reservations only (Property: CPU 80/150 mCPU, RAM 24/64 MiB, storage 4/16 MiB; Host: 100/180 mCPU, 32/80 MiB, 8/24 MiB). `NODE_PROCESS_ONLY`, `kernelLimitsEnforced=false`, `actualLimitsEnforced=false`, `network=SYNTHETIC`, `cloud=LOCAL_MOCK`. No actual power cut, device certification, kernel isolation for Property/Host, remote Cloud or 72-hour endurance.
+- The injected fsync failure returns **no ACK** but leaves write durability uncertain: do not claim the disk contains no bytes after failure.
+
+**Decision:** M4.3 remains **CLOSED — SOFTWARE LAB ONLY**; operator Mac evidence now supplements GitHub CI [#39219003980](https://github.com/krukmat/logistica/actions/runs/39219003980). **M4.4 remains not started**: joint signed/hash-verified evidence package and integral product demonstration. No rerun on Mac is required solely to document this result.
