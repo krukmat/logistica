@@ -4,6 +4,7 @@
 const fs=require("node:fs"),path=require("node:path"),os=require("node:os");
 const {createHash,randomUUID}=require("node:crypto");
 const {nextInstallState,validVersion}=require("../core/install-policy.js");
+const {guardSignedActivation,verifySignedInstall}=require("../adapters/m72-trust-anchor.js");
 const PROJECT=path.resolve(__dirname,"../..");
 const INCLUDED=["bin/pef-edge.js","bin/pef-m56-edge.js","package.json"];
 const DIRS=["src/core","src/runtime","src/adapters","src/workloads","src/emulator"];
@@ -132,6 +133,7 @@ function verifyRelease(root,version){
 function verifyInstall(rootInput){
  const root=safeDir(rootInput),state=readState(root);
  if(!state)throw Error("M5_INSTALL_MISSING");
+ verifySignedInstall(root,state);
  const release=verifyRelease(root,state.activeVersion);
  if(release.digest!==state.activeHash)throw Error("M5_ACTIVE_DIGEST_MISMATCH");
  if(state.previousVersion){
@@ -177,7 +179,7 @@ function releaseCreate(root,version){
    return verifyRelease(root,version);
  }finally{if(fs.existsSync(tmp))fs.rmSync(tmp,{recursive:true,force:true});}
 }
-function applyRelease({root:givenRoot,version,mode,interruptBeforeActivation=false}){
+function applyRelease({root:givenRoot,version,mode,interruptBeforeActivation=false,authorization}={}){
  if(!["install","upgrade","rollback"].includes(mode)||!validVersion(version))
    throw Error("M5_INVALID_INSTALL_COMMAND");
  // Validate the path before creating anything outside the ephemeral lab tree.
@@ -198,6 +200,9 @@ function applyRelease({root:givenRoot,version,mode,interruptBeforeActivation=fal
    const release=mode==="rollback"?verifyRelease(root,version):releaseCreate(root,version);
    if(mode!=="rollback"&&release.digest!==hashEntries(collect()))
      throw Error("M5_PACKAGE_SOURCE_CHANGED");
+   // Security guard MUST execute before activation, with fail-closed trust pin.
+   const signed=guardSignedActivation({root,current,version,digest:release.digest,
+     mode,authorization});
    // Trusted in-process lab fault; never exposed as CLI config or privileged action.
    if(interruptBeforeActivation===true)throw Error("M5_INJECTED_BEFORE_ACTIVATION");
    const decision=nextInstallState(current,version,release.digest,mode);
@@ -206,6 +211,12 @@ function applyRelease({root:givenRoot,version,mode,interruptBeforeActivation=fal
      if(!fs.existsSync(dataPath))fs.mkdirSync(dataPath,{mode:0o700});
      if(fs.lstatSync(dataPath).isSymbolicLink()||!fs.lstatSync(dataPath).isDirectory())
        throw Error("M5_DATA_DIR_UNSAFE");
+     if(signed){
+       decision.state.secure={...signed,
+         previousFloorOrdinal:authorization.floorOrdinal,
+         previousVersionAtSignature:authorization.previousVersion,
+         previousDigestAtSignature:authorization.previousDigest};
+     }
      writeAtomic(root,"state.json",encode(decision.state));
    }
    return {...verifyInstall(root),idempotent:!decision.changed,changed:decision.changed};
