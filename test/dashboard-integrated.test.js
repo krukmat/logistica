@@ -487,3 +487,19 @@ test("M4.1 dashboard HTTP invokes real Property Edge offline ACK/restart/replay"
  assert.equal(result.lab.property.lastEvidence.status,"LAB_PASS");
  assert.equal(result.lab.property.physicalValidated,false);
 }));
+
+test("M4.2 dashboard HTTP action runs Host standalone Edge and common Site Operations",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text(),js=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["host-overlay-panel","m4-host-smoke","m4-host-evidence"])
+   assert.ok(html.includes('id="'+id+'"'),id);
+ assert.match(js,/labAction\("hostSmoke"\)/);
+ await call({command:"mode",mode:"lab"});
+ const result=await call({command:"lab",action:"hostSmoke"});
+ assert.equal(result.httpStatus,200);
+ assert.equal(result.result.status,"LAB_PASS",JSON.stringify(result.result));
+ assert.equal(result.result.checks.RESTART_RESTORES_INCIDENT,true);
+ assert.equal(result.result.checks.MOCK_REPLAY,true);
+ assert.equal(result.lab.host.lastEvidence.status,"LAB_PASS");
+ assert.equal(result.lab.host.lastEvidence.sharedEngine,"src/core/site-operations.js");
+ assert.equal(result.lab.host.physicalValidated,false);
+}));

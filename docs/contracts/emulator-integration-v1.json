@@ -436,6 +436,22 @@
       "implementation": "src/core/property-incidents.js",
       "test": "test/property-overlay.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "M4.2",
+      "mode": "lab",
+      "title": "Host operations offline OPEN and ACK using same Site Operations Core and journal",
+      "controlIds": [
+        "host-overlay-panel",
+        "m4-host-smoke",
+        "m4-host-evidence"
+      ],
+      "actions": [
+        "hostSmoke"
+      ],
+      "implementation": "src/core/site-operations.js",
+      "test": "test/host-overlay.test.js",
+      "hardwareValidated": false
     }
   ]
 }

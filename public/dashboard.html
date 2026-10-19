@@ -170,6 +170,16 @@
           <button id="m4-property-smoke" type="button" class="secondary">Probar Property offline → ACK → reinicio → replay</button>
           <pre id="m4-property-evidence">M4.1 NOT_RUN · sin certificación de dispositivo</pre>
         </div>
+        <div class="lab-detail" id="host-overlay-panel">
+          <h4>M4.2 — Host: incidencia local de alojamiento</h4>
+          <p class="micro">Mismo <code>Site Operations Engine</code>, Supervisor y Journal de Property.
+            Un Edge HTTP independiente supervisa <code>pef-host</code> y verifica
+            incidencia por unidad (OPEN), ACK durable, WAN virtual offline, reapertura,
+            validaciones y replay contra Cloud mock.
+            <strong>LAB_ONLY</strong>; no PMS, huéspedes reales, cgroups Host ni hardware.</p>
+          <button id="m4-host-smoke" type="button" class="secondary">Probar Host offline → ACK → reinicio → replay</button>
+          <pre id="m4-host-evidence">M4.2 NOT_RUN · no certifica infraestructura física</pre>
+        </div>
         <div class="lab-detail workload-panel" id="workload-panel">
           <h4>S — Workload Runtime · proceso local (NO sandbox)</h4>
           <p class="micro">Workload permitido: <code>pef-receiver</code>. El Core valida su manifest, recursos y política offline; el supervisor inicia un proceso Node aislado sólo por proceso. <strong>CPU/RAM, filesystem y red todavía no están aislados por Linux</strong>.</p>
