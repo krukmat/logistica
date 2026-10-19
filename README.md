@@ -264,3 +264,9 @@ El reboot total de la VM Lima ARM64 fue **ejecutado por el operador y validado L
 [CI #39246560682](https://github.com/krukmat/logistica/actions/runs/39246560682) **SUCCESS**: staged Edge release → actual systemd service → shared Core Supervisor → cgroup/netns/chroot isolated Property/Host worker. Both profiles demonstrate durable offline business operations, SIGKILL/restart and persistent journal. Evidence independently schema-verified and exposed via `m56Integration` dashboard contract; artifacts CI only. `npm run m5:integrated:contract` is safe/read-only on the Mac. [Plan](docs/tasks/m5-6-integrated-linux-service.md) · [audit](docs/audit/m5-6-integrated-linux-service-2026-10-19.md).
 
 **LAB ONLY:** root-capable sandbox restricted to disposable GitHub CI, not a production installer; no combined VM OS-reboot test, physical device or external Cloud. Next: M6 Cloud Lite local without new paid infrastructure.
+
+## M6.1 — Cloud Lite Registry local (sin hosting externo)
+
+`npm run m6:registry` inicia un **servidor HTTP real en loopback** y comprueba enrolamiento, autenticación por dispositivo, persistencia de hashes tras reiniciar, rechazo de identidades/credenciales erróneas y del acceso no autorizado. Sin SDK de terceros ni coste nuevo de hosting. Disponible desde `npm run dashboard` → M6.1. `node bin/pef-cloud-lite.js --root /ruta/temporal/privada/existente` ejecuta el servidor independiente con `PEF_CLOUD_LITE_ADMIN_TOKEN` de 64 dígitos hexadecimales generado localmente. [Plan](docs/tasks/m6-cloud-lite-local.md) · [auditoría](docs/audit/m6-1-local-registry-2026-10-19.md).
+
+M6.1 **no reemplaza todavía el Cloud mock**: no hay ingestión/ACK de eventos (M6.2) ni transporte Edge→Cloud autenticado (M6.3); sólo credenciales locales por bearer token, sin TLS/mTLS ni provisión física. El almacenamiento es temporal para el laboratorio, no una base operativa de producción.

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "kind": "PEF_M6_CLOUD_LITE_LAB_PLAN_V1",
+  "scope": "LOCALHOST_ONLY_ZERO_ADDITIONAL_HOSTING",
+  "m61": {
+    "api": [
+      "GET /health",
+      "GET /v1/admin/status",
+      "POST /v1/admin/enroll",
+      "POST /v1/device/authenticate"
+    ],
+    "deviceIdentity": [
+      "siteId",
+      "deviceId",
+      "configRevision"
+    ],
+    "auth": "ADMIN_TOKEN_PLUS_PER_DEVICE_256_BIT_RANDOM_BEARER",
+    "storage": "FSYNC_ATOMIC_JSON_REGISTRY_HASH_ONLY",
+    "realHttpServer": true,
+    "remoteTlsValidated": false,
+    "cloudMockReplaced": false,
+    "eventIngestionAvailable": false,
+    "deviceProvisioningProductionReady": false
+  },
+  "m62": {
+    "objective": "FSYNC_EVENT_INGEST_AND_ACK_AFTER_COMMIT",
+    "state": "PENDING"
+  },
+  "m63": {
+    "objective": "EDGE_HTTP_TRANSPORT_AND_OFFLINE_RECONCILIATION",
+    "state": "PENDING"
+  },
+  "m64": {
+    "objective": "DASHBOARD_AND_X64_ARM64_FAILURE_MATRIX",
+    "state": "PENDING"
+  },
+  "physicalValidated": false
+}

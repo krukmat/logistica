@@ -86,3 +86,7 @@ M3.1–M3.6 están **CLOSED sólo para laboratorio** (incluye configuración tra
 ## M5.6 — systemd + cgroup integration closed in CI lab (2026-10-19)
 
 **CLOSED SOFTWARE LAB ONLY**, [CI #39246560682](https://github.com/krukmat/logistica/actions/runs/39246560682) SUCCESS: ARM64 195/195, x64 194 PASS+1 skip, Linux systemd + Property and Host kernel-sandboxed workers with journal durability/recovery in same CI execution. Dashboard inspection and independent 20-check evidence contract pass. No combined full VM reboot, production service or external Cloud. [Task](tasks/m5-6-integrated-linux-service.md). Next priority **M6 zero-cost Cloud Lite local**, rather than hardware procurement or paid cloud.
+
+## M6 Cloud Lite local iniciado — M6.1 (2026-10-19)
+
+M6.1: registro de dispositivos y autenticación por token en servidor HTTP real loopback, almacenamiento fsynced bajo directorio privado temporal y UI real; **CI acceptance pending**. M6.2 ingest/ACK, M6.3 Edge reconciliation y M6.4 cierre integral pendientes. Coste adicional de hosting **0 EUR**; Cloud mock sigue en otras demos. [Plan](tasks/m6-cloud-lite-local.md) · [auditoría](audit/m6-1-local-registry-2026-10-19.md).

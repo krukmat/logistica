@@ -268,3 +268,7 @@ Control Panel → Laboratorio integrado → **M5.4** valida el renderer real de 
 ## M5.6 — Integrated service inspection (CI-only runtime)
 
 Dashboard → Laboratorio integrado → **M5.6** (`m56Integration`): inspect allowlisted CI Edge entrypoint, systemd service contract, Property and Host CPU/memory/PIDs plans. The local action returns `LAB_PASS_CONTRACT_ONLY` with `localKernelExecution=NOT_RUN_BLOCKED` and **does not activate privileged Mac system services**. Real systemd/kernel composition + restart and data recovery executes inside GitHub-hosted ephemeral Linux CI and is independently verified. [CI #39246560682](https://github.com/krukmat/logistica/actions/runs/39246560682) / [audit](audit/m5-6-integrated-linux-service-2026-10-19.md). The earlier M5.4 'Lima reboot NOT_RUN' note is superseded by the operator's 5/5 LAB_PASS evidence for its separate, Node-only service; M5.6 combined stack has not itself undergone OS reboot.
+
+## M6.1 — Registry Cloud Lite real (local)
+
+En Lab integrado → **M6.1**, la acción `m61Registry` crea un servicio HTTP real de loopback aislado del mock, valida enrolamiento de dos identidades, credenciales aleatorias protegidas por hash SHA-256, reinicio y reautenticación. El dashboard recibe únicamente checks y metadatos sin credenciales. El servicio se cierra y elimina el estado de prueba al finalizar el smoke. El `cloud` del resto del dashboard sigue siendo el **Cloud mock** hasta M6.3; no se supone sustitución. Contrato [Cloud Lite M6](contracts/m6-cloud-lite-local-v1.json), [plan](tasks/m6-cloud-lite-local.md).
