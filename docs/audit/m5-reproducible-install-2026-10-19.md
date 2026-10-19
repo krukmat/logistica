@@ -32,3 +32,17 @@
 | Isolated S3 Linux receiver / prehardware handoff | PASS | PASS gate | Existing CI S3 evidence, **not** installed Property/Host |
 
 **Commit with latest tested M5 source:** `628f839600fb99dadf0778bec8a18662d3cdc3d7`. No operator Mac output yet; that remains an optional local reproduction, not a reason to inflate physical claims. The normal CLI, not the dashboard, is the appropriate tool for a controlled manual temp-root install (system services untouched).
+
+## Mac temporary-path regression — 2026-10-19 (post M5.1/2 CI acceptance)
+
+The operator reported `npm run m5:lab` on macOS returning `{"kind":"PEF_M5_INSTALL_LINUX_LAB_V1","ok":false,"status":"LAB_FAIL","error":"M5_TEMP_ROOT_ONLY"}`. This was a real local failure, **not** a successful Mac smoke.
+
+**Root cause:** macOS exposes `os.tmpdir()` as a path under `/var/folders/...` while `fs.realpathSync()` can return `/private/var/folders/...`. M5's `safeDir()` originally allowed only the lexical `os.tmpdir()` prefix, but returned the canonical root. A subsequent `verifyInstall(canonicalRoot)` rejected its own legitimate working directory with `M5_TEMP_ROOT_ONLY`.
+
+**Change and regression gates:**
+
+- [Fix `e5467506`](https://github.com/krukmat/logistica/commit/e54675061d615651406ba69a1846a36085298464): allow paths under either the exact temporary root alias or its resolved canonical equivalent. Continue to resolve and constrain within the canonical temporary root; symlinks **beneath** the trusted temporary anchor remain denied, as do paths outside both prefixes.
+- [Regression `456062e7`](https://github.com/krukmat/logistica/commit/456062e794032997431b7b9425463a9dffb4fcec): emulate the `/var` → `/private/var` relationship on Linux using a temporary directory alias. Verify install, independent verify, idempotency, upgrade, rollback, foreign-path rejection and symlink traversal rejection using both path spellings.
+- [CI #39235672611](https://github.com/krukmat/logistica/actions/runs/39235672611) **SUCCESS**: native Linux ARM64 **184/184 PASS**, x64 **183 PASS + 1 platform skip**, no failures. The new `M5.1 accepts canonical macOS tmp path after creating under /var alias` test PASS on both. `netns-lab` and `Pre-hardware software handoff` SUCCESS.
+
+**Acceptance boundary:** Linux emulation of the Mac alias confirms the fix in CI, but **a fresh macOS `npm run m5:lab` execution has not yet been reported**. M5.1–M5.2 remain CLOSED **for the Linux software lab scope**; Mac smoke is **PENDING RETEST**, physical M5.3 remains BLOCKED. No Mac system services, kernel resources or real device were modified by the patch.
