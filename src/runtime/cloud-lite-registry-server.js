@@ -4,18 +4,24 @@ const http=require("node:http");
 const {randomBytes,timingSafeEqual}=require("node:crypto");
 const {planEnroll,findRegistered,checkedIdentity}=require("../core/cloud-lite-registry-policy.js");
 const {createFileRegistryStore,digestCredential}=require("../adapters/cloud-lite-registry-file.js");
+const {createCloudLiteEventStore}=require("../adapters/cloud-lite-event-file.js");
+const {validateCloudLiteEvent}=require("../core/cloud-lite-ingest-policy.js");
 function sameSecret(candidate,expected){
  if(typeof candidate!=="string"||typeof expected!=="string"||
     !candidate||!expected)return false;
  const a=Buffer.from(candidate),b=Buffer.from(expected);
  return a.length===b.length&&timingSafeEqual(a,b);
 }
-function createCloudLiteRegistryServer({dir,adminToken,host="127.0.0.1",port=0}={}){
+function createCloudLiteRegistryServer({dir,adminToken,host="127.0.0.1",port=0,enableIngest=false}={}){
  if(host!=="127.0.0.1"||!Number.isInteger(port)||port<0||port>65535)
    throw Error("CLOUD_LITE_LOCALHOST_ONLY");
  if(typeof adminToken!=="string"||!/^[a-f0-9]{64}$/.test(adminToken))
    throw Error("CLOUD_LITE_ADMIN_TOKEN_REQUIRED");
+ if(typeof enableIngest!=="boolean")throw Error("CLOUD_LITE_INVALID_INGEST_OPTION");
  const store=createFileRegistryStore({dir});
+ let eventStore=null;
+ try{if(enableIngest)eventStore=createCloudLiteEventStore({dir:store.root});}
+ catch(e){store.close();throw e;}
  const dummy="0".repeat(64);
  let boundPort=null,closed=false;
  const send=(res,status,data)=>{
@@ -24,12 +30,12 @@ function createCloudLiteRegistryServer({dir,adminToken,host="127.0.0.1",port=0}=
      "X-Frame-Options":"DENY","Content-Security-Policy":"default-src 'none'"});
    res.end(JSON.stringify(data));
  };
- async function body(req){
+ async function body(req,maxBytes=2048){
    if(req.headers["content-type"]?.split(";")[0]!=="application/json")
      throw Error("CLOUD_LITE_JSON_REQUIRED");
    const chunks=[];let count=0;
    for await(const chunk of req){
-     count+=chunk.length;if(count>2048)throw Error("CLOUD_LITE_BODY_TOO_LARGE");
+     count+=chunk.length;if(count>maxBytes)throw Error("CLOUD_LITE_BODY_TOO_LARGE");
      chunks.push(chunk);
    }
    let parsed;
@@ -52,8 +58,39 @@ function createCloudLiteRegistryServer({dir,adminToken,host="127.0.0.1",port=0}=
      const devices=store.read();
      send(res,200,{kind:"PEF_CLOUD_LITE_REGISTRY_STATUS_V1",ok:true,
        registered:devices.length,credentialsPersistedAsHashes:true,
-       ingestionAvailable:false,cloudMockOnly:false,realHttpServer:true,
+       ingestionAvailable:enableIngest,eventsStored:eventStore?.status().stored||0,
+       cloudMockOnly:false,realHttpServer:true,
        physicalValidated:false,remoteTlsValidated:false});return;
+   }
+   if(req.method==="POST"&&req.url==="/v1/device/ingest"&&enableIngest){
+     const provided=req.headers["x-pef-device-token"];
+     if(typeof provided!=="string"||!digestCredential(provided)){
+       send(res,403,{ok:false,durable:false,error:"AUTH_DENIED"});return;
+     }
+     let event;
+     try{event=await body(req,16384);}
+     catch(e){send(res,400,{ok:false,durable:false,error:e.message});return;}
+     const valid=validateCloudLiteEvent(event);
+     if(!valid.ok){send(res,400,{ok:false,durable:false,error:valid.error});return;}
+     const registered=findRegistered(store.read(),valid.scope);
+     const digest=digestCredential(provided);
+     const equal=registered?.credentialHash||dummy;
+     if(!registered||!sameSecret(digest,equal)){
+       send(res,403,{ok:false,durable:false,error:"AUTH_DENIED"});return;
+     }
+     const result=eventStore.ingest(event);
+     if(!result.ok){
+       const status=result.error==="EVENT_ID_CONFLICT"?409:
+         result.error==="CLOUD_LITE_EVENT_STORE_UNSAFE"?503:
+         result.error==="CLOUD_LITE_EVENT_CAPACITY"?507:400;
+       send(res,status,{ok:false,durable:false,error:result.error});return;
+     }
+     send(res,200,{kind:"PEF_CLOUD_LITE_DURABLE_ACK_V1",ok:true,durable:true,
+       eventId:event.eventId,sha256:event.sha256,...valid.scope,
+       duplicate:result.duplicate,fsyncCompleted:!result.duplicate,
+       actualHttpServer:true,localOnly:true,remoteTlsValidated:false,
+       physicalValidated:false});
+     return;
    }
    if(req.method!=="POST"||!["/v1/admin/enroll","/v1/device/authenticate"].includes(req.url)){
      send(res,404,{ok:false,error:"NOT_FOUND"});return;
@@ -112,7 +149,7 @@ function createCloudLiteRegistryServer({dir,adminToken,host="127.0.0.1",port=0}=
    async close(){
      if(closed)return;closed=true;
      try{if(server.listening)await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));}
-     finally{store.close();}
+     finally{try{eventStore?.close();}finally{store.close();}}
    }
  };
 }
