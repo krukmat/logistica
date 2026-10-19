@@ -236,3 +236,9 @@ La acción M3 en el **Laboratorio integrado** ejecuta `runM3LifecycleSmoke` y re
 ## M3.3–M3.4 — Transacción de supervisor y SAFE_MODE
 
 El panel **Laboratorio integrado → M3.3–M3.4** activa `m3Recovery` y lanza un Edge autónomo real aislado. Prueba COMMIT con verificación de salud, rechazo stale revision, ROLLBACK, segundo SIGKILL → SAFE_MODE y recuperación local autenticada. No actúa sobre el daemon existente del usuario ni su WAN; ver [guía](tasks/m3-config-safe-mode.md) y [auditoría CI](audit/m3-config-safe-mode-2026-10-18.md).
+
+## M4.1 — Property: workflow offline end-to-end
+
+`Laboratorio integrado → M4.1` activa `propertySmoke`, que levanta **otro Edge autónomo HTTP real** y el proceso `pef-property` con el mismo Supervisor, resource admission y OS-file journal. Comprueba API autenticada, alerta/ACK fsynced, WAN offline, reapertura e idempotencia, y eventual replay a Cloud mock. `lab.property.lastEvidence` contiene los checks observados y el estado `LAB_PASS|LAB_FAIL`; este escenario no altera la sesión principal del panel. Es visible vía `m4-property-smoke` y está registrado en el [integration gate](contracts/emulator-integration-v1.json).
+
+El backend Property es `NODE_PROCESS_ONLY`; no se ha aplicado cgroup/netns/chroot al nuevo workload ni se ha medido consumo físico. `docs/tasks/m4-property-overlay.md` define contrato y límites.

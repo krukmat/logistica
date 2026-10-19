@@ -216,3 +216,9 @@ npm run m3:bundle:verify-video -- artifacts/m3/<run-dir>
 El vídeo es una reproducción de los registros del mismo ensayo, NO un dispositivo filmado. Requiere ejecución opt-in en CI (m3_video=true) para certificar el artefacto audiovisual. La prueba no demuestra powercut, configuraciones firmadas, Cloud Lite ni hardware. [Tareas y DoD](docs/tasks/m3-operations-evidence.md).
 
 **M3 LAB CLOSED (2026-10-18):** [CI #39157645016](https://github.com/krukmat/logistica/actions/runs/39157645016) SUCCESS, ARM64 160/160 PASS, Linux x64 159 PASS + 1 platform skip, todos los gates de laboratorio y vídeo WebM same-run verificados. [Auditoría M3.5–M3.6](docs/audit/m3-operations-2026-10-18.md). Siguiente: M4 Property/Host con el Core común; M2 Cloud Lite remoto sigue DEFERRED por presupuesto.
+
+## M4.1 — Property overlay (software lab)
+
+El mismo Core de PEF ejecuta ahora un perfil **Property** opcional: `pef-property` (proceso Node allowlisted, Supervisor/health compartidos), alerta de instalación local → evento O1 con fsync → ACK operativo como segundo evento inmutable. La configuración `workload.profile="property"` selecciona el perfil; `receiver` continúa por defecto. `POST/GET /property/incidents` requiere token operador y sólo escucha en localhost. No se crea un journal vertical ni se admite ejecución arbitraria.
+
+En el **dashboard → Laboratorio integrado → M4.1**, ejecutar la prueba para observar WAN sintética desconectada, comandos inválidos/orphan/conflictos rechazados, idempotencia, reapertura con incidente retenido y replay hacia Cloud mock. Código en `src/core/property-incidents.js`, runner real `src/emulator/lab/property-smoke.js`, tests `test/property-overlay.test.js` y [task](docs/tasks/m4-property-overlay.md). No demuestra sensores, sandbox Linux Property, WAN/cloud reales, powercut ni hardware certificado.
