@@ -56,6 +56,11 @@ function createNodeProcessDriver(){
       return {
         pid:ready.pid,isolation:"NODE_PROCESS_ONLY",actualLimitsEnforced:false,
         async health(){return await request("HEALTH");},
+        async metrics(){
+          if(!["pef-property","pef-host"].includes(manifest.workload_id))
+            return {ok:false,error:"METRICS_NOT_SUPPORTED"};
+          return await request("METRICS");
+        },
         async processReceipt(input){
           if(manifest.workload_id!=="pef-receiver")return {ok:false,error:"OPERATION_NOT_ALLOWED"};
           return await request("RECEIPT",input);
