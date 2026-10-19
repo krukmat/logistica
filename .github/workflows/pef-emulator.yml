@@ -57,6 +57,19 @@ jobs:
         run: npm run m7:mtls > "$RUNNER_TEMP/pef-m73-mtls-x64.json"
       - name: M7.4 M3 recovery and tamper-evident journal x64
         run: npm run m7:ops > "$RUNNER_TEMP/pef-m74-ops-x64.json"
+      - name: M7.5 real HTTP failure-cycle short stress x64
+        run: npm run m7:stress > "$RUNNER_TEMP/pef-m75-short-x64.json"
+      - name: M7.6 truthful lab vs field readiness gate x64
+        run: npm run m7:pilot > "$RUNNER_TEMP/pef-m76-gate-x64.json"
+      - name: Upload M7.5 and M7.6 lab-only evidence x64
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pef-m75-m76-x64
+          path: |
+            ${{ runner.temp }}/pef-m75-short-x64.json
+            ${{ runner.temp }}/pef-m76-gate-x64.json
+          if-no-files-found: error
       - name: Upload M7.4 recovery audit x64
         if: always()
         uses: actions/upload-artifact@v4
@@ -250,6 +263,19 @@ jobs:
         run: npm run m7:mtls > "$RUNNER_TEMP/pef-m73-mtls-arm64.json"
       - name: M7.4 native ARM64 recovery and correlated durable event ledger
         run: npm run m7:ops > "$RUNNER_TEMP/pef-m74-ops-arm64.json"
+      - name: M7.5 native ARM64 real HTTP failure-cycle short stress
+        run: npm run m7:stress > "$RUNNER_TEMP/pef-m75-short-arm64.json"
+      - name: M7.6 native ARM64 lab vs field pilot gate
+        run: npm run m7:pilot > "$RUNNER_TEMP/pef-m76-gate-arm64.json"
+      - name: Upload M7.5 and M7.6 lab-only evidence ARM64
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pef-m75-m76-arm64
+          path: |
+            ${{ runner.temp }}/pef-m75-short-arm64.json
+            ${{ runner.temp }}/pef-m76-gate-arm64.json
+          if-no-files-found: error
       - name: Upload M7.4 recovery audit ARM64
         if: always()
         uses: actions/upload-artifact@v4
