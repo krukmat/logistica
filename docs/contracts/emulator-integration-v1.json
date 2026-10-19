@@ -676,6 +676,38 @@
       "implementation": "src/runtime/m74-operational-smoke.js",
       "test": "test/m74-operations.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "M7.5",
+      "mode": "lab",
+      "title": "Short real Cloud Lite 2-cycle load/replay and resource measures (not 2h)",
+      "controlIds": [
+        "m75-stress-panel",
+        "m75-stress-run",
+        "m75-stress-evidence"
+      ],
+      "actions": [
+        "m75Stress"
+      ],
+      "implementation": "src/runtime/m75-endurance.js",
+      "test": "test/m75-endurance.test.js",
+      "hardwareValidated": false
+    },
+    {
+      "task": "M7.6",
+      "mode": "lab",
+      "title": "Evidence-backed conservative GO only for software lab, field pilot remains blocked",
+      "controlIds": [
+        "m76-pilot-panel",
+        "m76-pilot-run",
+        "m76-pilot-evidence"
+      ],
+      "actions": [
+        "m76Pilot"
+      ],
+      "implementation": "src/runtime/m76-pilot-gate.js",
+      "test": "test/m76-pilot.test.js",
+      "hardwareValidated": false
     }
   ]
 }

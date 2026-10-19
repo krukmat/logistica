@@ -322,6 +322,24 @@
           <button id="m74-operations-run" class="secondary" type="button">Probar recuperación y evidencia M7.4</button>
           <pre id="m74-operations-evidence">M7.4 NOT_RUN · auditoría durable</pre>
         </div>
+        <div class="lab-detail" id="m75-stress-panel">
+          <h4>M7.5 — Resiliencia corta y mediciones</h4>
+          <p class="micro">Repite la matriz HTTP Cloud Lite real y mide CPU/RSS,
+          tiempos por ciclo y checks de persistencia y replay. El ensayo es corto;
+          <strong>no representa 2–24 h de resistencia ni retención de 72 h.</strong>
+          Para duración larga existe runner opt-in por CLI.</p>
+          <button id="m75-stress-run" class="secondary" type="button">Ejecutar smoke corto M7.5</button>
+          <pre id="m75-stress-evidence">M7.5 NOT_RUN · duración larga pendiente</pre>
+        </div>
+        <div class="lab-detail" id="m76-pilot-panel">
+          <h4>M7.6 — Decisión GO/NO-GO de piloto</h4>
+          <p class="micro">Ejecuta evidencias reales de M7.1–M7.5 y evalúa
+          prerequisitos físicos y de resistencia sin inventar datos.
+          Puede habilitar sólo LAB; no autoriza piloto físico hasta resolver
+          los blockers pendientes. <strong>Gate fail-closed.</strong></p>
+          <button id="m76-pilot-run" class="secondary" type="button">Evaluar readiness M7.6</button>
+          <pre id="m76-pilot-evidence">M7.6 NOT_RUN · field pilot NO-GO por defecto</pre>
+        </div>
         <div class="lab-detail workload-panel" id="workload-panel">
           <h4>S — Workload Runtime · proceso local (NO sandbox)</h4>
           <p class="micro">Workload permitido: <code>pef-receiver</code>. El Core valida su manifest, recursos y política offline; el supervisor inicia un proceso Node aislado sólo por proceso. <strong>CPU/RAM, filesystem y red todavía no están aislados por Linux</strong>.</p>

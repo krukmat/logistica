@@ -727,3 +727,27 @@ test("M7.4 dashboard HTTP produces durable authenticated M3 operational recovery
  assert.equal(response.result.checks.M3_RECOVERY_REUSED,true);
  assert.equal(response.lab.m74Operations.lastEvidence.status,"LAB_PASS");
 }));
+
+test("M7.5 dashboard runs bounded stress without falsely passing multi-hour endurance",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text(),client=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["m75-stress-panel","m75-stress-run","m75-stress-evidence"])assert.ok(html.includes('id="'+id+'"'));
+ assert.match(client,/labAction\("m75Stress"\)/);
+ await call({command:"mode",mode:"lab"});
+ const response=await call({command:"lab",action:"m75Stress"});
+ assert.equal(response.httpStatus,200);
+ assert.equal(response.result.status,"LAB_PASS",JSON.stringify(response.result));
+ assert.equal(response.result.twoHourSoakValidated,false);
+ assert.equal(response.lab.m75Stress.lastEvidence.ok,true);
+}));
+test("M7.6 dashboard emits software-lab-only and blocks field pilot without hardware",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text(),client=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["m76-pilot-panel","m76-pilot-run","m76-pilot-evidence"])assert.ok(html.includes('id="'+id+'"'));
+ assert.match(client,/labAction\("m76Pilot"\)/);
+ await call({command:"mode",mode:"lab"});
+ const response=await call({command:"lab",action:"m76Pilot"});
+ assert.equal(response.httpStatus,200);
+ assert.equal(response.result.status,"LAB_PASS_GATE_ONLY",JSON.stringify(response.result));
+ assert.equal(response.result.decision,"GO_SOFTWARE_LAB_ONLY");
+ assert.equal(response.result.fieldPilotAuthorized,false);
+ assert.equal(response.lab.m76Pilot.lastEvidence.status,"LAB_PASS_GATE_ONLY");
+}));
