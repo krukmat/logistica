@@ -5,7 +5,7 @@ const fs=require("node:fs"),path=require("node:path"),os=require("node:os");
 const {createHash,randomUUID}=require("node:crypto");
 const {nextInstallState,validVersion}=require("../core/install-policy.js");
 const PROJECT=path.resolve(__dirname,"../..");
-const INCLUDED=["bin/pef-edge.js","package.json"];
+const INCLUDED=["bin/pef-edge.js","bin/pef-m56-edge.js","package.json"];
 const DIRS=["src/core","src/runtime","src/adapters","src/workloads","src/emulator"];
 const sha=data=>createHash("sha256").update(data).digest("hex");
 const encode=v=>Buffer.from(JSON.stringify(v,null,2)+"\n");
