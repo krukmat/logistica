@@ -572,3 +572,18 @@ test("M5.4 dashboard HTTP validates real systemd unit composition but never acti
  assert.equal(response.lab.m54Systemd.systemdActivatedLocally,false);
  assert.equal(response.lab.m54Systemd.fullVmRebootValidated,false);
 }));
+
+test("M5.5 dashboard reports per-overlay isolation budgets and CI-only kernel state",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text(),client=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["m55-isolation-panel","m55-isolation-run","m55-isolation-evidence"])
+  assert.ok(html.includes('id="'+id+'"'),id);
+ assert.match(client,/labAction\("m55Isolation"\)/);
+ await call({command:"mode",mode:"lab"});
+ const response=await call({command:"lab",action:"m55Isolation"});
+ assert.equal(response.httpStatus,200);
+ assert.equal(response.result.status,"LAB_PASS_CONTRACT_ONLY");
+ assert.equal(response.result.profiles.property.cpuMax,"15000 100000");
+ assert.equal(response.result.profiles.host.cpuMax,"18000 100000");
+ assert.equal(response.result.linuxKernelLimitsObservedHere,false);
+ assert.equal(response.lab.m55Isolation.macKernelTest,"NOT_RUN_BLOCKED");
+}));

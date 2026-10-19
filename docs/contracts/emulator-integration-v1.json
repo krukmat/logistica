@@ -516,6 +516,22 @@
       "implementation": "src/runtime/m5-systemd-unit.js",
       "test": "test/m5-systemd.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "M5.5",
+      "mode": "lab",
+      "title": "Property Host actual Linux isolation driver CI-only contract inspection",
+      "controlIds": [
+        "m55-isolation-panel",
+        "m55-isolation-run",
+        "m55-isolation-evidence"
+      ],
+      "actions": [
+        "m55Isolation"
+      ],
+      "implementation": "src/runtime/m5-isolation-contract.js",
+      "test": "test/m5-isolation.test.js",
+      "hardwareValidated": false
     }
   ]
 }

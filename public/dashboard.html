@@ -222,6 +222,16 @@
           <button id="m54-systemd-run" class="secondary" type="button">Validar unidad systemd M5.4</button>
           <pre id="m54-systemd-evidence">M5.4 NOT_RUN · systemd sólo en CI/VM</pre>
         </div>
+        <div class="lab-detail" id="m55-isolation-panel">
+          <h4>M5.5 — Aislamiento Linux Property y Host</h4>
+          <p class="micro">Muestra manifests de aislamiento por perfil y la ruta del harness.
+          El driver Linux sólo se activa en GitHub Actions efímero: cgroup v2, netns,
+          chroot y UID 65534, operaciones IPC y journal host fsync. Este panel no ejecuta
+          comandos kernel en macOS: resultados medidos sólo en artifact CI,
+          no confundir con un aislamiento real local ni validación física.</p>
+          <button id="m55-isolation-run" class="secondary" type="button">Inspeccionar política de aislamiento M5.5</button>
+          <pre id="m55-isolation-evidence">M5.5 NOT_RUN · evidencias kernel sólo CI</pre>
+        </div>
         <div class="lab-detail workload-panel" id="workload-panel">
           <h4>S — Workload Runtime · proceso local (NO sandbox)</h4>
           <p class="micro">Workload permitido: <code>pef-receiver</code>. El Core valida su manifest, recursos y política offline; el supervisor inicia un proceso Node aislado sólo por proceso. <strong>CPU/RAM, filesystem y red todavía no están aislados por Linux</strong>.</p>
