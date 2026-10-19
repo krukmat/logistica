@@ -45,7 +45,7 @@
   },
   "m64": {
     "objective": "DASHBOARD_AND_X64_ARM64_FAILURE_MATRIX",
-    "state": "IMPLEMENTED_CI_FINAL_ACCEPTANCE_PENDING",
+    "state": "CLOSED_SOFTWARE_LAB",
     "checksPerProfile": [
       "OFFLINE_LOCAL_FSYNC",
       "CLOUD_OUTAGE_RETAINS_JOURNAL",
@@ -62,7 +62,20 @@
     ],
     "evidenceKind": "PEF_M64_CLOUD_LITE_FAULT_MATRIX_V1",
     "network": "LOCALHOST_ONLY",
-    "physicalValidated": false
+    "physicalValidated": false,
+    "ciRunId": 39272167885,
+    "evidence": {
+      "linuxArm64": {
+        "pass": 210,
+        "fail": 0
+      },
+      "linuxX64": {
+        "pass": 209,
+        "skip": 1,
+        "fail": 0
+      }
+    }
   },
-  "physicalValidated": false
+  "physicalValidated": false,
+  "status": "CLOSED_SOFTWARE_LAB_ONLY"
 }

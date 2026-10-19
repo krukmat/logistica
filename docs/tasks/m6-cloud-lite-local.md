@@ -1,6 +1,6 @@
 # M6 — Cloud Lite local: identidad, persistencia y sincronización real
 
-**2026-10-19 · main · M6.1–M6.4 IMPLEMENTED, CI LAB_PASS (M6.4 final CI gate pending verification at document creation).**
+**2026-10-19 · main · M6.1–M6.4 CLOSED — SOFTWARE LAB ONLY, full CI x64/ARM64 validated**
 
 ## Objetivo
 
@@ -28,7 +28,7 @@ flowchart LR
 | **M6.3.b** | M6.3.a | Dos Edge autónomos en serie, WAN sintética offline, ACK perdido, reenvío y restart | CLOSED SOFTWARE LAB |
 | **M6.3.c** | M6.3.b | Dashboard `m63Sync` + CI HTTP test | CLOSED SOFTWARE LAB, [CI #39271176439](https://github.com/krukmat/logistica/actions/runs/39271176439) |
 | **M6.4.a** | M6.3 | Matriz con caída Cloud, token inválido, ACK falsificado, dedup y Edge reopen | IMPLEMENTED, CI [#39271578783](https://github.com/krukmat/logistica/actions/runs/39271578783) PASS |
-| **M6.4.b** | M6.4.a | Dashboard `m64Matrix`, consola `m6:matrix`, CI x64/ARM64 artifacts | IMPLEMENTED; final CI acceptance being checked |
+| **M6.4.b** | M6.4.a | Dashboard `m64Matrix`, consola `m6:matrix`, CI x64/ARM64 artifacts | CLOSED SOFTWARE LAB; [CI #39272167885](https://github.com/krukmat/logistica/actions/runs/39272167885) SUCCESS |
 
 ## Operación del laboratorio
 
@@ -52,3 +52,7 @@ Cada smoke usa directorios privados de `os.tmpdir()`, crea un servidor HTTP `127
 - **Coste adicional de infraestructura:** 0 EUR al ejecutarse localmente; cuotas de GitHub Actions siguen sujetas al plan. M5.3 físico sigue BLOCKED. No se requiere VM para M6.
 
 [Auditoría M6.1](../audit/m6-1-local-registry-2026-10-19.md) · [Auditoría M6.2–M6.4](../audit/m6-2-4-cloud-lite-local-2026-10-19.md) · [Contrato](../contracts/m6-cloud-lite-local-v1.json).
+
+## Aceptación final
+
+[CI #39272167885](https://github.com/krukmat/logistica/actions/runs/39272167885) SUCCESS — native Linux ARM64 **210/210 PASS**, Linux x64 **209 PASS + 1 platform skip**, 0 tests fallidos. HTTP dashboard `m63Sync` y `m64Matrix` PASS; procesos independientes `npm run m6:sync` y `npm run m6:matrix` PASS; artifact [x64](https://github.com/krukmat/logistica/actions/runs/39272167885/artifacts/12196022306), [ARM64](https://github.com/krukmat/logistica/actions/runs/39272167885/artifacts/12194929270). `netns-lab`, servicio systemd M5.4 y prehardware gate conservan SUCCESS. **M6 CLOSED SOFTWARE LAB ONLY**; no se afirma TLS remoto, hardware, Cloud público, powercut físico, PKI ni 72h.

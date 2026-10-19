@@ -94,3 +94,5 @@ M6.1: registro de dispositivos y autenticación por token en servidor HTTP real 
 ## Cloud Lite M6 — avance laboratorio, 2026-10-19
 
 M6.1/M6.2/M6.3 CLOSED SOFTWARE LAB (registry, ingesta durable y Edge real → HTTP Cloud Lite con HMAC/replay), M6.4 matriz real Property+Host PASS en CI #39271578783, integración dashboard/artefactos en verificación final. Cloud legacy mock sigue en demos antiguas; nuevo flujo no lo utiliza. Sin hosting ni hardware físico. Véase [plan](tasks/m6-cloud-lite-local.md).
+
+**M6 closure:** M6.1–M6.4 CLOSED SOFTWARE LAB ONLY tras [CI #39272167885](https://github.com/krukmat/logistica/actions/runs/39272167885): ARM64 210 PASS, x64 209 PASS+1 skip, tablero y CLI x64/ARM64 con artifacts. El estado de verificación pendiente de líneas anteriores queda supersedido. Aún no hay cloud externo, costes nuevos de hosting, TLS remoto ni hardware físico. [Task](tasks/m6-cloud-lite-local.md).

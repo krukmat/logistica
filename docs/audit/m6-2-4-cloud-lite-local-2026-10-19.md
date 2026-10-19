@@ -5,7 +5,7 @@
 - **M6.2:** `test/m62-ingest.test.js` y `npm run m6:ingest`, HTTP real, sobre Core, ingest append-only con fsync y directorio durable, dedup y fail-closed en corrupción; [CI #39263462132](https://github.com/krukmat/logistica/actions/runs/39263462132) SUCCESS.
 - **M6.3:** `src/runtime/m63-edge-cloud-lite-smoke.js` + `test/m63-sync.test.js` y acción dashboard `m63Sync`. Property y Host reales sobre `127.0.0.1`, WAN sintética desconectada, fallos en ACK poscommit, retry dedup y journal reopening. [CI #39271176439](https://github.com/krukmat/logistica/actions/runs/39271176439) SUCCESS.
 - **M6.4 primera matriz:** `src/runtime/m64-cloud-lite-matrix.js` + `test/m64-matrix.test.js`, doce checks de los dos perfiles + tres gates previos. Cubren pérdida de conexión real HTTP al detener Cloud, reabrir con registry persistido, credencial errónea sin commit, prueba HMAC adulterada después de commit con cursor Edge conservado, deduplicación y reopen del Edge. [CI #39271578783](https://github.com/krukmat/logistica/actions/runs/39271578783) SUCCESS.
-- **M6.4 integración final:** nueva acción dashboard `m64Matrix`, `npm run m6:matrix`, CI artifacts `m6-cloud-lite-complete-x64` y `m6-cloud-lite-complete-arm64`; *la última ejecución CI debe confirmarse antes de declarar M6.4 CLOSED*.
+- **M6.4 integración final:** nueva acción dashboard `m64Matrix`, `npm run m6:matrix`, CI artifacts `m6-cloud-lite-complete-x64` y `m6-cloud-lite-complete-arm64`; **confirmado** en [CI #39272167885](https://github.com/krukmat/logistica/actions/runs/39272167885) SUCCESS.
 
 ## Alcance y exactitud
 
@@ -14,3 +14,9 @@ La autenticación de dispositivo se realiza con bearer tokens aleatorios sobre H
 M6.3/M6.4 no borran `createLabCloudReplica`: los mocks siguen disponibles en escenas legacy. La nueva matriz usa por separado un backend HTTP y un Edge real. No se proclama soporte de hosting público, flota operativa, PKI/rotación de credenciales, durabilidad ante powercut físico, 72 horas ni manejo remoto de hardware.
 
 **Change:** added · REQ-CLO-01, REQ-STA-01/02, REQ-SEC-01/02, REQ-LOC-01 · classification CORE protocol, MODULE service/transport, CONFIG local lab, RESOURCE bounded ledger · risks physical storage, TLS unaudited, failure-injection simulated WAN.
+
+## M6.4 DoD — aceptación final
+
+[GitHub Actions #39272167885](https://github.com/krukmat/logistica/actions/runs/39272167885) **SUCCESS**: ARM64 210 PASS/0 fail; x64 209 PASS, 1 skip/0 fail; ambos tests de dashboard M6.3 y M6.4 PASS; comandos CLI `npm run m6:sync` y `npm run m6:matrix` ejecutados y PASS en ambas arquitecturas. Artefactos preservados: [M6 x64](https://github.com/krukmat/logistica/actions/runs/39272167885/artifacts/12196022306) y [M6 ARM64](https://github.com/krukmat/logistica/actions/runs/39272167885/artifacts/12194929270); netns Linux y systemd previos SUCCESS, prehardware SUCCESS.
+
+**Decisión:** M6.1, M6.2, M6.3 y M6.4 **CLOSED SOFTWARE LAB ONLY**. El coste adicional de hosting es cero; puede haber cuota/consumo de CI del plan. No certificar TLS remoto, Cloud público, test power-cut ni dispositivo físico. Los tests usan Edge real y Cloud Lite real en localhost; las demos antiguas mantienen el mock.
