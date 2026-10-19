@@ -1,6 +1,6 @@
 # M4.4 — Auditoría de cierre software del MVP PEF
 
-**Fecha:** 2026-10-19 · **Repositorio:** krukmat/logistica · **Rama:** main · **Estado:** IMPLEMENTED, CI final pendiente.
+**Fecha:** 2026-10-19 · **Repositorio:** krukmat/logistica · **Rama:** main · **Estado:** CLOSED — SOFTWARE LAB ONLY. CI #39226414601 SUCCESS.
 
 ## Proceso y gates
 
@@ -13,7 +13,7 @@
 
 ## Resultado de CI
 
-**Pendiente de verificar último commit de implementación y documentación.** No atribuir PASS antes de los jobs terminales. Fuente: `.github/workflows/pef-emulator.yml`. El workflow carga artifacts `m4-integrated-evidence-x64` y `m4-integrated-evidence-arm64` con datos de un run por arquitectura.
+**CI #39226414601** ([enlace](https://github.com/krukmat/logistica/actions/runs/39226414601)): todos los jobs requeridos SUCCESS. Node ARM64 **178/178** PASS; Linux x64 **177 PASS / 1 skip**. El test `M4.4.1/2 one real Property+Host+M4.3 run builds SHA256 bundle and rejects tampering` y el HTTP dashboard E2E M4.4 PASS en ambos. El paso separado CLI creó un bundle nuevo con `m4:bundle`, verificó SHA256 con `m4:bundle:verify` y publicó artifacts **[x64](https://github.com/krukmat/logistica/actions/runs/39226414601/artifacts/12173203985)** y **[ARM64](https://github.com/krukmat/logistica/actions/runs/39226414601/artifacts/12173842813)**. `netns-lab` y `Pre-hardware software handoff` SUCCESS. M1/M3 video jobs omitidos intencionadamente. Los artifacts de distintas arquitecturas corresponden a **runs internos diferentes** (cada uno coherente consigo mismo), no a una única ejecución trans-arquitectura.
 
 ## Evaluación técnica
 
@@ -23,4 +23,11 @@
 - No hay confianza criptográfica independiente de fuente: el SHA256 y el manifiesto pueden ser regenerados por el productor de los archivos.
 - No hay certificación de cgroups Host/Property, 72 horas de persistencia, WAN/Cloud reales, PKI/OTA, powercut, hardware, cliente piloto ni SLA. M5 queda pendiente, sin compra ni gasto autorizado.
 
-**Decision:** cierre de M4 únicamente en laboratorio si CI x64, ARM64, netns/prehardware y prueba HTTP/digest completan sin fallos; no autoriza producción.
+**Decision:** M4.4.1–M4.4.3 y bloque M4 **CLOSED — SOFTWARE LAB ONLY**. Se cumplieron los gates x64, ARM64, netns/prehardware, dashboard y verificador. No autoriza producción, contratación ni compra. M5 prepara el despliegue y ensayos físicos, de forma independiente.
+
+## Resultado final trazable
+
+- Commit funcional verificado: `91b5c52b9700d65a4672b8cebd2ccf3d907577a0`. Documentación posterior no cambia la lógica ejecutable.
+- `M4_BUNDLE_VERIFIED_V1`: integridad `SHA256_NOT_SIGNATURE`; 4 archivos de contenido con digest; 92 controles de la misma ejecución para cada artifact.
+- Operador Mac: **NOT_RUN/NOT_REPORTED** para `npm run m4:bundle` al cerrar este documento; no atribuirle los resultados del runner GitHub.
+- Próximos riesgos de producto: kernel enforcement real para Property/Host, budget físico y energía, capacidad 72h, powercut, boot en dispositivo, WAN/Cloud remoto y seguridad de aprovisionamiento.

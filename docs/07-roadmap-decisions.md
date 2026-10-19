@@ -210,3 +210,5 @@ M4.3.1–M4.3.3 **CLOSED SOFTWARE LAB ONLY** con evidencia CI [#39218335525](htt
 ## M4.4 — Integración de evidencia software (2026-10-19)
 
 El bundle M4 combina Property/Host y la matriz M4.3 **sin duplicar Core**. Pruebas negativas de adulteración, resumen/HTML regenerable, hash SHA256 **no firmado**, dashboard HTTP `m4Integrated` y artifacts x64/ARM64. Aún pendiente aceptar CI final al publicar documentación. [Tasks](tasks/m4-integrated-closure.md) · [auditoría](audit/m4-integrated-closure.md). Tras el cierre LAB, priorizar M5 instalación y pruebas físicas; no convertir artifact reproducible en evidencia de powercut/hardware/producto.
+
+**Cierre LAB M4 completo:** [CI #39226414601](https://github.com/krukmat/logistica/actions/runs/39226414601) SUCCESS; 178 ARM64 PASS, 177 x64 PASS y un skip; artifacts x64/ARM64 con verificador de hashes. M4.1–M4.4 quedan **CLOSED SOFTWARE LAB ONLY**. El gate prehardware no autoriza producto físico; M5 permanece pendiente.

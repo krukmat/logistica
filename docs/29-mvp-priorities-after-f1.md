@@ -67,4 +67,6 @@ M3.1–M3.6 están **CLOSED sólo para laboratorio** (incluye configuración tra
 
 ## M4.4 — Demostración y evidencia integral (2026-10-19)
 
-**IMPLEMENTED — CI del último commit pendiente:** orquestación de los M4.1–M4.3 ya validados, bundle reproducible con SHA256/HTML/NDJSON y pruebas de tampering, dashboard real y artifacts CI x64/ARM64. [Tasks](tasks/m4-integrated-closure.md), [auditoría](audit/m4-integrated-closure.md). El cierre de M4 será exclusivamente **software lab**; M5 debe encargarse del dispositivo, durabilidad real, kernel isolation de Property/Host y capacidad económica. M2 Cloud Lite externo permanece DEFERRED.
+**CLOSED — SOFTWARE LAB ONLY, CI #39226414601 SUCCESS:** orquestación de los M4.1–M4.3 ya validados, bundle reproducible con SHA256/HTML/NDJSON y pruebas de tampering, dashboard real y artifacts CI x64/ARM64. [Tasks](tasks/m4-integrated-closure.md), [auditoría](audit/m4-integrated-closure.md). El cierre de M4 será exclusivamente **software lab**; M5 debe encargarse del dispositivo, durabilidad real, kernel isolation de Property/Host y capacidad económica. M2 Cloud Lite externo permanece DEFERRED.
+
+**Aceptación M4 completa:** [CI #39226414601](https://github.com/krukmat/logistica/actions/runs/39226414601) ARM64 178/178, x64 177 pass +1 skip; bundle SHA256 verificado en ambos y HTTP dashboard PASS. M4.1–M4.4 LAB CLOSED, no device/production GO. [Auditoría de cierre](audit/m4-integrated-closure.md).

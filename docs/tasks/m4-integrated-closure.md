@@ -1,6 +1,6 @@
 # M4.4 — Demonstración integral y cierre de M4 software
 
-**Fecha:** 2026-10-19 · **Rama:** main · **Estado:** IMPLEMENTED — pendiente aceptación del último pipeline CI.
+**Fecha:** 2026-10-19 · **Rama:** main · **Estado:** M4.4.1–M4.4.3 CLOSED — SOFTWARE LAB ONLY. CI #39226414601 SUCCESS.
 
 ## Alcance
 
@@ -8,15 +8,15 @@ No añadir nuevos componentes de Core. Orquestar M4.1 Property y M4.2 Host media
 
 | ID | Dependencia | Entregable/criterio DoD | Estado |
 | --- | --- | --- | --- |
-| M4.4.1.a | M4.1/M4.2 | Ejecución única secuencial con identidades Edge distintas por vertical | IMPLEMENTED |
-| M4.4.1.b | M4.3 | Paridad, crash real Node, recuperación, ACK, fsync, fallos y replay mock | IMPLEMENTED |
-| M4.4.1.c | .1.a/.1.b | Report LAB_PASS solo si todos los checks obligatorios pasan | IMPLEMENTED |
-| M4.4.2.a | M4.4.1 | report.json, events.ndjson (aserciones), metadata de misma ejecución | IMPLEMENTED |
-| M4.4.2.b | .2.a | manifest SHA256, SHA256SUMS y verifier sin confianza en navegador | IMPLEMENTED |
-| M4.4.2.c | .2.b | summary.md y HTML estático regenerables, sin scripts ni red | IMPLEMENTED |
-| M4.4.3.a | M4.4.2 | Dashboard botón m4Integrated → API real → paquete temporal verificable y estado | IMPLEMENTED |
-| M4.4.3.b | .3.a | CI x64/ARM64, prueba de alteración/archivo ausente y artifact por plataforma | IMPLEMENTED — CI pendiente |
-| M4.4.3.c | .3.b | README, roadmap, auditoría; no elevar un PASS virtual a device/production | DOCUMENTED — CI pendiente |
+| M4.4.1.a | M4.1/M4.2 | Ejecución única secuencial con identidades Edge distintas por vertical | CLOSED LAB |
+| M4.4.1.b | M4.3 | Paridad, crash real Node, recuperación, ACK, fsync, fallos y replay mock | CLOSED LAB |
+| M4.4.1.c | .1.a/.1.b | Report LAB_PASS solo si todos los checks obligatorios pasan | CLOSED LAB |
+| M4.4.2.a | M4.4.1 | report.json, events.ndjson (aserciones), metadata de misma ejecución | CLOSED LAB |
+| M4.4.2.b | .2.a | manifest SHA256, SHA256SUMS y verifier sin confianza en navegador | CLOSED LAB |
+| M4.4.2.c | .2.b | summary.md y HTML estático regenerables, sin scripts ni red | CLOSED LAB |
+| M4.4.3.a | M4.4.2 | Dashboard botón m4Integrated → API real → paquete temporal verificable y estado | CLOSED LAB |
+| M4.4.3.b | .3.a | CI x64/ARM64, prueba de alteración/archivo ausente y artifact por plataforma | CLOSED LAB |
+| M4.4.3.c | .3.b | README, roadmap, auditoría; no elevar un PASS virtual a device/production | CLOSED LAB |
 
 ## Implementación
 
@@ -45,3 +45,7 @@ También `npm run m4:bundle -- --output-root /ruta/absoluta`. El runner falla ce
 Se exigen checks de Property **13/13**, Host **14/14**, M4.3 **65/65**; total **92 aserciones**, aunque contadores específicos del Core/otros gates pueden cambiar separadamente. Cada overlay queda en `NODE_PROCESS_ONLY`, `actualLimitsEnforced=false`; no Cloud remoto, WAN física, PKI, aislamiento kernel Property/Host, powercut, retención 72h, sensores, PMS o certificación de producto. El porcentaje de LOC reutilizado se refiere solo a muestra elegida M4.3, no al producto.
 
 **Requisitos:** REQ-LOC-01, REQ-WRK-01/02/03, REQ-STA-01/02/03, REQ-OBS-01. **Change:** added evidence integration. **Classification:** MODULE + CONFIG; ningún Core nuevo. **Evidence:** [auditoría](../audit/m4-integrated-closure.md), workflow `.github/workflows/pef-emulator.yml`. M5 instalación e integración de dispositivo requiere gate independiente.
+
+### Registro de aceptación CI (2026-10-19)
+
+Se verificó que `npm run m4:bundle -- --output-root artifacts/m4-ci` generó el paquete y `npm run m4:bundle:verify -- "$bundle"` lo revalidó en el runner. ARM64 ejecutó el mismo flujo independientemente. [CI #39226414601](https://github.com/krukmat/logistica/actions/runs/39226414601): `emulator`, `arm64-isa`, `netns-lab`, `Pre-hardware software handoff` **SUCCESS**. Ambos tests nuevos (bundle tamper y dashboard HTTP) PASS en las dos arquitecturas. Artifacts: [x64](https://github.com/krukmat/logistica/actions/runs/39226414601/artifacts/12173203985) y [ARM64](https://github.com/krukmat/logistica/actions/runs/39226414601/artifacts/12173842813). **No hay smoke M4.4 reportado todavía desde el Mac del operador.**
