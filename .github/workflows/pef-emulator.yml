@@ -57,6 +57,18 @@ jobs:
           name: m4-commonality-lab-${{ github.run_id }}
           path: ${{ runner.temp }}/pef-m4-commonality.json
           if-no-files-found: error
+      - name: M4.4 integrated Property Host failure matrix SHA256 bundle
+        run: |
+          npm run m4:bundle -- --output-root artifacts/m4-ci
+          bundle="$(find artifacts/m4-ci -mindepth 1 -maxdepth 1 -type d | head -1)"
+          test -n "$bundle"
+          npm run m4:bundle:verify -- "$bundle"
+      - name: Upload M4.4 same-run verified evidence (x64 lab-only)
+        uses: actions/upload-artifact@v4
+        with:
+          name: m4-integrated-evidence-x64
+          path: artifacts/m4-ci
+          if-no-files-found: error
       - name: Pre-device port contract rehearsal
         run: npm run ports:conformance -- --output "$RUNNER_TEMP/pef-predevice-ports.json"
       - name: Upload predevice evidence
@@ -156,6 +168,18 @@ jobs:
         run: bash -n scripts/arm64-vm/lima.sh scripts/arm64-vm/guest-run.sh scripts/arm64-vm/guest-network-lab.sh scripts/arm64-vm/guest-d3.sh scripts/arm64-vm/guest-load.sh scripts/arm64-vm/guest-compare.sh scripts/arm64-vm/guest-e1-e2.sh scripts/arm64-vm/guest-e5.sh scripts/arm64-vm/guest-f1-f2.sh
       - name: ARM64 Core test suite
         run: npm test
+      - name: M4.4 ARM64 integrated lab-only bundle and SHA256 verification
+        run: |
+          npm run m4:bundle -- --output-root artifacts/m4-arm64-ci
+          bundle="$(find artifacts/m4-arm64-ci -mindepth 1 -maxdepth 1 -type d | head -1)"
+          test -n "$bundle"
+          npm run m4:bundle:verify -- "$bundle"
+      - name: Upload M4.4 native ARM64 evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: m4-integrated-evidence-arm64
+          path: artifacts/m4-arm64-ci
+          if-no-files-found: error
       - name: ARM64 ISA golden parity and journal
         run: |
           mkdir -p "$RUNNER_TEMP/pef-arm64-data"
