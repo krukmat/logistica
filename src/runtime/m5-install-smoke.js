@@ -146,4 +146,4 @@ async function runM5InstallSmoke({linuxRequired=false}={}){
    fs.rmSync(root,{recursive:true,force:true});
  }
 }
-module.exports={runM5InstallSmoke};
+module.exports={runM5InstallSmoke,boot,halt,request};
