@@ -10,7 +10,7 @@ const {openRuntimeBackend}=require("./backend-registry.js");
 const {createWorkloadManager}=require("../core/workload-manager.js");
 const {createWorkloadSupervisor}=require("../core/workload-supervisor.js");
 const {createNodeProcessDriver}=require("../adapters/node-process-driver.js");
-const {demoManifest}=require("./demo-workload.js");
+const {demoManifest,propertyManifest}=require("./demo-workload.js");
 const {openLabBoot}=require("./lab-boot-metadata.js");
 function createAutonomousEdgeHost({config,token,workloadDriver}={}){
   // Explicit driver injection is for trusted in-process host composition, not HTTP or JSON config.
@@ -25,6 +25,7 @@ function createAutonomousEdgeHost({config,token,workloadDriver}={}){
   const lock=acquireEdgeLock(cfg.storageDir);
   let engine=null,supervisor=null,ports=null,server=null,interval=null,closed=false;
   let lastSample=null,lastFault=null,samples=0,operating=false,started=false,port=null,labCloud=null;
+  const workloadId=cfg.workload.profile==="property"?"pef-property":"pef-receiver";
   const secret=Buffer.from(token,"utf8");
   const isAuthorized=req=>{
     const received=req.headers["x-pef-token"];
@@ -37,6 +38,7 @@ function createAutonomousEdgeHost({config,token,workloadDriver}={}){
     return {kind:"PEF_STANDALONE_EDGE_LAB",backend:cfg.backend,
       identity:runtime.identity,network:runtime.network,storage:runtime.storage,
       runtimeHealth:runtime.runtimeHealth,receipts:engine.listReceipts(),
+      propertyIncidents:engine.listPropertyIncidents(),activeOverlay:cfg.workload.profile||"receiver",
       workloads:supervisor?supervisor.list():[],sampleCount:samples,lastFault,
       simulatedRoutes:cfg.backend==="virtual-lab"?ports.snapshot():null,
       remoteCloudConnected:false,transportProvisioned:false,
@@ -81,7 +83,7 @@ function createAutonomousEdgeHost({config,token,workloadDriver}={}){
     if(!isAuthorized(req)){send(res,403,{ok:false,error:"OPERATOR_TOKEN_REQUIRED"});return;}
     if(req.method==="GET"&&pathname==="/ready"){
       const s=state();
-      const workloadsReady=!cfg.workload.enabled||s.workloads.some(w=>w.workloadId==="pef-receiver"&&w.state==="RUNNING");
+      const workloadsReady=!cfg.workload.enabled||s.workloads.some(w=>w.workloadId===workloadId&&w.state==="RUNNING");
       const ready=!s.storage.unsafe&&s.runtimeHealth==="HEALTHY"&&workloadsReady;
       send(res,ready?200:503,{ok:ready,kind:"PEF_EDGE_LAB_READINESS",
         storage:s.storage.unsafe?"UNSAFE":"READY",workloads:s.workloads.map(w=>({id:w.workloadId,state:w.state})),
@@ -89,9 +91,20 @@ function createAutonomousEdgeHost({config,token,workloadDriver}={}){
     }
     if(req.method==="GET"&&pathname==="/state"){send(res,200,state());return;}
     if(req.method==="GET"&&pathname==="/receipts"){send(res,200,{receipts:engine.listReceipts()});return;}
+    if(req.method==="GET"&&pathname==="/property/incidents"){
+      send(res,200,{incidents:engine.listPropertyIncidents(),scope:"LAB_ONLY"});return;}
     if(req.method!=="POST"){send(res,404,{ok:false,error:"NOT_FOUND"});return;}
     let body;
     try{body=await readBody(req);}catch(e){send(res,400,{ok:false,error:e.message});return;}
+    if(pathname==="/property/incidents"){
+      if(workloadId!=="pef-property"||!supervisor){
+        send(res,409,{ok:false,error:"PROPERTY_WORKLOAD_NOT_ACTIVE"});return;
+      }
+      const checked=await supervisor.processOperation(workloadId,"PROPERTY",body);
+      if(!checked.ok){send(res,400,{ok:false,error:checked.error});return;}
+      const result=engine.recordPropertyIncident(body);
+      send(res,receiptStatus(result),result);return;
+    }
     if(pathname==="/receipts"||pathname==="/workloads/receipts"){
       if(!["receiptId","packageId"].every(k=>typeof body[k]==="string")||
          Object.keys(body).some(k=>!["receiptId","packageId"].includes(k))){
@@ -172,7 +185,7 @@ function createAutonomousEdgeHost({config,token,workloadDriver}={}){
           manager:createWorkloadManager(),driver:workloadDriver||createNodeProcessDriver(),
           autoReconcileMs:cfg.workload.reconcileMs
         });
-        const launched=await supervisor.start(demoManifest(),{
+        const launched=await supervisor.start(workloadId==="pef-property"?propertyManifest():demoManifest(),{
           trusted:true,offline:engine.status().network.connectivity==="LOCAL_ONLY"});
         if(!launched.ok)throw Error("WORKLOAD_BOOT_FAILED:"+launched.lastError);
       }

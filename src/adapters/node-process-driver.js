@@ -3,14 +3,18 @@
 // This provides process separation, NOT Linux/cgroup/FS/network security isolation.
 const {fork}=require("node:child_process");
 const path=require("node:path");
-const WORKER=path.resolve(__dirname,"../workloads/receiver-worker.js");
+const WORKERS=Object.freeze({
+  "pef-receiver":path.resolve(__dirname,"../workloads/receiver-worker.js"),
+  "pef-property":path.resolve(__dirname,"../workloads/property-worker.js")
+});
 function createNodeProcessDriver(){
   return {
     async start(manifest,{onExit}={}){
-      if(manifest?.workload_id!=="pef-receiver"||
+      if(!Object.hasOwn(WORKERS,manifest?.workload_id)||
          manifest.connectivity_mode!=="LOCAL_ONLY_CAPABLE"||
          typeof onExit!=="function")throw Error("WORKLOAD_BINARY_NOT_ALLOWLISTED");
-      const child=fork(WORKER,[],{silent:true,execArgv:[],cwd:path.dirname(WORKER),
+      const worker=WORKERS[manifest.workload_id];
+      const child=fork(worker,[],{silent:true,execArgv:[],cwd:path.dirname(worker),
         env:{PATH:process.env.PATH||"/usr/bin",LANG:"C"},serialization:"json"});
       let exited=false,stopping=false,nextId=0;
       const pending=new Map();
@@ -35,7 +39,7 @@ function createNodeProcessDriver(){
         ready=await new Promise((resolve,reject)=>{
           const timeout=setTimeout(()=>reject(Error("WORKER_START_TIMEOUT")),1500);
           const onMessage=m=>{
-            if(m?.type==="READY"&&m.id==="pef-receiver"){clearTimeout(timeout);child.off("message",onMessage);resolve(m);}
+            if(m?.type==="READY"&&m.id===manifest.workload_id){clearTimeout(timeout);child.off("message",onMessage);resolve(m);}
           };
           child.on("message",onMessage);
           child.once("exit",()=>{clearTimeout(timeout);child.off("message",onMessage);reject(Error("WORKER_START_EXITED"));});
@@ -48,7 +52,15 @@ function createNodeProcessDriver(){
       return {
         pid:ready.pid,isolation:"NODE_PROCESS_ONLY",actualLimitsEnforced:false,
         async health(){return await request("HEALTH");},
-        async processReceipt(input){return await request("RECEIPT",input);},
+        async processReceipt(input){
+          if(manifest.workload_id!=="pef-receiver")return {ok:false,error:"OPERATION_NOT_ALLOWED"};
+          return await request("RECEIPT",input);
+        },
+        async processOperation(operation,input){
+          if(manifest.workload_id!=="pef-property"||operation!=="PROPERTY")
+            return {ok:false,error:"OPERATION_NOT_ALLOWED"};
+          return await request("PROPERTY",{input});
+        },
         async injectCrash(){
           if(exited)return {ok:false,error:"WORKER_UNAVAILABLE"};
           child.send({type:"CRASH"});return {ok:true,expectedState:"BACKOFF"};

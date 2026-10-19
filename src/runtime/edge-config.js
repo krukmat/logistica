@@ -19,9 +19,10 @@ function validateEdgeConfig(v){
   if(!keys(v.http,["host","port"])||v.http?.host!=="127.0.0.1"||
      !integer(v.http.port,0,65535))throw Error("EDGE_LOOPBACK_ONLY");
   if(!integer(v.sampleIntervalMs,100,30000))throw Error("INVALID_EDGE_SAMPLE_INTERVAL");
-  if(!keys(v.workload,["enabled","reconcileMs"])||
+  if(!keys(v.workload,["enabled","reconcileMs","profile"])||
      typeof v.workload.enabled!=="boolean"||
-     !integer(v.workload.reconcileMs,100,30000))
+     !integer(v.workload.reconcileMs,100,30000)||
+     (v.workload.profile!==undefined&&!["receiver","property"].includes(v.workload.profile)))
     throw Error("INVALID_EDGE_WORKLOAD_OPTIONS");
   if(!keys(v.journal,["capacityBytes","controlReserveBytes"])||
     !integer(v.journal.capacityBytes,2048,100*1024*1024)||
@@ -41,7 +42,8 @@ function validateEdgeConfig(v){
   return {schemaVersion:1,backend:v.backend,identity,storageDir:realDir,
     http:{host:"127.0.0.1",port:v.http.port},
     sampleIntervalMs:v.sampleIntervalMs,
-    workload:{enabled:v.workload.enabled,reconcileMs:v.workload.reconcileMs},
+    workload:{enabled:v.workload.enabled,reconcileMs:v.workload.reconcileMs,
+      ...(v.workload.profile?{profile:v.workload.profile}:{})},
     journal:{...v.journal},
     ...(v.backend==="virtual-lab"?{wan:{
       primary:{...v.wan.primary},backup:{...v.wan.backup}
