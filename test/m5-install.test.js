@@ -36,3 +36,19 @@ test("M5.2 real packaged Node subprocess: install, fsync, update, fault, reopen,
  assert.equal(report.physicalValidated,false);
  assert.equal(report.systemdActivated,false);
 });
+
+test("M5.1 rejects symlinked installation tree and release/data paths",()=>{
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),"pef-m5-symlink-"));
+ const external=fs.mkdtempSync(path.join(os.tmpdir(),"pef-m5-external-"));
+ try{
+   fs.symlinkSync(external,path.join(root,"link"));
+   assert.throws(()=>applyRelease({root:path.join(root,"link","nested"),version:"r1",mode:"install"}),/M5_UNSAFE_ROOT/);
+   assert.equal(fs.existsSync(path.join(external,"nested")),false);
+   fs.symlinkSync(external,path.join(root,"releases"));
+   assert.throws(()=>applyRelease({root,version:"r1",mode:"install"}),/M5_RELEASE_ROOT_UNSAFE/);
+   fs.unlinkSync(path.join(root,"releases"));
+   fs.symlinkSync(external,path.join(root,"data"));
+   assert.throws(()=>applyRelease({root,version:"r1",mode:"install"}),/M5_DATA_DIR_UNSAFE/);
+   assert.equal(fs.existsSync(path.join(root,"state.json")),false);
+ }finally{fs.rmSync(root,{recursive:true,force:true});fs.rmSync(external,{recursive:true,force:true});}
+});
