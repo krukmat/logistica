@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "kind": "PEF_M7_TRUST_SOFTWARE_LAB_CONTRACT_V1",
   "scope": "EPHEMERAL_LOCAL_AND_CI_ONLY",
-  "status": "CLOSED_SOFTWARE_LAB_ONLY",
+  "status": "SOFTWARE_GATES_PASS_WITH_FIELD_BLOCKERS",
   "m71": {
     "state": "CLOSED_SOFTWARE_LAB_ONLY",
     "algorithm": "Ed25519",
@@ -46,17 +46,64 @@
     "hardwareMonotonicRollbackProtection": false
   },
   "m73": {
-    "state": "PROPOSED",
-    "remoteTlsValidated": false
+    "state": "CLOSED_LOCAL_LAB",
+    "protocol": "TLS1.3_MUTUAL_CERTIFICATES",
+    "scope": "LOOPBACK_ONLY",
+    "clientSanAuthorizesDevice": true,
+    "labCa": "EPHEMERAL_ED25519",
+    "secondSameScopeCertAccepted": true,
+    "certRevocationImplemented": false,
+    "deviceKeySameAsM71": false,
+    "publicTlsValidated": false,
+    "evidenceKind": "PEF_M73_MTLS_LOCAL_LAB_V1",
+    "dashboardAction": "m73Mtls",
+    "ciRunId": 39293654717
   },
   "m74": {
-    "state": "PROPOSED"
+    "state": "CLOSED_LOCAL_LAB",
+    "reuse": "M3_AUTHENTICATED_RECOVERY",
+    "journal": "FSYNC_SHA256_LINKED",
+    "correlation": true,
+    "remoteRecoveryAllowed": false,
+    "adminCanRewriteChain": true,
+    "dashboardAction": "m74Operations",
+    "ciRunId": 39294591697
   },
   "m75": {
-    "state": "PROPOSED"
+    "state": "SHORT_LAB_PASS_LONG_RUN_NOT_RUN",
+    "shortCycles": 2,
+    "metrics": [
+      "rss",
+      "cpu",
+      "cycleLatency",
+      "faultRecovery"
+    ],
+    "longDurationHoursOptions": [
+      2,
+      4,
+      8,
+      24
+    ],
+    "twoHourValidated": false,
+    "seventyTwoHourRetentionValidated": false,
+    "action": "m75Stress",
+    "ciRunId": 39295301813
   },
   "m76": {
-    "state": "PROPOSED"
+    "state": "LAB_GATE_PASS_FIELD_NO_GO",
+    "decision": "GO_SOFTWARE_LAB_ONLY",
+    "fieldPilotAuthorized": false,
+    "hardBlockers": [
+      "TWO_HOUR_ENDURANCE",
+      "PHYSICAL_WAN_NIC",
+      "POWER_CUT_STORAGE",
+      "ENERGY_THERMALS",
+      "OPERATOR_ROLLOUT"
+    ],
+    "physicalBOMCostEuro": null,
+    "hostingAdditionalEuro": 0,
+    "action": "m76Pilot",
+    "ciRunId": 39295301813
   },
   "hardwareValidated": false,
   "productionAuthorized": false,

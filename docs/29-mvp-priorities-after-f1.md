@@ -102,3 +102,7 @@ M6.1/M6.2/M6.3 CLOSED SOFTWARE LAB (registry, ingesta durable y Edge real → HT
 M7.1/M7.2 IMPLEMENTED / CI_PENDING: keypair persistente local Ed25519 y signed upgrade/rollback con alta de autoridad software sin reemplazar instalador M5; dashboard CLI y CI añadidos. M7.3–M7.6 PROPOSED. Diferenciar `fsync` + software trust de TPM/secure boot y powercut. No se contrató Cloud ni hardware. [Tareas](tasks/m7-security-pilot.md) · [auditoría](audit/m7-identity-and-signed-release-2026-10-19.md).
 
 **M7.1–M7.2 closed in CI software lab (2026-10-19):** [#39286831769](https://github.com/krukmat/logistica/actions/runs/39286831769) SUCCESS — x64 215 PASS+1 skip, ARM64 216 PASS, packaged signed Edge boot enforcement and dashboard HTTP E2E. No physical trusted boot, hardware rollback counter, hosted TLS or production security. [Task](tasks/m7-security-pilot.md).
+
+## M7 full software branch, 2026-10-19
+
+M7.1/M7.2 signed identity/release CLOSED LAB. M7.3 mTLS 1.3 local Cloud Lite CLOSED LAB x64/ARM64, M7.4 fsync operational recovery audit CLOSED LAB, M7.5 short real HTTP stress PASS (2–24h NOT_RUN), M7.6 evidence-backed software lab gate PASS **field pilot NO-GO**. No physical storage powercut, WAN NIC, energy/thermal benchmark or signed boot hardware, nor 72h backlog validation. Hosting additional 0 EUR. [CI #39295301813](https://github.com/krukmat/logistica/actions/runs/39295301813), [audit](audit/m7-3-6-security-pilot-lab-2026-10-19.md).

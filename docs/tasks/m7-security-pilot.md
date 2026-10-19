@@ -1,6 +1,6 @@
 # M7 — Seguridad y preparación del piloto
 
-**Inicio: 2026-10-19, branch `main`.** M7.1/M7.2 **CLOSED — SOFTWARE LAB ONLY**, with current-HEAD CI success; x64/ARM64 and dashboard gates passed. M7.3–M7.6 not implemented. No purchased hardware, hosted cloud, external services or operator system changes.
+**Inicio: 2026-10-19, branch `main`.** M7.1/M7.2 **CLOSED — SOFTWARE LAB ONLY**, with current-HEAD CI success; x64/ARM64 and dashboard gates passed. M7.3/M7.4 closed local CI software lab; M7.5 short stress closed, 2–24h pending; M7.6 lab gate implemented, field pilot NO-GO. No purchased hardware, hosted cloud, external services or operator system changes.
 
 ## M7.1 — Identidad criptográfica de Edge (P0)
 
@@ -26,14 +26,14 @@ Files: `src/core/m72-signed-update-policy.js`, `src/adapters/m72-trust-anchor.js
 
 The M5 **legacy unsigned ephemeral lab** remains available for regression *only when no pinned trust exists*. Once a trust anchor has been provisioned, `applyRelease` rejects unsigned activation. No retroactive enablement on an unsigned already-installed root. The trust anchor and signed state are software files, not hardware-protected monotonic counters; an adversary who can modify or restore older copies of **state.json** (or the entire filesystem) can bypass this software-only high-water; such attacks are **out of scope** pending a monotonic hardware/remote authority. No secure boot/firmware verification or remote OTA distribution is implied. The health failure is an **injected negative result after actually starting a packaged Edge**, not a witnessed physical hardware fault. Rollback is preauthorized by a distinct signed transition.
 
-## Deferred tasks (not authorized as completed)
+## M7.3–M7.6 — software delivery, dependencies and truthful gates
 
 | Task | Inputs | DoD / major subtasks | State |
 | --- | --- | --- | --- |
-| M7.3 — TLS/mTLS trust | M7.1 + M6 Cloud Lite | A: lab CA/certs; B: identity binding and expired/foreign rejection; C: credential rotation, cloud failure isolation with local continuity | PROPOSED |
-| M7.4 — Operational recovery | M7.2 + M3/M5 | A: common health; B: durable correlated incident lifecycle; C: authenticated operator recovery and restart | PROPOSED |
-| M7.5 — Endurance and resource economics | M7.3/4 + M6 | A: 2–24h fault/load harness; B: saturation, offline/backpressure; C: CPU/RSS/latency/report thresholds and limits | PROPOSED |
-| M7.6 — Software pilot readiness | M7.1–5 | A: Property/Host acceptance; B: cost/BOM/operating runbook; C: evidence pack GO/NO-GO explicitly software-only | PROPOSED |
+| M7.3 — TLS/mTLS trust | M7.1 + M6 Cloud Lite | A: ephemeral Ed25519 CA and TLS1.3; B: SAN scope and foreign/expired policy, no plaintext fallback; C: second cert accepted, Cloud failure offline; no revocation/identity-key unification | CLOSED LOCAL LAB CI #39293654717; production identity pending |
+| M7.4 — Operational recovery | M7.2 + M3/M5 | A: reuse M3 health and recovery; B: fsync hash-chain correlated audit; C: authenticated operator evidence, no new production recovery endpoint | CLOSED LOCAL LAB CI #39294591697; production interface pending |
+| M7.5 — Endurance and resource economics | M7.3/4 + M6 | A: short repeated real HTTP stress; B: explicit opt-in 2–24h runner available; C: CPU/RSS/latency measured, 72h retention not validated | SHORT LAB PASS CI #39295301813; LONG-RUN NOT_RUN |
+| M7.6 — Software pilot readiness | M7.1–5 | A: real software gates Property/Host; B: BOM placeholders without invented prices; C: conservative GO_SOFTWARE_LAB_ONLY / fieldPilotAuthorized=false | LAB GATE PASS CI #39295301813; physical pilot NO-GO |
 
 **72h journal / W1.10.G remains DEFERRED** until realistic product payload rate, capacity and local failure policy are fixed; 100MiB alone does not satisfy 72h at modeled load. M5.3 physical device (NICs, storage powercut, energy, thermals) remains BLOCKED.
 
@@ -62,3 +62,24 @@ All tests operate with private ephemeral OS directories and do not install keys 
 ### Current-head final acceptance — 2026-10-19
 
 [GitHub Actions #39286831769](https://github.com/krukmat/logistica/actions/runs/39286831769) SUCCESS for `fc9ac7f72f70bd30a3106dad0aa2d65689f56185`: Linux ARM64 **216 PASS / 0 fail**, Linux x64 **215 PASS +1 skip / 0 fail**. Dashboard HTTP `m71Identity` and `m72Release` PASS. Independent CLI `npm run m7:identity` and `npm run m7:release` PASS on both architectures, with uploaded artifacts. Dedicated Linux systemd and namespace jobs and prehardware gate SUCCESS. `bin/pef-edge.js` now verifies the **active pinned M5 release and signed integrity** before loading runtime modules when executed from a versioned release; tampered packaged boot is rejected (regression at same SHA). These results close M7.1 and M7.2 **software lab only**, not physical trusted boot or TPM-protected rollback.
+
+## Operator commands M7.3–M7.6 (2026-10-19)
+
+```bash
+git switch main && git pull
+npm run m7:mtls       # Real TLS1.3 mTLS Edge→Cloud Lite (loopback, ephemeral CA)
+npm run m7:ops        # M3 recovery + fsync correlated hash-chain audit
+npm run m7:stress     # Short 2-cycle HTTP fault-matrix smoke only
+npm run m7:pilot      # Re-runs real lab evidence; physical pilot remains NO-GO
+npm run dashboard     # Lab → M7.1 ... M7.6
+```
+
+To deliberately run an extended experiment on **your own Mac/VM**, no hardware purchase:
+
+```bash
+export PEF_M75_LONGRUN_ACK=EXPLICIT_OPERATOR_LONG_SOAK_LOCAL
+npm run m7:stress -- --hours 2 > m75-long-soak.json
+unset PEF_M75_LONGRUN_ACK
+```
+
+**The 2h/4h/8h/24h option has NOT been run**; never claim that smoke CI measured multi-hour lifetime. It generates repeated real localhost fault tests, not realistic P0/P1 load over 72h. No commercial pilot GO until physical M5.3 and other blockers close. The mTLS certificate key is independent of M7.1 Ed25519 identity; renewable certificate does not imply revocation, TPM or production PKI. Certificate/authority scope is loopback only. [Audit M7.3–M7.6](../audit/m7-3-6-security-pilot-lab-2026-10-19.md).

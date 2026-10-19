@@ -280,3 +280,7 @@ Dashboard → Laboratorio integrado → **M6.3** (`m63Sync`) inicia Edge real y 
 ## M7.1–M7.2 — Identidad y signed M5 (software-only)
 
 Dentro de Laboratorio integrado, **M7.1** (`m71Identity`) crea una identidad software Ed25519 temporal, firma desafíos ligados al device y valida reapertura/corrupción. **M7.2** (`m72Release`) ejecuta un release temporal firmando permisos en una autoridad efímera de laboratorio, verifica package M5, arranca un Edge real, simula fallo de health-check y realiza rollback autorizado. El dashboard no instala software, no importa claves permanentes ni cambia el systemd del Mac. Ambas tareas: IMPLEMENTED / CI_PENDING. [Contrato](contracts/m7-security-lab-v1.json) y [auditoría](audit/m7-identity-and-signed-release-2026-10-19.md).
+
+## M7.3–M7.6 — Canal seguro, diagnóstico, estrés y readiness
+
+Laboratorio integrado → `m73Mtls`: Cloud Lite/Edge **HTTPS TLS1.3 mTLS real** con CA local, rechazo de identidad ajena y fallo de trust sin downgradear HTTP. `m74Operations`: M3 SAFE_MODE/recovery autenticado con journal hash-chain fsynced. `m75Stress`: dos ciclos cortos de escenarios Cloud Lite con métricas CPU/RSS, **NO 2h certificadas**. `m76Pilot`: decision estricta `GO_SOFTWARE_LAB_ONLY`, `fieldPilotAuthorized=false`, bloqueo físico explícito. No se escriben certificados en llaveros del Mac ni se instalan servicios. [Auditoría](audit/m7-3-6-security-pilot-lab-2026-10-19.md).
