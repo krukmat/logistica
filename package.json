@@ -35,7 +35,8 @@
     "m3:bundle": "node bin/pef-m3-bundle.js",
     "m3:bundle:verify": "node bin/pef-m3-bundle.js --verify",
     "m3:bundle:video": "node bin/pef-m3-bundle.js --video",
-    "m3:bundle:verify-video": "node bin/pef-m3-bundle.js --verify-video"
+    "m3:bundle:verify-video": "node bin/pef-m3-bundle.js --verify-video",
+    "m4:property": "node bin/pef-m4-property.js"
   },
   "license": "UNLICENSED",
   "devDependencies": {

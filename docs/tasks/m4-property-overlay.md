@@ -1,6 +1,6 @@
 # M4.1 — Property overlay: local alert and acknowledgement
 
-**Date:** 2026-10-19 · **Branch:** `main` · **Status:** IMPLEMENTED; CI validation tracked separately. This block is software lab only.
+**Date:** 2026-10-19 · **Branch:** `main` · **Status:** CLOSED — SOFTWARE LAB ONLY, CI verified (#39209710426). This block is software lab only.
 
 ## Scope, input and dependency
 
@@ -15,9 +15,9 @@
 
 | ID | Scope | Dependency | Output and acceptance | Status |
 | --- | --- | --- | --- | --- |
-| M4.1.1 | Contract: ALERT / ACK, stable immutable event IDs, schema, error semantics | shared Core and journal | Domain commands; invalid/orphan ACK/conflicts rejected | IMPLEMENTED |
-| M4.1.2 | Local workload + Edge composition | M4.1.1, M3 | Static allowlist + manifest + health + operator-authenticated localhost API | IMPLEMENTED |
-| M4.1.3 | Actual Edge E2E and visual UI | M4.1.2 | Offline → alert → ACK → stop/reopen → retained state → synthetic WAN back → mock replay; HTTP dashboard action and CI proof | IMPLEMENTED — CI pending |
+| M4.1.1 | Contract: ALERT / ACK, stable immutable event IDs, schema, error semantics | shared Core and journal | Domain commands; invalid/orphan ACK/conflicts rejected | CLOSED LAB |
+| M4.1.2 | Local workload + Edge composition | M4.1.1, M3 | Static allowlist + manifest + health + operator-authenticated localhost API | CLOSED LAB |
+| M4.1.3 | Actual Edge E2E and visual UI | M4.1.2 | Offline → alert → ACK → stop/reopen → retained state → synthetic WAN back → mock replay; HTTP dashboard action and CI proof | CLOSED LAB |
 
 ## Contract
 
@@ -35,6 +35,7 @@ Event IDs are `property.<deviceId>.<incidentId>.alert|ack`, with domain envelope
 
 ```bash
 npm test
+npm run m4:property
 npm run dashboard
 # open http://127.0.0.1:8787 and select "Laboratorio integrado"
 # click "M4.1 — Property: alerta local y ACK operativo"
@@ -57,6 +58,12 @@ Requirement ID: REQ-LOC-01, REQ-WRK-01/02, REQ-STA-01/02, REQ-OBS-01
 Change: added
 Rationale: Prove usefulness of one locally capable product overlay without forking Core.
 Classification: MODULE + CONFIG
-Evidence: `src/core/property-incidents.js`; `test/property-overlay.test.js`; `test/dashboard-integrated.test.js`; CI run to be linked once green.
+Evidence: `src/core/property-incidents.js`; `test/property-overlay.test.js`; `test/dashboard-integrated.test.js`; [CI #39209710426](https://github.com/krukmat/logistica/actions/runs/39209710426) SUCCESS; [audit](../audit/m4-property-2026-10-19.md).
 Impacted docs: `docs/05-overlays-workload-contract.md`, `docs/12-emulator.md`, `docs/29-mvp-priorities-after-f1.md`, `docs/contracts/emulator-integration-v1.json` (existing contract maintained).
 Open decision: Host workload/commonality (M4.2–M4.4) and physical integration remain outstanding.
+
+### Acceptance record (2026-10-19)
+
+[CI #39209710426](https://github.com/krukmat/logistica/actions/runs/39209710426): `emulator` PASS (x64 162/163, one expected ARM-only skip), `arm64-isa` PASS (163/163), `netns-lab` PASS and `Pre-hardware software handoff` PASS. Property dashboard HTTP E2E and Edge/property smoke test PASS on both architectures. [Audit](../audit/m4-property-2026-10-19.md).
+
+This closes **M4.1.1–M4.1.3 in software lab only**; neither Property Linux kernel isolation nor physical infrastructure is certified.
