@@ -8,6 +8,7 @@ systemd-detect-virt --vm >/dev/null ||
   { echo "M54_GUEST_BLOCKED:VM not detected" >&2;exit 78; }
 [[ "$(cat /proc/1/comm)" == systemd && -f "$repo/src/runtime/m5-systemd-unit.js" ]] ||
   { echo "M54_GUEST_BLOCKED:systemd or repo mount missing" >&2;exit 78; }
+cd "$repo"
 command -v node >/dev/null && [[ "$(node -p 'Number(process.versions.node.split(".")[0])')" -ge 20 ]] ||
   { echo "M54_GUEST_BLOCKED:Node >=20 required inside guest" >&2;exit 78; }
 user="$(id -un)";group="$(id -gn)"
