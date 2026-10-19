@@ -636,3 +636,20 @@ test("M6.2 dashboard HTTP executes authenticated Cloud Lite durable ingest, repl
  assert.equal(response.result.checks.REOPEN_AND_REPLAY,true);
  assert.equal(response.lab.m62Ingest.cloudMockReplaced,false);
 }));
+
+test("M6.3 dashboard real Edge→Cloud Lite exercises authenticated loopback replay for Property and Host",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text(),js=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["m63-sync-panel","m63-sync-run","m63-sync-evidence"])
+  assert.ok(html.includes('id="'+id+'"'),id);
+ assert.match(js,/labAction\("m63Sync"\)/);
+ await call({command:"mode",mode:"lab"});
+ const response=await call({command:"lab",action:"m63Sync"});
+ assert.equal(response.httpStatus,200);
+ assert.equal(response.result.status,"LAB_PASS",JSON.stringify(response.result));
+ assert.equal(response.result.checks.property_LOST_ACK_NO_LOCAL_ADVANCE,true);
+ assert.equal(response.result.checks.host_DEDUP_ON_RETRY,true);
+ assert.equal(response.result.realEdgeAutonomousHost,true);
+ assert.equal(response.result.cloudMockReplacedInThisTest,true);
+ assert.equal(response.result.defaultMockDeleted,false);
+ assert.equal(response.lab.m63Sync.currentDemoCloudStillMock,true);
+}));

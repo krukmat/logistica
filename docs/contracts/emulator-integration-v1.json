@@ -580,6 +580,22 @@
       "implementation": "src/runtime/m62-ingest-smoke.js",
       "test": "test/m62-ingest.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "M6.3",
+      "mode": "lab",
+      "title": "Real Edge and authenticated Cloud Lite HTTP reconciler, lost ACK dedup and local reopen",
+      "controlIds": [
+        "m63-sync-panel",
+        "m63-sync-run",
+        "m63-sync-evidence"
+      ],
+      "actions": [
+        "m63Sync"
+      ],
+      "implementation": "src/runtime/m63-edge-cloud-lite-smoke.js",
+      "test": "test/m63-sync.test.js",
+      "hardwareValidated": false
     }
   ]
 }
