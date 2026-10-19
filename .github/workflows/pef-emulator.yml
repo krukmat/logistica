@@ -45,8 +45,8 @@ jobs:
           node-version: '22'
       - name: Browser client syntax check
         run: node --check public/dashboard.js
-      - name: M5.4 Lima service and guarded CI systemd script syntax
-        run: bash -n scripts/lab/m5-systemd-smoke.sh scripts/arm64-vm/m54-lima-service.sh scripts/arm64-vm/guest-m54-service.sh
+      - name: M5.4/M5.6 guarded Linux service scripts syntax
+        run: bash -n scripts/lab/m5-systemd-smoke.sh scripts/lab/m56-systemd-kernel-smoke.sh scripts/arm64-vm/m54-lima-service.sh scripts/arm64-vm/guest-m54-service.sh
       - name: Node regression suite
         run: npm test
       - name: M4.3 dual-overlay commonality and fault evidence (lab only)
@@ -301,11 +301,12 @@ jobs:
       - name: S3 cgroup and namespace workload isolation (ephemeral Linux)
         env:
           PEF_S3_ACK: GITHUB_HOSTED_EPHEMERAL_ONLY
+          PEF_M56_ACK: GITHUB_HOSTED_EPHEMERAL_SERVICE_ONLY
         run: |
           sudo -n env CI="$CI" GITHUB_ACTIONS="$GITHUB_ACTIONS" RUNNER_ENVIRONMENT="$RUNNER_ENVIRONMENT" \
-            PEF_S3_ACK="$PEF_S3_ACK" PEF_S3_REPO_ROOT="$GITHUB_WORKSPACE" \
+            PEF_S3_ACK="$PEF_S3_ACK" PEF_M56_ACK="$PEF_M56_ACK" PEF_S3_REPO_ROOT="$GITHUB_WORKSPACE" \
             PEF_S3_NODE="$(command -v node)" \
-            PEF_S3_EVIDENCE="$RUNNER_TEMP/pef-s3-evidence.json" PEF_S34_EVIDENCE="$RUNNER_TEMP/pef-s34-evidence.json" PEF_M55_EVIDENCE="$RUNNER_TEMP/pef-m55-evidence.json" \
+            PEF_S3_EVIDENCE="$RUNNER_TEMP/pef-s3-evidence.json" PEF_S34_EVIDENCE="$RUNNER_TEMP/pef-s34-evidence.json" PEF_M55_EVIDENCE="$RUNNER_TEMP/pef-m55-evidence.json" PEF_M56_EVIDENCE="$RUNNER_TEMP/pef-m56-evidence.json" \
             bash scripts/lab/workload-isolation-smoke.sh
       - name: Upload lab evidence
         if: always()
@@ -317,6 +318,7 @@ jobs:
             ${{ runner.temp }}/pef-s3-evidence.json
             ${{ runner.temp }}/pef-s34-evidence.json
             ${{ runner.temp }}/pef-m55-evidence.json
+            ${{ runner.temp }}/pef-m56-evidence.json
           if-no-files-found: warn
 
   m54-systemd-lab:
