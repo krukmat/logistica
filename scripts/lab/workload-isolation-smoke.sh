@@ -146,10 +146,10 @@ NODE
      "$(cat "$cg/memory.max")" == "${site_limits[1]}" &&
      "$(cat "$cg/pids.max")" == "${site_limits[2]}" ]] ||
     { echo "M55_LIMIT_NOT_ENFORCED" >&2;exit 1; }
-  mkdir -p "$tmpdir/$siteprofile-journal"
+  mkdir -p "$tmpdir/m55-$siteprofile-journal"
   timeout -k 3s 35s "$PEF_S3_NODE" "$PEF_S3_REPO_ROOT/scripts/lab/supervised-site-worker.js" \
     "$siteprofile" "$name" "$cg" "$root" "$node_bin" \
-    "$tmpdir/$siteprofile-journal" "$tmpdir/host-canary" \
+    "$tmpdir/m55-$siteprofile-journal" "$tmpdir/host-canary" \
     >"$tmpdir/site-$siteprofile.out" 2>&1 || {
       cat "$tmpdir/site-$siteprofile.out" >&2
       exit 1
