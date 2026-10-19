@@ -21,7 +21,12 @@ test("M6.2 never returns a durable ACK when cloud event-store fsync fails",()=>{
       siteId:"s",deviceId:"d",configRevision:"r"}});
    assert.equal(local.receive({receiptId:"R1",packageId:"P1"}).fsyncCompleted,true);
    const event=journal.pending()[0];
-   const fsOps={...fs,fsyncSync(){throw Error("INJECTED_REMOTE_FSYNC_FAIL");}};
+   let calls=0;
+   const fsOps={...fs,fsyncSync(fd){
+     calls++;
+     if(calls===3)throw Error("INJECTED_REMOTE_FSYNC_FAIL");
+     return fs.fsyncSync(fd);
+   }};
    cloud=createCloudLiteEventStore({dir:root,fsOps});
    const result=cloud.ingest(event);
    assert.equal(result.durable,false);

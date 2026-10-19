@@ -10,6 +10,7 @@ function createCloudLiteEventStore({dir,fsOps=fs}={}){
    throw Error("CLOUD_LITE_EVENT_ROOT_REQUIRED");
  const file=path.join(dir,FILE);
  const flags=fs.constants.O_RDWR|fs.constants.O_CREAT|fs.constants.O_APPEND|(fs.constants.O_NOFOLLOW||0);
+ const newFile=!fsOps.existsSync(file);
  let fd=fsOps.openSync(file,flags,0o600),unsafe=false,closed=false,bytes=0;
  const events=new Map();
  const ensure=()=>{if(closed)throw Error("CLOUD_LITE_EVENT_STORE_CLOSED");};
@@ -35,6 +36,12 @@ function createCloudLiteEventStore({dir,fsOps=fs}={}){
    }
   }
   if(events.size>MAX_EVENTS)throw Error("CLOUD_LITE_EVENT_CAPACITY_INVALID");
+  // Persist a freshly created directory entry before any durable ingestion claim.
+  if(newFile){
+    fsOps.fsyncSync(fd);
+    const dirfd=fsOps.openSync(dir,fs.constants.O_RDONLY|(fs.constants.O_DIRECTORY||0));
+    try{fsOps.fsyncSync(dirfd);}finally{fsOps.closeSync(dirfd);}
+  }
  }catch(e){fsOps.closeSync(fd);throw e;}
  return {
   ingest(event){
