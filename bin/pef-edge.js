@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 "use strict";
 const fs=require("node:fs"),path=require("node:path");
-const {validateEdgeConfig}=require("../src/runtime/edge-config.js");
-const {createAutonomousEdgeHost}=require("../src/runtime/autonomous-edge.js");
 function verifyPackagedBoot(){
   const release=path.dirname(__dirname),releases=path.dirname(release);
   if(path.basename(releases)!=="releases")return;
@@ -20,6 +18,8 @@ async function main(args){
   if(position<0||position+1>=args.length||args.some((x,i)=>i!==position&&i!==position+1&&x!=="--check"))
     throw Error("EDGE_CONFIG_PATH_REQUIRED");
   verifyPackagedBoot();
+  const {validateEdgeConfig}=require("../src/runtime/edge-config.js");
+  const {createAutonomousEdgeHost}=require("../src/runtime/autonomous-edge.js");
   const configFile=path.resolve(args[position+1]);
   const stat=fs.lstatSync(configFile);
   if(!stat.isFile()||stat.isSymbolicLink())throw Error("EDGE_CONFIG_FILE_UNSAFE");
