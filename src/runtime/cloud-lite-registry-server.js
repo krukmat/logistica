@@ -6,6 +6,7 @@ const {planEnroll,findRegistered,checkedIdentity}=require("../core/cloud-lite-re
 const {createFileRegistryStore,digestCredential}=require("../adapters/cloud-lite-registry-file.js");
 const {createCloudLiteEventStore}=require("../adapters/cloud-lite-event-file.js");
 const {validateCloudLiteEvent}=require("../core/cloud-lite-ingest-policy.js");
+const {VERSION,signCloudLiteAck}=require("../adapters/cloud-lite-ack-proof.js");
 function sameSecret(candidate,expected){
  if(typeof candidate!=="string"||typeof expected!=="string"||
     !candidate||!expected)return false;
@@ -85,11 +86,14 @@ function createCloudLiteRegistryServer({dir,adminToken,host="127.0.0.1",port=0,e
          result.error==="CLOUD_LITE_EVENT_CAPACITY"?507:400;
        send(res,status,{ok:false,durable:false,error:result.error});return;
      }
-     send(res,200,{kind:"PEF_CLOUD_LITE_DURABLE_ACK_V1",ok:true,durable:true,
+     const ack={kind:"PEF_CLOUD_LITE_DURABLE_ACK_V1",ok:true,durable:true,
        eventId:event.eventId,sha256:event.sha256,...valid.scope,
        duplicate:result.duplicate,fsyncCompleted:!result.duplicate,
+       protocolVersion:VERSION,
        actualHttpServer:true,localOnly:true,remoteTlsValidated:false,
-       physicalValidated:false});
+       physicalValidated:false};
+     ack.labProof=signCloudLiteAck(ack,provided);
+     send(res,200,ack);
      return;
    }
    if(req.method!=="POST"||!["/v1/admin/enroll","/v1/device/authenticate"].includes(req.url)){

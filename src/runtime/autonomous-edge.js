@@ -12,9 +12,12 @@ const {createWorkloadSupervisor}=require("../core/workload-supervisor.js");
 const {createNodeProcessDriver}=require("../adapters/node-process-driver.js");
 const {demoManifest,propertyManifest,hostManifest}=require("./demo-workload.js");
 const {openLabBoot}=require("./lab-boot-metadata.js");
-function createAutonomousEdgeHost({config,token,workloadDriver}={}){
+function createAutonomousEdgeHost({config,token,workloadDriver,cloudTransport}={}){
   // Explicit driver injection is for trusted in-process host composition, not HTTP or JSON config.
   // Linux mode MUST NOT silently fall back to an unisolated Node child.
+  if(cloudTransport!==undefined&&
+     (typeof cloudTransport?.ingest!=="function"||typeof cloudTransport?.verifyAck!=="function"))
+    throw Error("CLOUD_LITE_AUTHENTICATED_TRANSPORT_REQUIRED");
   if(workloadDriver!==undefined&&typeof workloadDriver?.start!=="function")
     throw Error("INVALID_WORKLOAD_DRIVER_PORT");
   const cfg=validateEdgeConfig(config);
@@ -24,7 +27,7 @@ function createAutonomousEdgeHost({config,token,workloadDriver}={}){
     throw Error("EDGE_OPERATOR_TOKEN_REQUIRED");
   const lock=acquireEdgeLock(cfg.storageDir);
   let engine=null,supervisor=null,ports=null,server=null,interval=null,closed=false;
-  let lastSample=null,lastFault=null,samples=0,operating=false,started=false,port=null,labCloud=null;
+  let lastSample=null,lastFault=null,lastCloudLiteSync=null,samples=0,operating=false,started=false,port=null,labCloud=null;
   const workloadId=cfg.workload.profile==="property"?"pef-property":
     cfg.workload.profile==="host"?"pef-host":"pef-receiver";
   const secret=Buffer.from(token,"utf8");
@@ -46,7 +49,9 @@ function createAutonomousEdgeHost({config,token,workloadDriver}={}){
       remoteCloudConnected:false,transportProvisioned:false,
       physicalWanValidated:false,powerCutValidated:false,hardwareValidated:false,
       dashboardRequired:false,scope:"LAB_ONLY_NOT_DEVICE",
-      labCloud:labCloud?{...labCloud.status(),available:runtime.network.selectedWan!==null,provisioned:false}:null};
+      labCloud:labCloud?{...labCloud.status(),available:runtime.network.selectedWan!==null,provisioned:false}:null,
+      cloudLite:{configured:Boolean(cloudTransport),scope:"LOCALHOST_ONLY",
+        lastSync:lastCloudLiteSync,productionAuthorized:false,physicalValidated:false}};
   }
   async function sample(){
     if(operating||closed)return {ok:false,error:"EDGE_SAMPLE_BUSY"};
@@ -143,6 +148,23 @@ function createAutonomousEdgeHost({config,token,workloadDriver}={}){
       else labCloud.forgeNextAck();
       send(res,200,{ok:true,kind:"PEF_LAB_CLOUD_FAULT",fault:body.fault,cloudMockOnly:true});
       return;
+    }
+    // Real authenticated localhost Cloud Lite transport, opt-in trusted composition.
+    // No implicit fallback to the previous in-memory Cloud mock.
+    if(pathname==="/lab/cloud-lite/sync"&&cfg.backend==="virtual-lab"){
+      if(!cloudTransport){send(res,409,{ok:false,error:"CLOUD_LITE_NOT_CONFIGURED"});return;}
+      if(Object.keys(body).length!==0){send(res,400,{ok:false,error:"INVALID_LAB_SYNC_BODY"});return;}
+      if(engine.status().network.selectedWan===null){
+        send(res,409,{ok:false,error:"CLOUD_UNAVAILABLE"});return;
+      }
+      try{
+        lastCloudLiteSync=await engine.sync(cloudTransport,16,{timeoutMs:1500,maxAttempts:1});
+        send(res,lastCloudLiteSync.status==="SYNC_OK"?200:409,
+          {ok:lastCloudLiteSync.status==="SYNC_OK",result:lastCloudLiteSync,
+           cloudMockOnly:false,localTransport:true,physicalValidated:false});return;
+      }catch{
+        send(res,503,{ok:false,error:"CLOUD_LITE_TRANSPORT_ERROR"});return;
+      }
     }
     if(pathname==="/lab/sync"&&cfg.backend==="virtual-lab"){
       if(Object.keys(body).length!==0){send(res,400,{ok:false,error:"INVALID_LAB_SYNC_BODY"});return;}
