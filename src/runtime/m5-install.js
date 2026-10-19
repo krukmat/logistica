@@ -14,10 +14,14 @@ function safeDir(p,{create=false}={}){
  const anchor=path.resolve(os.tmpdir());
  const parent=fs.realpathSync(anchor);
  const absolute=path.resolve(p);
- if(absolute===anchor||!absolute.startsWith(anchor+path.sep))
-   throw Error("M5_TEMP_ROOT_ONLY");
- const suffix=path.relative(anchor,absolute).split(path.sep);
- let scope=anchor;
+ // macOS commonly exposes os.tmpdir() below /var, whose canonical path is /private/var.
+ // Accept the original tmpdir spelling OR its canonical spelling, but nothing else.
+ // The platform-owned anchor is the only symlink alias allowed by this policy.
+ const base=absolute.startsWith(anchor+path.sep)?anchor:
+   absolute.startsWith(parent+path.sep)?parent:null;
+ if(!base)throw Error("M5_TEMP_ROOT_ONLY");
+ const suffix=path.relative(base,absolute).split(path.sep);
+ let scope=base;
  for(const component of suffix){
    scope=path.join(scope,component);
    let stat;
