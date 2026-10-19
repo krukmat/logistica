@@ -12,6 +12,9 @@ const encode=v=>Buffer.from(JSON.stringify(v,null,2)+"\n");
 function safeDir(p,{create=false}={}){
  if(typeof p!=="string"||!path.isAbsolute(p))throw Error("M5_ABSOLUTE_ROOT_REQUIRED");
  const parent=fs.realpathSync(os.tmpdir());
+ const absolute=path.resolve(p);
+ if(absolute===parent||!absolute.startsWith(parent+path.sep))
+   throw Error("M5_TEMP_ROOT_ONLY");
  if(create&&!fs.existsSync(p))fs.mkdirSync(p,{recursive:true,mode:0o700});
  const real=fs.realpathSync(p);
  if(real===parent||!real.startsWith(parent+path.sep))
@@ -153,7 +156,7 @@ function releaseCreate(root,version){
    return verifyRelease(root,version);
  }finally{if(fs.existsSync(tmp))fs.rmSync(tmp,{recursive:true,force:true});}
 }
-function applyRelease({root:givenRoot,version,mode}){
+function applyRelease({root:givenRoot,version,mode,interruptBeforeActivation=false}){
  if(!["install","upgrade","rollback"].includes(mode)||!validVersion(version))
    throw Error("M5_INVALID_INSTALL_COMMAND");
  // Validate the path before creating anything outside the ephemeral lab tree.
@@ -174,6 +177,8 @@ function applyRelease({root:givenRoot,version,mode}){
    const release=mode==="rollback"?verifyRelease(root,version):releaseCreate(root,version);
    if(mode!=="rollback"&&release.digest!==hashEntries(collect()))
      throw Error("M5_PACKAGE_SOURCE_CHANGED");
+   // Trusted in-process lab fault; never exposed as CLI config or privileged action.
+   if(interruptBeforeActivation===true)throw Error("M5_INJECTED_BEFORE_ACTIVATION");
    const decision=nextInstallState(current,version,release.digest,mode);
    if(decision.changed){
      fs.mkdirSync(path.join(root,"data"),{recursive:true,mode:0o700});
