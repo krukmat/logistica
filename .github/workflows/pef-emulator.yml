@@ -14,6 +14,7 @@ on:
       - 'scenarios/**'
       - 'package.json'
       - 'scripts/lab/**'
+      - 'ops/systemd/**'
       - 'scripts/arm64-vm/**'
       - 'docs/contracts/**'
       - '.github/workflows/pef-emulator.yml'
@@ -314,6 +315,33 @@ jobs:
             ${{ runner.temp }}/pef-s3-evidence.json
             ${{ runner.temp }}/pef-s34-evidence.json
           if-no-files-found: warn
+
+  m54-systemd-lab:
+    name: M5.4 systemd service lifecycle (ephemeral Linux only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: M5.4 run real systemd on GitHub-hosted VM (not an OS reboot)
+        env:
+          PEF_M54_ACK: GITHUB_HOSTED_EPHEMERAL_ONLY
+        run: |
+          sudo -n env CI="$CI" GITHUB_ACTIONS="$GITHUB_ACTIONS" RUNNER_ENVIRONMENT="$RUNNER_ENVIRONMENT" \
+            PEF_M54_ACK="$PEF_M54_ACK" SUDO_USER="$(whoami)" \
+            PEF_M54_EVIDENCE="$RUNNER_TEMP/pef-m54-systemd.json" \
+            PATH="$PATH" bash scripts/lab/m5-systemd-smoke.sh
+      - name: Upload M5.4 systemd evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pef-m54-systemd-ci
+          path: ${{ runner.temp }}/pef-m54-systemd.json
+          if-no-files-found: error
 
   prehardware-gate:
     name: Pre-hardware software handoff

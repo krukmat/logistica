@@ -212,6 +212,16 @@
           <button id="m5-install-run" type="button" class="secondary">Probar instalar → reiniciar → actualizar → rollback M5</button>
           <pre id="m5-install-evidence">M5.1–M5.2 NOT_RUN · M5.3 hardware BLOCKED</pre>
         </div>
+        <div class="lab-detail" id="m54-systemd-panel">
+          <h4>M5.4 — Servicio Linux systemd</h4>
+          <p class="micro">Inspección local del contrato systemd: arranque offline, restart on-failure,
+          sandbox de servicio y acceso acotado al journal. No instala ni ejecuta systemd
+          desde el Mac. La activación real con recuperación SIGKILL se ejecuta sólo en
+          CI Linux efímero. El reinicio completo de VM queda <strong>NOT_RUN</strong>
+          hasta ejecutar el procedimiento opt-in dentro de Lima.</p>
+          <button id="m54-systemd-run" class="secondary" type="button">Validar unidad systemd M5.4</button>
+          <pre id="m54-systemd-evidence">M5.4 NOT_RUN · systemd sólo en CI/VM</pre>
+        </div>
         <div class="lab-detail workload-panel" id="workload-panel">
           <h4>S — Workload Runtime · proceso local (NO sandbox)</h4>
           <p class="micro">Workload permitido: <code>pef-receiver</code>. El Core valida su manifest, recursos y política offline; el supervisor inicia un proceso Node aislado sólo por proceso. <strong>CPU/RAM, filesystem y red todavía no están aislados por Linux</strong>.</p>

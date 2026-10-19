@@ -556,3 +556,19 @@ test("M5 dashboard HTTP invokes real packaged Edge install/upgrade/rollback with
  assert.equal(res.lab.m5Install.lastEvidence.status,"LAB_PASS");
  assert.equal(res.lab.m5Install.physicalValidated,false);
 }));
+
+test("M5.4 dashboard HTTP validates real systemd unit composition but never activates Mac service",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text(),client=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["m54-systemd-panel","m54-systemd-run","m54-systemd-evidence"])
+   assert.ok(html.includes('id="'+id+'"'),id);
+ assert.match(client,/labAction\("m54Systemd"\)/);
+ await call({command:"mode",mode:"lab"});
+ const response=await call({command:"lab",action:"m54Systemd"});
+ assert.equal(response.httpStatus,200);
+ assert.equal(response.result.ok,true);
+ assert.equal(response.result.kind,"PEF_M54_SYSTEMD_CONTRACT_V1");
+ assert.match(response.result.unit,/Restart=on-failure/);
+ assert.equal(response.result.activation,"NOT_RUN");
+ assert.equal(response.lab.m54Systemd.systemdActivatedLocally,false);
+ assert.equal(response.lab.m54Systemd.fullVmRebootValidated,false);
+}));

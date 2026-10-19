@@ -500,6 +500,22 @@
       "implementation": "src/runtime/m5-install-smoke.js",
       "test": "test/m5-install.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "M5.4",
+      "mode": "lab",
+      "title": "Validated systemd offline boot service contract (CI-only privileged service activation)",
+      "controlIds": [
+        "m54-systemd-panel",
+        "m54-systemd-run",
+        "m54-systemd-evidence"
+      ],
+      "actions": [
+        "m54Systemd"
+      ],
+      "implementation": "src/runtime/m5-systemd-unit.js",
+      "test": "test/m5-systemd.test.js",
+      "hardwareValidated": false
     }
   ]
 }

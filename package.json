@@ -43,7 +43,8 @@
     "m4:bundle:verify": "node bin/pef-m4-bundle.js --verify",
     "m5:install": "node bin/pef-m5-install.js",
     "m5:lab": "node bin/pef-m5-lab.js",
-    "m5:linux": "node bin/pef-m5-lab.js --require-linux"
+    "m5:linux": "node bin/pef-m5-lab.js --require-linux",
+    "m5:systemd:contract": "node bin/pef-m5-systemd.js"
   },
   "license": "UNLICENSED",
   "devDependencies": {
