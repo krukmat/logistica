@@ -252,3 +252,7 @@ El motor común y los contratos están en `src/core/site-operations.js` y `src/c
 ## M4.3 — Matriz Property/Host, pruebas y observaciones
 
 La acción `m4Commonality` en el panel integrado ejecuta `src/runtime/m4-commonality.js`: historial Property, regresión de identidad, fallo de hijo real (Node), backoff y recuperación, política de supervisor con reloj simulado, fallo fsync inyectado sobre archivo temporal, capacidad/admisión, enlace WAN virtual y Cloud mock. `lab.m4Commonality.lastEvidence` muestra resultado por perfil, contadores reales de RSS/CPU worker, latencia HTTP y una métrica LOC **acotada a rutas explícitas**. No equivale a pruebas físicas de corte o sandbox Host/Property. [Guía](tasks/m4-commonality-resilience.md).
+
+## M4.4 — Demo integral con bundle SHA256
+
+`Laboratorio integrado → M4.4` ejecuta `m4Integrated`: crea un paquete temporal verificable a partir de los **Edge HTTP reales** de Property y Host y la matriz M4.3. `lab.m4Integrated.lastEvidence` muestra `LAB_PASS`, runId, conteo de aserciones, los tres estados y ruta efímera local. El Control Panel no incorpora privilegios ni certificación física. El paquete se borra al reset/cierre del lab; para conservarlo usar `npm run m4:bundle` y verificar con `npm run m4:bundle:verify -- <directorio>`. [Contrato](contracts/m4-evidence-v1.json) y [tasks](tasks/m4-integrated-closure.md). HTML estático, sin red; NDJSON registra comprobaciones de runners, no eventos OS brutos; SHA256 no autentica el emisor.

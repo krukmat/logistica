@@ -236,3 +236,9 @@ En el **dashboard → Laboratorio integrado → M4.1**, ejecutar la prueba para 
 ## M4.3 — Commonality y resiliencia (LAB ONLY)
 
 `npm run m4:commonality` ejecuta paridad Property/Host, eventos históricos Property, fallos de proceso real Node, pruebas sintéticas de health/agotamiento, journal con fsync inyectado, admisión, WAN virtual y Cloud mock con ACK ambiguo. Reporta memoria RSS y CPU del hijo por IPC, latencias observadas y líneas compartidas **sólo de una muestra explícita**. El dashboard integra **Laboratorio integrado → M4.3** con el mismo camino HTTP. [Task](docs/tasks/m4-commonality-resilience.md) · [Auditoría](docs/audit/m4-commonality-2026-10-19.md). CI [#39218335525](https://github.com/krukmat/logistica/actions/runs/39218335525) PASS: ARM64 176/176, x64 175 PASS + 1 skip, Linux namespace y prehardware gate SUCCESS. Sin hardware, WAN real, cuotas kernel Property/Host ni Cloud alojado.
+
+## M4.4 — Paquete integral Property + Host (software lab)
+
+`npm run m4:bundle` ejecuta Property, Host y M4.3 en una sola pasada, construye `artifacts/m4/run-*` (report, aserciones NDJSON, summary, HTML estático, hashes y manifiesto) y verifica el bundle antes de responder éxito. `npm run m4:bundle:verify -- <directorio>` valida después sin volver a correr Edge. `npm run dashboard` → **Laboratorio integrado → M4.4** para ejecutar el mismo productor y mostrar ruta temporal (borrada al reset/cierre del panel). [Tasks](docs/tasks/m4-integrated-closure.md) y [auditoría](docs/audit/m4-integrated-closure.md).
+
+M4.4 es evidencia **LAB_ONLY**; SHA-256 no firma identidad y `events.ndjson` contiene aserciones, no registros directos del journal. No valida hardware, WAN/Cloud reales, PKI, cuotas kernel de ambos overlays, energía ni 72h. M5 requiere trabajo adicional.

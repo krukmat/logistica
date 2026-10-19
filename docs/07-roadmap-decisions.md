@@ -206,3 +206,7 @@ Se añade `pef-property` como **MODULE + CONFIG** con el mismo Core/Workload Sup
 ## M4.3 — Commonality medida y resiliencia (2026-10-19)
 
 M4.3.1–M4.3.3 **CLOSED SOFTWARE LAB ONLY** con evidencia CI [#39218335525](https://github.com/krukmat/logistica/actions/runs/39218335525). Core, journal, supervisor y worker compartidos Property/Host; compatibilidad Property histórica y matriz de fallos, fail-closed y recuperación comprobadas. 9 archivos comunes (929 LOC) y fachada Property (7 LOC) en muestra explícita: **no extrapolar el 99,25 % de muestra al producto**. CPU/RSS y latencias observadas no equivalen a cuotas físicas; Host/Property kernel sandbox NOT_RUN. [Tareas](tasks/m4-commonality-resilience.md) y [audit](audit/m4-commonality-2026-10-19.md). Siguiente M4.4 con bundle mismo run y verificación.
+
+## M4.4 — Integración de evidencia software (2026-10-19)
+
+El bundle M4 combina Property/Host y la matriz M4.3 **sin duplicar Core**. Pruebas negativas de adulteración, resumen/HTML regenerable, hash SHA256 **no firmado**, dashboard HTTP `m4Integrated` y artifacts x64/ARM64. Aún pendiente aceptar CI final al publicar documentación. [Tasks](tasks/m4-integrated-closure.md) · [auditoría](audit/m4-integrated-closure.md). Tras el cierre LAB, priorizar M5 instalación y pruebas físicas; no convertir artifact reproducible en evidencia de powercut/hardware/producto.

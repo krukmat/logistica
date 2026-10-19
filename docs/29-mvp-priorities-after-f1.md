@@ -64,3 +64,7 @@ M3.1–M3.6 están **CLOSED sólo para laboratorio** (incluye configuración tra
 ## M4.3 — Paridad cuantificada, resiliencia y recursos (2026-10-19)
 
 **CLOSED — SOFTWARE LAB ONLY:** validado por [CI #39218335525](https://github.com/krukmat/logistica/actions/runs/39218335525), ARM64 176/176, x64 175 PASS + 1 skip; dashboard real, Linux lab y prehardware PASS. Se mide commonality en subconjunto escogido (929 LOC compartidas, 7 de fachada Property; **99,25 % únicamente de esa muestra de 10 archivos activos**, NO producto), CPU/RSS y latencias experimentales en artifacts, y una misma matriz de fallos para Property y Host. [Task](tasks/m4-commonality-resilience.md), [auditoría](audit/m4-commonality-2026-10-19.md). M4.4 demostración y cierre integral sigue pendiente.
+
+## M4.4 — Demostración y evidencia integral (2026-10-19)
+
+**IMPLEMENTED — CI del último commit pendiente:** orquestación de los M4.1–M4.3 ya validados, bundle reproducible con SHA256/HTML/NDJSON y pruebas de tampering, dashboard real y artifacts CI x64/ARM64. [Tasks](tasks/m4-integrated-closure.md), [auditoría](audit/m4-integrated-closure.md). El cierre de M4 será exclusivamente **software lab**; M5 debe encargarse del dispositivo, durabilidad real, kernel isolation de Property/Host y capacidad económica. M2 Cloud Lite externo permanece DEFERRED.
