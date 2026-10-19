@@ -16,8 +16,18 @@ function safeDir(p,{create=false}={}){
  const absolute=path.resolve(p);
  if(absolute===anchor||!absolute.startsWith(anchor+path.sep))
    throw Error("M5_TEMP_ROOT_ONLY");
- if(create&&!fs.existsSync(p))fs.mkdirSync(p,{recursive:true,mode:0o700});
- const real=fs.realpathSync(p);
+ const suffix=path.relative(anchor,absolute).split(path.sep);
+ let scope=anchor;
+ for(const component of suffix){
+   scope=path.join(scope,component);
+   let stat;
+   try{stat=fs.lstatSync(scope);}catch(e){if(e.code!=="ENOENT")throw e;}
+   if(stat){
+     if(stat.isSymbolicLink()||!stat.isDirectory())throw Error("M5_UNSAFE_ROOT");
+   }else if(create)fs.mkdirSync(scope,{mode:0o700});
+   else throw Error("M5_ROOT_NOT_FOUND");
+ }
+ const real=fs.realpathSync(absolute);
  if(real===parent||!real.startsWith(parent+path.sep))
    throw Error("M5_TEMP_ROOT_ONLY");
  // Reject any symbolic component, not only the terminal path.
@@ -81,6 +91,9 @@ function releaseDir(root,version){return path.join(root,"releases",version);}
 function verifyRelease(root,version){
  if(!validVersion(version))throw Error("M5_INVALID_VERSION");
  const dir=releaseDir(root,version);
+ const releases=path.join(root,"releases");
+ if(!fs.existsSync(releases)||fs.lstatSync(releases).isSymbolicLink()||
+    !fs.lstatSync(releases).isDirectory())throw Error("M5_RELEASE_ROOT_UNSAFE");
  if(!fs.existsSync(dir)||fs.lstatSync(dir).isSymbolicLink()||!fs.statSync(dir).isDirectory())
    throw Error("M5_RELEASE_MISSING");
  const manifest=JSON.parse(safeFile(path.join(dir,"manifest.json")).toString("utf8"));
@@ -134,7 +147,10 @@ function withLock(root,fn){
  try{return fn();}finally{fs.rmSync(lock,{recursive:true,force:true});}
 }
 function releaseCreate(root,version){
- const releases=path.join(root,"releases");fs.mkdirSync(releases,{mode:0o700,recursive:true});
+ const releases=path.join(root,"releases");
+ if(!fs.existsSync(releases))fs.mkdirSync(releases,{mode:0o700});
+ if(fs.lstatSync(releases).isSymbolicLink()||!fs.lstatSync(releases).isDirectory())
+   throw Error("M5_RELEASE_ROOT_UNSAFE");
  const dest=releaseDir(root,version);
  if(fs.existsSync(dest))return verifyRelease(root,version);
  const tmp=path.join(releases,".stage-"+randomUUID());
@@ -182,7 +198,10 @@ function applyRelease({root:givenRoot,version,mode,interruptBeforeActivation=fal
    if(interruptBeforeActivation===true)throw Error("M5_INJECTED_BEFORE_ACTIVATION");
    const decision=nextInstallState(current,version,release.digest,mode);
    if(decision.changed){
-     fs.mkdirSync(path.join(root,"data"),{recursive:true,mode:0o700});
+     const dataPath=path.join(root,"data");
+     if(!fs.existsSync(dataPath))fs.mkdirSync(dataPath,{mode:0o700});
+     if(fs.lstatSync(dataPath).isSymbolicLink()||!fs.lstatSync(dataPath).isDirectory())
+       throw Error("M5_DATA_DIR_UNSAFE");
      writeAtomic(root,"state.json",encode(decision.state));
    }
    return {...verifyInstall(root),idempotent:!decision.changed,changed:decision.changed};
