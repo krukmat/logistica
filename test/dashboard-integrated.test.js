@@ -670,3 +670,34 @@ test("M6.4 dashboard integrates real HTTP local Cloud Lite outage, authenticatio
  assert.equal(response.lab.m64Matrix.lastEvidence.status,"LAB_PASS");
  assert.equal(response.result.legacyCloudMockRemoved,false);
 }));
+
+test("M7.1 dashboard signs real scoped Ed25519 challenge, reopens key and blocks corruption",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text(),client=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["m71-identity-panel","m71-identity-run","m71-identity-evidence"])
+  assert.ok(html.includes('id="'+id+'"'),id);
+ assert.match(client,/labAction\("m71Identity"\)/);
+ await call({command:"mode",mode:"lab"});
+ const response=await call({command:"lab",action:"m71Identity"});
+ assert.equal(response.httpStatus,200);
+ assert.equal(response.result.status,"LAB_PASS",JSON.stringify(response.result));
+ assert.equal(response.result.checks.REOPEN_PRESERVES_KEY,true);
+ assert.equal(response.result.checks.CORRUPTION_FAIL_CLOSED,true);
+ assert.equal(response.result.privateKeyInEvidence,false);
+ assert.equal(response.lab.m71Identity.lastEvidence.status,"LAB_PASS");
+}));
+test("M7.2 dashboard runs trusted M5 release boot and signed health-gated rollback",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text(),client=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["m72-release-panel","m72-release-run","m72-release-evidence"])
+  assert.ok(html.includes('id="'+id+'"'),id);
+ assert.match(client,/labAction\("m72Release"\)/);
+ await call({command:"mode",mode:"lab"});
+ const response=await call({command:"lab",action:"m72Release"});
+ assert.equal(response.httpStatus,200);
+ assert.equal(response.result.status,"LAB_PASS",JSON.stringify(response.result));
+ assert.equal(response.result.checks.FORGED_SIGNATURE_DENIED,true);
+ assert.equal(response.result.checks.ANTI_DOWNGRADE_FLOOR,true);
+ assert.equal(response.result.checks.SIGNED_HEALTH_FAILED_ROLLBACK,true);
+ assert.equal(response.result.checks.ROLLBACK_JOURNAL_PRESERVED,true);
+ assert.equal(response.result.secureBootValidated,false);
+ assert.equal(response.lab.m72Release.lastEvidence.status,"LAB_PASS");
+}));

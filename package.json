@@ -50,7 +50,9 @@
     "m6:registry": "node bin/pef-m61-registry.js",
     "m6:ingest": "node bin/pef-m62-ingest.js",
     "m6:matrix": "node bin/pef-m64-matrix.js",
-    "m6:sync": "node bin/pef-m63-sync.js"
+    "m6:sync": "node bin/pef-m63-sync.js",
+    "m7:identity": "node bin/pef-m71-identity.js",
+    "m7:release": "node bin/pef-m72-signed-release.js"
   },
   "license": "UNLICENSED",
   "devDependencies": {

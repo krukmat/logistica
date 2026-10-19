@@ -284,6 +284,25 @@
           <button id="m64-matrix-run" class="secondary" type="button">Ejecutar matriz de resiliencia M6.4</button>
           <pre id="m64-matrix-evidence">M6.4 NOT_RUN · backend local real</pre>
         </div>
+        <div class="lab-detail" id="m71-identity-panel">
+          <h4>M7.1 — Identidad criptográfica software</h4>
+          <p class="micro">Genera una identidad Ed25519 privada en un directorio temporal,
+          firma y verifica desafíos ligados a site/device/revision, prueba la
+          continuidad al reabrir y niega corrupción, scope ajeno y firma alterada.
+          No revela la clave privada; <strong>LAB_ONLY</strong>, sin TPM ni secure element.</p>
+          <button id="m71-identity-run" class="secondary" type="button">Probar identidad Ed25519 M7.1</button>
+          <pre id="m71-identity-evidence">M7.1 NOT_RUN · software key solamente</pre>
+        </div>
+        <div class="lab-detail" id="m72-release-panel">
+          <h4>M7.2 — Releases firmados y rollback autorizado</h4>
+          <p class="micro">Ancla una clave pública Ed25519, firma permisos de
+          activación ligados al digest/version/ordinal, usa el instalador M5
+          para arrancar un Edge real, rechaza upgrades manipulados e interrumpidos y
+          revierte al release conocido tras un health check negativo inyectado.
+          Sin PKI ni secure boot: <strong>LAB_ONLY</strong>.</p>
+          <button id="m72-release-run" class="secondary" type="button">Probar actualización firmada M7.2</button>
+          <pre id="m72-release-evidence">M7.2 NOT_RUN · firma sólo de release software</pre>
+        </div>
         <div class="lab-detail workload-panel" id="workload-panel">
           <h4>S — Workload Runtime · proceso local (NO sandbox)</h4>
           <p class="micro">Workload permitido: <code>pef-receiver</code>. El Core valida su manifest, recursos y política offline; el supervisor inicia un proceso Node aislado sólo por proceso. <strong>CPU/RAM, filesystem y red todavía no están aislados por Linux</strong>.</p>

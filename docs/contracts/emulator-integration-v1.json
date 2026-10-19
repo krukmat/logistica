@@ -612,6 +612,38 @@
       "implementation": "src/runtime/m64-cloud-lite-matrix.js",
       "test": "test/m64-matrix.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "M7.1",
+      "mode": "lab",
+      "title": "Actual software Ed25519 device identity, create-once persist, replay/scope rejection",
+      "controlIds": [
+        "m71-identity-panel",
+        "m71-identity-run",
+        "m71-identity-evidence"
+      ],
+      "actions": [
+        "m71Identity"
+      ],
+      "implementation": "src/runtime/m71-identity-smoke.js",
+      "test": "test/m71-identity.test.js",
+      "hardwareValidated": false
+    },
+    {
+      "task": "M7.2",
+      "mode": "lab",
+      "title": "Pinned Ed25519-authorized M5 release install upgrade rollback and tamper rejection",
+      "controlIds": [
+        "m72-release-panel",
+        "m72-release-run",
+        "m72-release-evidence"
+      ],
+      "actions": [
+        "m72Release"
+      ],
+      "implementation": "src/runtime/m72-signed-release-smoke.js",
+      "test": "test/m72-signed-release.test.js",
+      "hardwareValidated": false
     }
   ]
 }
