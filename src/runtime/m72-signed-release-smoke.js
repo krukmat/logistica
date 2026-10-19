@@ -107,6 +107,13 @@ async function runM72SignedReleaseSmoke(){
   let tampered=false;
   try{verifyInstall(root);}catch(e){tampered=e.message==="M72_ACTIVE_SIGNATURE_INVALID";}
   checks.SIGNED_STATE_TAMPER_DENIED=tampered;
+  let bootRejected=false;
+  try{
+   const unexpected=await boot(path.join(root,"releases","v1"),configFile,edgeToken);
+   await halt(unexpected.child);
+  }catch(e){bootRejected=/M72_ACTIVE_SIGNATURE_INVALID/.test(e.message);}
+  // The verifier must fail before a non-active or corrupted release is started.
+  checks.SIGNED_STATE_BOOT_REJECTED=bootRejected;
   fs.writeFileSync(stateFile,old);
   checks.VERIFIED_AFTER_RESTORE=verifyInstall(root).ok===true;
   const ok=Object.values(checks).every(Boolean);
