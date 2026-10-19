@@ -83,3 +83,7 @@ unset PEF_M75_LONGRUN_ACK
 ```
 
 **The 2h/4h/8h/24h option has NOT been run**; never claim that smoke CI measured multi-hour lifetime. It generates repeated real localhost fault tests, not realistic P0/P1 load over 72h. No commercial pilot GO until physical M5.3 and other blockers close. The mTLS certificate key is independent of M7.1 Ed25519 identity; renewable certificate does not imply revocation, TPM or production PKI. Certificate/authority scope is loopback only. [Audit M7.3–M7.6](../audit/m7-3-6-security-pilot-lab-2026-10-19.md).
+
+### Integrated M7.3–M7.6 HTTP/UI CI acceptance
+
+[CI #39295644533](https://github.com/krukmat/logistica/actions/runs/39295644533) SUCCESS: native ARM64 **227/227**, x64 **226 PASS +1 skip**, no failures; M7.3, M7.4, M7.5, M7.6 dashboard action tests all PASS; short stress + local lab readiness gate emitted evidence on both architectures. **M7.3 and M7.4 CLOSED SOFTWARE LAB**, M7.5 SHORT STRESS LAB PASS / 2–24h NOT_RUN, M7.6 SOFTWARE LAB GATE PASS / PHYSICAL FIELD NO-GO. The test did not authorize a commercial/site device deployment.

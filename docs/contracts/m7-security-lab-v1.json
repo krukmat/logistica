@@ -120,6 +120,19 @@
       "skip": 1,
       "fail": 0
     },
-    "dashboardHttp": true
+    "dashboardHttp": true,
+    "m7Combined": {
+      "runId": 39295644533,
+      "linuxArm64": {
+        "pass": 227,
+        "fail": 0
+      },
+      "linuxX64": {
+        "pass": 226,
+        "skip": 1,
+        "fail": 0
+      },
+      "dashboardM73ToM76Passed": true
+    }
   }
 }
