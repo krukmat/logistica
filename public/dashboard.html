@@ -232,6 +232,17 @@
           <button id="m55-isolation-run" class="secondary" type="button">Inspeccionar política de aislamiento M5.5</button>
           <pre id="m55-isolation-evidence">M5.5 NOT_RUN · evidencias kernel sólo CI</pre>
         </div>
+        <div class="lab-detail" id="m56-integration-panel">
+          <h4>M5.6 — Edge instalado + systemd + worker Linux aislado</h4>
+          <p class="micro">Comprueba la composición del paquete, entrypoint CI autorizado,
+            unidad systemd y presupuestos kernel de Property/Host. La acción local es
+            <strong>inspección sin privilegios</strong>: no instala servicios ni ejecuta cgroups
+            en macOS. El recorrido completo se prueba en CI Linux real y publica evidencia
+            `PEF_M56_INTEGRATED_SYSTEMD_KERNEL_LAB_V1`. No se certifican hardware,
+            reinicio completo de VM combinado, cloud remoto ni instalación de producción.</p>
+          <button id="m56-integration-run" class="secondary" type="button">Inspeccionar integración Linux M5.6</button>
+          <pre id="m56-integration-evidence">M5.6 NOT_RUN local · kernel/systemd sólo CI</pre>
+        </div>
         <div class="lab-detail workload-panel" id="workload-panel">
           <h4>S — Workload Runtime · proceso local (NO sandbox)</h4>
           <p class="micro">Workload permitido: <code>pef-receiver</code>. El Core valida su manifest, recursos y política offline; el supervisor inicia un proceso Node aislado sólo por proceso. <strong>CPU/RAM, filesystem y red todavía no están aislados por Linux</strong>.</p>

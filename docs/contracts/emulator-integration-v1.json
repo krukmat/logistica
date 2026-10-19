@@ -532,6 +532,22 @@
       "implementation": "src/runtime/m5-isolation-contract.js",
       "test": "test/m5-isolation.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "M5.6",
+      "mode": "lab",
+      "title": "Packaged systemd service with kernel isolated Property/Host real CI evidence; local read-only inspection",
+      "controlIds": [
+        "m56-integration-panel",
+        "m56-integration-run",
+        "m56-integration-evidence"
+      ],
+      "actions": [
+        "m56Integration"
+      ],
+      "implementation": "src/runtime/m56-integration-contract.js",
+      "test": "test/m56-integration-contract.test.js",
+      "hardwareValidated": false
     }
   ]
 }

@@ -587,3 +587,19 @@ test("M5.5 dashboard reports per-overlay isolation budgets and CI-only kernel st
  assert.equal(response.result.linuxKernelLimitsObservedHere,false);
  assert.equal(response.lab.m55Isolation.macKernelTest,"NOT_RUN_BLOCKED");
 }));
+
+test("M5.6 dashboard API inspects package + Linux systemd/kernel contracts without privileged Mac execution",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text(),client=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["m56-integration-panel","m56-integration-run","m56-integration-evidence"])
+  assert.ok(html.includes('id="'+id+'"'),id);
+ assert.match(client,/labAction\("m56Integration"\)/);
+ await call({command:"mode",mode:"lab"});
+ const response=await call({command:"lab",action:"m56Integration"});
+ assert.equal(response.httpStatus,200);
+ assert.equal(response.result.ok,true);
+ assert.equal(response.result.status,"LAB_PASS_CONTRACT_ONLY");
+ assert.equal(response.result.checks.PACKAGED_LAB_ENTRYPOINT,true);
+ assert.equal(response.result.profilePlans.host.cpuMax,"18000 100000");
+ assert.equal(response.result.localKernelExecution,"NOT_RUN_BLOCKED");
+ assert.equal(response.lab.m56Integration.kernelValidatedLocally,false);
+}));
