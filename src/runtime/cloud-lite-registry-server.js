@@ -1,6 +1,7 @@
 "use strict";
 // M6.1 real HTTP registry, loopback only. Transport is not mTLS/production trust.
-const http=require("node:http");
+const http=require("node:http"),https=require("node:https");
+const {X509Certificate}=require("node:crypto");
 const {randomBytes,timingSafeEqual}=require("node:crypto");
 const {planEnroll,findRegistered,checkedIdentity}=require("../core/cloud-lite-registry-policy.js");
 const {createFileRegistryStore,digestCredential}=require("../adapters/cloud-lite-registry-file.js");
@@ -13,7 +14,9 @@ function sameSecret(candidate,expected){
  const a=Buffer.from(candidate),b=Buffer.from(expected);
  return a.length===b.length&&timingSafeEqual(a,b);
 }
-function createCloudLiteRegistryServer({dir,adminToken,host="127.0.0.1",port=0,enableIngest=false}={}){
+function createCloudLiteRegistryServer({dir,adminToken,host="127.0.0.1",port=0,enableIngest=false,tls=null}={}){
+ if(tls!==null&&(!tls||!Buffer.isBuffer(tls.ca)||!Buffer.isBuffer(tls.key)||!Buffer.isBuffer(tls.cert)))
+   throw Error("M73_TLS_CONFIG_INVALID");
  if(host!=="127.0.0.1"||!Number.isInteger(port)||port<0||port>65535)
    throw Error("CLOUD_LITE_LOCALHOST_ONLY");
  if(typeof adminToken!=="string"||!/^[a-f0-9]{64}$/.test(adminToken))
@@ -46,7 +49,23 @@ function createCloudLiteRegistryServer({dir,adminToken,host="127.0.0.1",port=0,e
      throw Error("CLOUD_LITE_INVALID_BODY");
    return parsed;
  }
- const server=http.createServer((req,res)=>{void (async()=>{
+ const server=(tls?https.createServer({ca:tls.ca,key:tls.key,cert:tls.cert,
+    requestCert:true,rejectUnauthorized:true,minVersion:"TLSv1.3",
+    maxVersion:"TLSv1.3"}):http.createServer()).on("request",(req,res)=>{void (async()=>{
+   if(tls){
+     if(!req.socket.authorized){send(res,403,{ok:false,error:"M73_CLIENT_CERT_REQUIRED"});return;}
+     const peer=req.socket.getPeerCertificate();
+     if(!peer?.raw){send(res,403,{ok:false,error:"M73_CLIENT_CERT_REQUIRED"});return;}
+     const scope=require("../core/m73-tls-identity.js").certificateScope(new X509Certificate(peer.raw));
+     if(req.url==="/v1/device/ingest"){
+       // Body identity is compared later, after bounded parsing and validation.
+       req.m73ClientScope=scope;
+     }else if(req.url==="/v1/admin/enroll"||req.url==="/v1/admin/status"){
+       if(scope!=="admin"){send(res,403,{ok:false,error:"M73_ADMIN_CERT_DENIED"});return;}
+     }else if(req.url==="/v1/device/authenticate"){
+       req.m73ClientScope=scope;
+     }
+   }
    if(!["127.0.0.1:"+boundPort,"localhost:"+boundPort].includes(req.headers.host)){
      send(res,403,{ok:false,error:"HOST_DENIED"});return;
    }
@@ -61,7 +80,7 @@ function createCloudLiteRegistryServer({dir,adminToken,host="127.0.0.1",port=0,e
        registered:devices.length,credentialsPersistedAsHashes:true,
        ingestionAvailable:enableIngest,eventsStored:eventStore?.status().stored||0,
        cloudMockOnly:false,realHttpServer:true,
-       physicalValidated:false,remoteTlsValidated:false});return;
+       physicalValidated:false,remoteTlsValidated:!!tls});return;
    }
    if(req.method==="POST"&&req.url==="/v1/device/ingest"&&enableIngest){
      const provided=req.headers["x-pef-device-token"];
@@ -73,6 +92,9 @@ function createCloudLiteRegistryServer({dir,adminToken,host="127.0.0.1",port=0,e
      catch(e){send(res,400,{ok:false,durable:false,error:e.message});return;}
      const valid=validateCloudLiteEvent(event);
      if(!valid.ok){send(res,400,{ok:false,durable:false,error:valid.error});return;}
+     if(tls&&req.m73ClientScope!=="device/"+valid.scope.siteId+"/"+valid.scope.deviceId){
+       send(res,403,{ok:false,durable:false,error:"M73_CERT_SCOPE_DENIED"});return;
+     }
      const registered=findRegistered(store.read(),valid.scope);
      const digest=digestCredential(provided);
      const equal=registered?.credentialHash||dummy;
@@ -126,6 +148,9 @@ function createCloudLiteRegistryServer({dir,adminToken,host="127.0.0.1",port=0,e
      let identity;
      try{identity=checkedIdentity(input);}
      catch{send(res,403,{ok:false,error:"AUTH_DENIED"});return;}
+     if(tls&&req.m73ClientScope!=="device/"+identity.siteId+"/"+identity.deviceId){
+       send(res,403,{ok:false,error:"M73_CERT_SCOPE_DENIED"});return;
+     }
      const found=findRegistered(store.read(),identity);
      const digest=digestCredential(req.headers["x-pef-device-token"]);
      const equal=found?found.credentialHash:dummy;
@@ -148,7 +173,7 @@ function createCloudLiteRegistryServer({dir,adminToken,host="127.0.0.1",port=0,e
        server.listen(port,host,()=>{server.off("error",reject);resolve();});
      });}catch(e){store.close();closed=true;throw e;}
      boundPort=server.address().port;
-     return "http://127.0.0.1:"+boundPort;
+     return (tls?"https://":"http://")+"127.0.0.1:"+boundPort;
    },
    async close(){
      if(closed)return;closed=true;
