@@ -29,5 +29,20 @@
 
 - Commit funcional verificado: `91b5c52b9700d65a4672b8cebd2ccf3d907577a0`. Documentación posterior no cambia la lógica ejecutable.
 - `M4_BUNDLE_VERIFIED_V1`: integridad `SHA256_NOT_SIGNATURE`; 4 archivos de contenido con digest; 92 controles de la misma ejecución para cada artifact.
-- Operador Mac: **NOT_RUN/NOT_REPORTED** para `npm run m4:bundle` al cerrar este documento; no atribuirle los resultados del runner GitHub.
+- Operador Mac: `npm run m4:bundle` **LAB_PASS** reportado posteriormente; ver sección de evidencia local más abajo.
 - Próximos riesgos de producto: kernel enforcement real para Property/Host, budget físico y energía, capacidad 72h, powercut, boot en dispositivo, WAN/Cloud remoto y seguridad de aprovisionamiento.
+
+## Mac operator evidence — 2026-10-19
+
+**Provenance:** operator-provided terminal output of `npm run m4:bundle`, distinct from CI. The CLI created a local M4.4 bundle and invoked its own verifier before returning success. The underlying bytes were **not uploaded or independently inspected** in this interaction. The command `m4:bundle:verify` has **not yet been separately reported** by the operator.
+
+- CLI: `kind=PEF_M4_BUNDLE_CLI_V1`, `ok=true`.
+- Local relative output: `artifacts/m4/run-AwrpYG` (Mac operator-reported; the original absolute home directory is intentionally omitted from this public record).
+- Run ID: `aecea94d-b8c2-4461-b4a2-469e31ec2268`.
+- Reported source commit: `fc113ccfa6f4c7dabfd9c0decbe969224474e6eb` (matches the M4.4 documentation closure baseline).
+- Built-in verifier result: `kind=PEF_M4_BUNDLE_VERIFIED_V1`, `ok=true`, `status=LAB_PASS`, `assertions=92`, `files=4`, `physicalValidated=false`.
+- `files=4` counts content files with hashes; the generated bundle also carries `manifest.json` and `SHA256SUMS` for **six files total**.
+- `integrity=SHA256_NOT_SIGNATURE`: hash-relative integrity and cross-file checks are software lab checks, not proof of source authenticity or operator signing.
+- All conclusions retain the existing constraints: virtual WAN, local Cloud mock, no Property/Host Linux kernel isolation, no physical powercut, device, PKI or 72-hour retention validation.
+
+**Result:** operator Mac smoke `LAB_PASS` recorded; M4.1–M4.4 remain **CLOSED — SOFTWARE LAB ONLY**, with independent CI results linked above. M5 device/installation validation remains open.
