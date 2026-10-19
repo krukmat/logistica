@@ -93,6 +93,7 @@ function verifySignedInstall(root,state){
    p.rootId!==trust.rootId||p.version!==state.activeVersion||
    p.digest!==state.activeHash||p.sequence!==sec.sequence||
    p.ordinal!==sec.ordinal||p.floorOrdinal!==sec.previousFloorOrdinal||
+   p.previousOrdinal!==sec.previousReleaseOrdinal||
    p.previousVersion!==sec.previousVersionAtSignature||
    p.previousDigest!==sec.previousDigestAtSignature ||
    p.previousVersion!==state.previousVersion||p.previousDigest!==state.previousHash||
