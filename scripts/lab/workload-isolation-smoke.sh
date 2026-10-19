@@ -123,3 +123,49 @@ if [[ -n "${PEF_S34_EVIDENCE:-}" ]]; then
   sed -n 's/^PEF_S34_SUPERVISED_LINUX_PASS=//p' "$tmpdir/supervised.out" > "$PEF_S34_EVIDENCE"
   [[ -s "$PEF_S34_EVIDENCE" ]] || { echo "missing S3.4 artifact" >&2; exit 1; }
 fi
+
+# M5.5: reuse EXACT Core supervisor and isolated process driver for Property and Host.
+# All privileged commands remain guarded by this script's initial hosted CI preflight.
+mkdir -p "$root/app/workloads" "$root/app/core"
+cp "$PEF_S3_REPO_ROOT/src/workloads/site-operations-worker.js" "$root/app/workloads/"
+cp "$PEF_S3_REPO_ROOT/src/core/site-operation-contract.js" "$root/app/core/"
+for siteprofile in property host; do
+  mapfile -t site_limits < <("$PEF_S3_NODE" - "$PEF_S3_REPO_ROOT" "$siteprofile" <<'NODE'
+const root=process.argv[2],profile=process.argv[3];
+const {propertyManifest,hostManifest}=require(root+"/src/runtime/demo-workload.js");
+const {makeLinuxIsolationPlan}=require(root+"/src/adapters/linux-workload-isolation.js");
+const plan=makeLinuxIsolationPlan(profile==="property"?propertyManifest():hostManifest());
+console.log(plan.cpuMax);console.log(plan.memoryMax);console.log(plan.pidsMax);
+NODE
+)
+  [[ "${#site_limits[@]}" == 3 ]] || { echo "M55_INVALID_LIMIT_PLAN" >&2;exit 1; }
+  printf '%s\n' "${site_limits[0]}" > "$cg/cpu.max"
+  printf '%s\n' "${site_limits[1]}" > "$cg/memory.max"
+  printf '%s\n' "${site_limits[2]}" > "$cg/pids.max"
+  [[ "$(cat "$cg/cpu.max")" == "${site_limits[0]}" &&
+     "$(cat "$cg/memory.max")" == "${site_limits[1]}" &&
+     "$(cat "$cg/pids.max")" == "${site_limits[2]}" ]] ||
+    { echo "M55_LIMIT_NOT_ENFORCED" >&2;exit 1; }
+  mkdir -p "$tmpdir/$siteprofile-journal"
+  timeout -k 3s 35s "$PEF_S3_NODE" "$PEF_S3_REPO_ROOT/scripts/lab/supervised-site-worker.js" \
+    "$siteprofile" "$name" "$cg" "$root" "$node_bin" \
+    "$tmpdir/$siteprofile-journal" "$tmpdir/host-canary" \
+    >"$tmpdir/site-$siteprofile.out" 2>&1 || {
+      cat "$tmpdir/site-$siteprofile.out" >&2
+      exit 1
+    }
+  cat "$tmpdir/site-$siteprofile.out"
+  sed -n 's/^PEF_M55_PROFILE_PASS=//p' "$tmpdir/site-$siteprofile.out" > "$tmpdir/site-$siteprofile.json"
+  [[ -s "$tmpdir/site-$siteprofile.json" ]] || { echo "M55_MISSING_PROFILE_EVIDENCE" >&2;exit 1; }
+done
+"$PEF_S3_NODE" - "$tmpdir/site-property.json" "$tmpdir/site-host.json" <<'NODE' > "${PEF_M55_EVIDENCE:-$tmpdir/m55.json}"
+const fs=require("node:fs");
+const results=process.argv.slice(2).map(p=>JSON.parse(fs.readFileSync(p)));
+if(results.length!==2||results.some(x=>!x.ok||x.status!=="LAB_PASS"||
+  x.actualLimitsEnforced!==true||x.physicalValidated!==false)||results[0].profile!=="property"||
+  results[1].profile!=="host")throw Error("M55_PROFILES_INCOMPLETE");
+console.log(JSON.stringify({kind:"PEF_M55_KERNEL_OVERLAYS_V1",status:"LAB_PASS",ok:true,
+ profiles:{property:results[0],host:results[1]},scope:"EPHEMERAL_GITHUB_LINUX",
+ physicalValidated:false,systemServiceInstalled:false}));
+NODE
+echo "M55_BOTH_OVERLAYS=LAB_PASS"
