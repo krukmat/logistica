@@ -256,3 +256,7 @@ La acción `m4Commonality` en el panel integrado ejecuta `src/runtime/m4-commona
 ## M4.4 — Demo integral con bundle SHA256
 
 `Laboratorio integrado → M4.4` ejecuta `m4Integrated`: crea un paquete temporal verificable a partir de los **Edge HTTP reales** de Property y Host y la matriz M4.3. `lab.m4Integrated.lastEvidence` muestra `LAB_PASS`, runId, conteo de aserciones, los tres estados y ruta efímera local. El Control Panel no incorpora privilegios ni certificación física. El paquete se borra al reset/cierre del lab; para conservarlo usar `npm run m4:bundle` y verificar con `npm run m4:bundle:verify -- <directorio>`. [Contrato](contracts/m4-evidence-v1.json) y [tasks](tasks/m4-integrated-closure.md). HTML estático, sin red; NDJSON registra comprobaciones de runners, no eventos OS brutos; SHA256 no autentica el emisor.
+
+## M5.1/M5.2 — Instalar/actualizar/rollback en laboratorio
+
+En **Laboratorio integrado → M5**, `m5InstallLab` arranca un instalador bajo un directorio temporal aislado y prueba el paquete Edge real por HTTP, eventos O1/fsync, conservación del journal tras actualización y rollback. Reporta en `lab.m5Install.lastEvidence`: checks, plataforma, release hash, estado de servicio del sistema **no instalado**. No modifica servicios del Mac. Código: `src/runtime/m5-install.js`, `src/runtime/m5-install-smoke.js`; contrato [M5 v1](contracts/m5-install-v1.json); [plan](tasks/m5-reproducible-install-linux-lab.md). La autenticación de operador se inyecta sólo por entorno efímero durante el test; no provisiona secretos del producto.

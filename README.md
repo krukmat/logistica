@@ -244,3 +244,9 @@ En el **dashboard → Laboratorio integrado → M4.1**, ejecutar la prueba para 
 M4.4 es evidencia **LAB_ONLY**; SHA-256 no firma identidad y `events.ndjson` contiene aserciones, no registros directos del journal. No valida hardware, WAN/Cloud reales, PKI, cuotas kernel de ambos overlays, energía ni 72h. M5 requiere trabajo adicional.
 
 **M4 LAB CLOSED (2026-10-19):** [CI #39226414601](https://github.com/krukmat/logistica/actions/runs/39226414601) SUCCESS: ARM64 178/178, x64 177 PASS + 1 skip, netns-lab y prehardware PASS. [Bundles CI x64](https://github.com/krukmat/logistica/actions/runs/39226414601/artifacts/12173203985) y [ARM64](https://github.com/krukmat/logistica/actions/runs/39226414601/artifacts/12173842813); [auditoría](docs/audit/m4-integrated-closure.md). Pendientes M5 y device/Cloud real.
+
+## M5.1–M5.2 — Instalación reproducible (prehardware)
+
+`npm run m5:lab` ejecuta una instalación temporal del servicio Edge desde release empaquetada, comprueba idempotencia, proceso autónomo Node, fsync de una incidencia Property, parada/rearranque, actualización v2 y rollback v1 sin borrar journal, rechazo de corrupción y un fallo justo antes de activar. `npm run m5:linux` ejecuta idéntica prueba sólo en Linux (CI x64/ARM64). Control Panel: **Laboratorio integrado → M5.1–M5.2**, con evidencia visual. Para CLI manual en directorio de laboratorio temporal, `npm run m5:install -- install --root /tmp/pef-m5-... --version v1` y `verify/upgrade/rollback`. [Plan](docs/tasks/m5-reproducible-install-linux-lab.md) · [auditoría](docs/audit/m5-reproducible-install-2026-10-19.md).
+
+**No es instalador de producto ni habilita systemd, reboot real, red física, secreto firmado ni hardware.** M5.3 sigue bloqueado hasta disponer de hardware físico; no hacer compras ni elevar un LAB_PASS a certificación.

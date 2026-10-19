@@ -212,3 +212,7 @@ M4.3.1–M4.3.3 **CLOSED SOFTWARE LAB ONLY** con evidencia CI [#39218335525](htt
 El bundle M4 combina Property/Host y la matriz M4.3 **sin duplicar Core**. Pruebas negativas de adulteración, resumen/HTML regenerable, hash SHA256 **no firmado**, dashboard HTTP `m4Integrated` y artifacts x64/ARM64. Aún pendiente aceptar CI final al publicar documentación. [Tasks](tasks/m4-integrated-closure.md) · [auditoría](audit/m4-integrated-closure.md). Tras el cierre LAB, priorizar M5 instalación y pruebas físicas; no convertir artifact reproducible en evidencia de powercut/hardware/producto.
 
 **Cierre LAB M4 completo:** [CI #39226414601](https://github.com/krukmat/logistica/actions/runs/39226414601) SUCCESS; 178 ARM64 PASS, 177 x64 PASS y un skip; artifacts x64/ARM64 con verificador de hashes. M4.1–M4.4 quedan **CLOSED SOFTWARE LAB ONLY**. El gate prehardware no autoriza producto físico; M5 permanece pendiente.
+
+## M5.1–M5.2 — Ciclo de release temporal en Linux prehardware (2026-10-19)
+
+Se implementa instalador de laboratorio `src/runtime/m5-install.js` con política pura Core y manifest SHA-256 (no firma), activación atómica, idempotencia y rollback conservando journal. Smoke de proceso empaquetado y UI con CI nativo x64+ARM64. **No** se instala daemon de sistema ni arranque automático ante reboot OS: readiness de proceso no constituye bootstrap de hardware. La selección de SO y control real de servicios se difiere a M5.3 según constraints. [Tasks](tasks/m5-reproducible-install-linux-lab.md), [audit](audit/m5-reproducible-install-2026-10-19.md).
