@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "kind": "PEF_M5_LAB_INSTALL_CONTRACT_V1",
+  "scope": "TEMPORARY_UNPRIVILEGED_LAB_ONLY",
+  "commands": [
+    "install",
+    "verify",
+    "upgrade",
+    "rollback"
+  ],
+  "versions": "[A-Za-z0-9][A-Za-z0-9._-]{0,47}",
+  "releaseMode": "IMMUTABLE_VERSIONED_STAGING_HASHED_ATOMIC_RENAME",
+  "activation": "FSYNC_ATOMIC_STATE_POINTER",
+  "persistentData": "DATA_DIR_NOT_DELETED_ON_UPGRADE_OR_ROLLBACK",
+  "osServiceInstalled": false,
+  "selectedOS": null,
+  "bootAutostartValidated": false,
+  "realRebootValidated": false,
+  "physicalDeviceValidated": false,
+  "actualPowerCutValidated": false,
+  "dashboard": {
+    "action": "m5InstallLab",
+    "controlIds": [
+      "m5-install-panel",
+      "m5-install-run",
+      "m5-install-evidence"
+    ]
+  },
+  "hardwareRequired": false
+}
