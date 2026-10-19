@@ -45,6 +45,8 @@ jobs:
           node-version: '22'
       - name: Browser client syntax check
         run: node --check public/dashboard.js
+      - name: M5.4 Lima service and guarded CI systemd script syntax
+        run: bash -n scripts/lab/m5-systemd-smoke.sh scripts/arm64-vm/m54-lima-service.sh scripts/arm64-vm/guest-m54-service.sh
       - name: Node regression suite
         run: npm test
       - name: M4.3 dual-overlay commonality and fault evidence (lab only)
