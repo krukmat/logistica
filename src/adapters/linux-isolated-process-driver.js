@@ -44,17 +44,25 @@ function createLinuxIsolatedProcessDriver({namespace,cgroup,rootfs,nodeInside,ho
       if(active)throw Error("LAB_WORKLOAD_ALREADY_ACTIVE");
       if(typeof onExit!=="function")throw Error("INVALID_ONEXIT_PORT");
       const plan=makeLinuxIsolationPlan(manifest);
+      const workerId=manifest.workload_id;
+      const isSite=workerId==="pef-property"||workerId==="pef-host";
+      const profile=workerId==="pef-property"?"property":workerId==="pef-host"?"host":null;
+      const workerFile=isSite?"/app/workloads/site-operations-worker.js":"/app/receiver-worker.js";
+      if(!fs.existsSync(path.join(real,workerFile))||
+        !fs.statSync(path.join(real,workerFile)).isFile())
+        throw Error("LAB_BLOCKED:worker-not-staged:"+workerId);
       verifyLimit("cpu.max",plan.cpuMax);
       verifyLimit("memory.max",plan.memoryMax);
       verifyLimit("memory.swap.max",plan.memorySwapMax);
       verifyLimit("pids.max",plan.pidsMax);
       const argv=["-c",'kill -STOP "$$"; exec "$@"',"pef-worker",
         "ip","netns","exec",namespace,"chroot","--userspec=65534:65534",
-        real,nodeInside,"/app/receiver-worker.js"];
+        real,nodeInside,workerFile];
       const child=spawn("/bin/sh",argv,{detached:true,stdio:["ignore","pipe","pipe","ipc"],
         env:{PATH:"/usr/sbin:/usr/bin:/bin",LANG:"C",
           PEF_ALLOW_FAULT_INJECTION:"CI_ISOLATED_WORKER",
-          PEF_HOST_SENTINEL:hostCanary||"/host-cannot-be-reached"}});
+          PEF_HOST_SENTINEL:hostCanary||"/host-cannot-be-reached",
+          ...(isSite?{PEF_SITE_PROFILE:profile,PEF_WORKLOAD_ID:workerId}:{})}});
       active=child;
       let closed=false,stopping=false,ready=false,nextId=0;
       let stdErr="";
@@ -81,7 +89,7 @@ function createLinuxIsolatedProcessDriver({namespace,cgroup,rootfs,nodeInside,ho
         });}catch(e){clearTimeout(timer);pending.delete(id);reject(e);}
       });
       child.on("message",m=>{
-        if(m?.type==="READY"&&m.id==="pef-receiver")ready=true;
+        if(m?.type==="READY"&&m.id===workerId)ready=true;
         if(m?.type==="REPLY"&&pending.has(m.id)){
           const p=pending.get(m.id);pending.delete(m.id);clearTimeout(p.timer);p.resolve(m);
         }
@@ -110,7 +118,13 @@ function createLinuxIsolatedProcessDriver({namespace,cgroup,rootfs,nodeInside,ho
           if(closed||!member(child.pid))return {ok:false,error:"NOT_IN_CGROUP"};
           return await request("HEALTH",{},15000);
         },
-        processReceipt:body=>request("RECEIPT",body),
+        processReceipt:body=>workerId==="pef-receiver"?request("RECEIPT",body):
+          Promise.resolve({ok:false,error:"OPERATION_NOT_ALLOWED"}),
+        processOperation:(operation,input)=>{
+          if(!isSite||operation!==profile.toUpperCase())
+            return Promise.resolve({ok:false,error:"OPERATION_NOT_ALLOWED"});
+          return request("SITE_OPERATION",{input});
+        },
         injectCrash:async()=>{const res=await request("CRASH");
           return {ok:true,expectedState:"BACKOFF",sent:res.ok};},
         fault:async type=>{

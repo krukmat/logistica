@@ -5,7 +5,8 @@ const {validateWorkloadManifest}=require("../core/workload-manager.js");
 function makeLinuxIsolationPlan(manifest){
   const valid=validateWorkloadManifest(manifest);
   if(!valid.ok)throw Error(valid.error);
-  if(manifest.workload_id!=="pef-receiver")throw Error("WORKLOAD_BINARY_NOT_ALLOWLISTED");
+  if(!["pef-receiver","pef-property","pef-host"].includes(manifest.workload_id))
+    throw Error("WORKLOAD_BINARY_NOT_ALLOWLISTED");
   const {cpu_limit_millicores:mc,memory_limit_mib:mib,storage_limit_mib:storage}=manifest.resources;
   if(mc>1000||mib>1024||storage>512)throw Error("LINUX_LAB_LIMIT_TOO_LARGE");
   const cpuQuota=Math.max(1000,Math.ceil(mc*100)); // 100000 us × millicores / 1000
