@@ -90,3 +90,7 @@ M3.1–M3.6 están **CLOSED sólo para laboratorio** (incluye configuración tra
 ## M6 Cloud Lite local iniciado — M6.1 (2026-10-19)
 
 M6.1: registro de dispositivos y autenticación por token en servidor HTTP real loopback, almacenamiento fsynced bajo directorio privado temporal y UI real; **CI acceptance pending**. M6.2 ingest/ACK, M6.3 Edge reconciliation y M6.4 cierre integral pendientes. Coste adicional de hosting **0 EUR**; Cloud mock sigue en otras demos. [Plan](tasks/m6-cloud-lite-local.md) · [auditoría](audit/m6-1-local-registry-2026-10-19.md).
+
+## Cloud Lite M6 — avance laboratorio, 2026-10-19
+
+M6.1/M6.2/M6.3 CLOSED SOFTWARE LAB (registry, ingesta durable y Edge real → HTTP Cloud Lite con HMAC/replay), M6.4 matriz real Property+Host PASS en CI #39271578783, integración dashboard/artefactos en verificación final. Cloud legacy mock sigue en demos antiguas; nuevo flujo no lo utiliza. Sin hosting ni hardware físico. Véase [plan](tasks/m6-cloud-lite-local.md).

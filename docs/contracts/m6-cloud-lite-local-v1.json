@@ -20,19 +20,49 @@
     "remoteTlsValidated": false,
     "cloudMockReplaced": false,
     "eventIngestionAvailable": false,
-    "deviceProvisioningProductionReady": false
+    "deviceProvisioningProductionReady": false,
+    "state": "CLOSED_LAB"
   },
   "m62": {
     "objective": "FSYNC_EVENT_INGEST_AND_ACK_AFTER_COMMIT",
-    "state": "PENDING"
+    "state": "CLOSED_SOFTWARE_LAB",
+    "dedup": true,
+    "identityScoped": true,
+    "boundedEvents": 4096,
+    "physicalPowerCutValidated": false
   },
   "m63": {
     "objective": "EDGE_HTTP_TRANSPORT_AND_OFFLINE_RECONCILIATION",
-    "state": "PENDING"
+    "state": "CLOSED_SOFTWARE_LAB",
+    "actualLoopbackHttp": true,
+    "ackHmac": "LAB_TOKEN_BOUND",
+    "lostAckReplay": true,
+    "profiles": [
+      "property",
+      "host"
+    ],
+    "legacyMockRemoved": false
   },
   "m64": {
     "objective": "DASHBOARD_AND_X64_ARM64_FAILURE_MATRIX",
-    "state": "PENDING"
+    "state": "IMPLEMENTED_CI_FINAL_ACCEPTANCE_PENDING",
+    "checksPerProfile": [
+      "OFFLINE_LOCAL_FSYNC",
+      "CLOUD_OUTAGE_RETAINS_JOURNAL",
+      "WRONG_DEVICE_TOKEN_DENIED",
+      "FORGED_PROOF_FAIL_CLOSED",
+      "AUTHENTICATED_REPLAY_DEDUP",
+      "EDGE_REOPEN_PRESERVES_ACK"
+    ],
+    "dashboardActions": [
+      "m61Registry",
+      "m62Ingest",
+      "m63Sync",
+      "m64Matrix"
+    ],
+    "evidenceKind": "PEF_M64_CLOUD_LITE_FAULT_MATRIX_V1",
+    "network": "LOCALHOST_ONLY",
+    "physicalValidated": false
   },
   "physicalValidated": false
 }

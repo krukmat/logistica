@@ -272,3 +272,7 @@ Dashboard → Laboratorio integrado → **M5.6** (`m56Integration`): inspect all
 ## M6.1 — Registry Cloud Lite real (local)
 
 En Lab integrado → **M6.1**, la acción `m61Registry` crea un servicio HTTP real de loopback aislado del mock, valida enrolamiento de dos identidades, credenciales aleatorias protegidas por hash SHA-256, reinicio y reautenticación. El dashboard recibe únicamente checks y metadatos sin credenciales. El servicio se cierra y elimina el estado de prueba al finalizar el smoke. El `cloud` del resto del dashboard sigue siendo el **Cloud mock** hasta M6.3; no se supone sustitución. Contrato [Cloud Lite M6](contracts/m6-cloud-lite-local-v1.json), [plan](tasks/m6-cloud-lite-local.md).
+
+## M6.3–M6.4 — Cloud Lite real y resiliencia
+
+Dashboard → Laboratorio integrado → **M6.3** (`m63Sync`) inicia Edge real y Cloud Lite HTTP loopback para Property/Host y valida offline, token, ACK autenticado, dedup/reinicio. **M6.4** (`m64Matrix`) ejecuta matriz adicional sobre servidor de Cloud que se detiene/reinicia, intento con token inválido, ACK falsificado y local journal que no avanza. Los dos servicios reales se cierran y eliminan sus directorios temporales al finalizar. El `cloud` de las otras escenas antiguas sigue siendo el mock. [Auditoría](audit/m6-2-4-cloud-lite-local-2026-10-19.md).

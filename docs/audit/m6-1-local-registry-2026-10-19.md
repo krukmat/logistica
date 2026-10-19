@@ -22,3 +22,7 @@
 Not Cloud mock replacement. Not event ingest/ACK, TLS, mTLS, certificate-based authority, physical-powercut validation, production persistent storage or paid hosting. Device tokens are 256-bit random bearer tokens over **loopback HTTP only**. `fsyncCompleted` refers to OS-level flush, not tested physical powercut.
 
 M6.2 will address persistent event ingest, dedup and ACK; M6.3 will connect real Edge transport without changing the ability to boot offline.
+
+## CI acceptance update — 2026-10-19
+
+Los controles M6.1 están **CLOSED SOFTWARE LAB**: [CI #39259967547](https://github.com/krukmat/logistica/actions/runs/39259967547) SUCCESS (ARM64 199 PASS; x64 198 PASS +1 skip), y nueva regresión x64/ARM64 en [#39263462132](https://github.com/krukmat/logistica/actions/runs/39263462132) SUCCESS. Las declaraciones iniciales de CI pending y de ausencia de ingestión en este mismo fichero corresponden al estado **M6.1 de entonces**; el estado posterior M6.2 y M6.3 está documentado en [auditoría conjunta](m6-2-4-cloud-lite-local-2026-10-19.md).

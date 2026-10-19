@@ -270,3 +270,9 @@ El reboot total de la VM Lima ARM64 fue **ejecutado por el operador y validado L
 `npm run m6:registry` inicia un **servidor HTTP real en loopback** y comprueba enrolamiento, autenticación por dispositivo, persistencia de hashes tras reiniciar, rechazo de identidades/credenciales erróneas y del acceso no autorizado. Sin SDK de terceros ni coste nuevo de hosting. Disponible desde `npm run dashboard` → M6.1. `node bin/pef-cloud-lite.js --root /ruta/temporal/privada/existente` ejecuta el servidor independiente con `PEF_CLOUD_LITE_ADMIN_TOKEN` de 64 dígitos hexadecimales generado localmente. [Plan](docs/tasks/m6-cloud-lite-local.md) · [auditoría](docs/audit/m6-1-local-registry-2026-10-19.md).
 
 M6.1 **no reemplaza todavía el Cloud mock**: no hay ingestión/ACK de eventos (M6.2) ni transporte Edge→Cloud autenticado (M6.3); sólo credenciales locales por bearer token, sin TLS/mTLS ni provisión física. El almacenamiento es temporal para el laboratorio, no una base operativa de producción.
+
+## M6 Cloud Lite local real — Edge → Cloud Lite (sin hosting de pago)
+
+`npm run m6:registry` (M6.1), `npm run m6:ingest` (M6.2), `npm run m6:sync` (M6.3) y `npm run m6:matrix` (M6.4) ejecutan pruebas HTTP locales con dos perfiles Edge (Property/Host), registro/credenciales individuales, ingesta fsynced, ACK HMAC de laboratorio, pérdida de ACK, caída de backend, token y prueba adulterados, retry idempotente y recuperación. Acceso visual: `npm run dashboard` → Laboratorio integrado M6.1–M6.4. La referencia antigua a M6.1 como única fase terminada ha quedado supersedida. [Plan](docs/tasks/m6-cloud-lite-local.md) · [Auditoría](docs/audit/m6-2-4-cloud-lite-local-2026-10-19.md).
+
+**LAB ONLY**: Cloud real pero restringido a loopback, WAN sintética, Cloud mock aún presente en demostraciones legacy, sin TLS remoto, powercut real, PKI ni garantía de 72 horas. Infraestructura externa nueva: ninguna.
