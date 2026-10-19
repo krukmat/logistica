@@ -242,3 +242,7 @@ M6.1 registry/auth y M6.2 fsync event ingest **CLOSED SOFTWARE LAB**. M6.3 Edge 
 ## M7.1–M7.2 security lab implementado, validación pendiente (2026-10-19)
 
 Se añadió Ed25519 software create-once por identidad y firma de desafío con fsync (M7.1) y protección de activación dentro del instalador M5 por firma y pin de autoridad con contador ordinal, known-good rollback y health check negativo inyectado tras arranque real (M7.2). Dashboard `m71Identity`/`m72Release`, HTTP E2E, tests unit y CI x64+ARM64 publicados en `main`. **Aún no declarar CLOSED**: los runs recientes de GitHub Actions continúan en cola sin verificación de los gates. No afirmar TPM, remote TLS, secure boot, powercut o resistencia a rollback completo de trust files. M7.3–M7.6 PROPOSED. [Plan](tasks/m7-security-pilot.md) · [auditoría](audit/m7-identity-and-signed-release-2026-10-19.md).
+
+## M7.1–M7.2 lab acceptance — 2026-10-19
+
+**CLOSED SOFTWARE LAB ONLY**. [CI #39286831769](https://github.com/krukmat/logistica/actions/runs/39286831769) SUCCESS at `fc9ac7f`; ARM64 216 PASS, x64 215 PASS+1 skip; Ed25519 identity/keystore, signed M5 release, explicit rollback, bundled Edge boot trust verification and both dashboard HTTP actions PASS. Previous M7 CI_PENDING notes superseded. M7.3–M7.6 remain PROPOSED, no remote TLS/PKI/TPM/physical verification. [Task](tasks/m7-security-pilot.md) · [audit](audit/m7-identity-and-signed-release-2026-10-19.md).

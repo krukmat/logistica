@@ -1,14 +1,14 @@
 # M7 — Seguridad y preparación del piloto
 
-**Inicio: 2026-10-19, branch `main`.** M7.1/M7.2 implementation and dashboard/CI integration authored; **VALIDATION PENDING** until successful current-HEAD CI. M7.3–M7.6 not implemented. No purchased hardware, hosted cloud, external services or operator system changes.
+**Inicio: 2026-10-19, branch `main`.** M7.1/M7.2 **CLOSED — SOFTWARE LAB ONLY**, with current-HEAD CI success; x64/ARM64 and dashboard gates passed. M7.3–M7.6 not implemented. No purchased hardware, hosted cloud, external services or operator system changes.
 
 ## M7.1 — Identidad criptográfica de Edge (P0)
 
 | ID | Dependencies | Delivery / acceptance | State |
 | --- | --- | --- | --- |
-| M7.1.A | M6 registry, Core identity | Ed25519 256-bit-curve software private key created once with 0600 + fsync (file and directory), pinned `siteId/deviceId/revision` | IMPLEMENTED / CI_PENDING |
-| M7.1.B | A | Challenge/nonce signed with persistent key, Ed25519 public verification and foreign-scope/nonce/modified-signature rejection | IMPLEMENTED / CI_PENDING |
-| M7.1.C | A–B | Open identical key after process reopen; refuse revision mismatch, storage corruption and silent key regeneration; CLI, dashboard HTTP, x64/ARM64 CI | IMPLEMENTED / CI_PENDING |
+| M7.1.A | M6 registry, Core identity | Ed25519 256-bit-curve software private key created once with 0600 + fsync (file and directory), pinned `siteId/deviceId/revision` | CLOSED — SOFTWARE LAB ONLY |
+| M7.1.B | A | Challenge/nonce signed with persistent key, Ed25519 public verification and foreign-scope/nonce/modified-signature rejection | CLOSED — SOFTWARE LAB ONLY |
+| M7.1.C | A–B | Open identical key after process reopen; refuse revision mismatch, storage corruption and silent key regeneration; CLI, dashboard HTTP, x64/ARM64 CI | CLOSED — SOFTWARE LAB ONLY |
 
 Files: `src/core/m71-identity-policy.js`, `src/adapters/m71-identity-keystore.js`, `src/runtime/m71-identity-smoke.js`, `bin/pef-m71-identity.js`, `test/m71-identity.test.js`. Command: `npm run m7:identity`. Dashboard action `m71Identity`.
 
@@ -18,9 +18,9 @@ Files: `src/core/m71-identity-policy.js`, `src/adapters/m71-identity-keystore.js
 
 | ID | Dependencies | Delivery / acceptance | State |
 | --- | --- | --- | --- |
-| M7.2.A | M5.1/M5.2 + M7.1 Trust principle | Pin a distinct Ed25519 **release authority** public key in the scoped installer root; verify signed `version/digest/rootId/ordinal/sequence/predecessor` before M5's atomic state activation | IMPLEMENTED / CI_PENDING |
-| M7.2.B | A | Ordinal high-water/floor blocks stale/downgrade as upgrade; explicit signed rollback only to the prior known-good release; no unsigned legacy activation if trust is pinned | IMPLEMENTED / CI_PENDING |
-| M7.2.C | A–B | Real packaged Edge boots and fsyncs a Property event; tampered signature and state denied, interrupted upgrade leaves active unchanged, injected failed health check triggers preauthorized rollback retaining journal; CLI/dashboard/x64/ARM64 tests | IMPLEMENTED / CI_PENDING |
+| M7.2.A | M5.1/M5.2 + M7.1 Trust principle | Pin a distinct Ed25519 **release authority** public key in the scoped installer root; verify signed `version/digest/rootId/ordinal/sequence/predecessor` before M5's atomic state activation | CLOSED — SOFTWARE LAB ONLY |
+| M7.2.B | A | Ordinal high-water/floor blocks stale/downgrade as upgrade; explicit signed rollback only to the prior known-good release; no unsigned legacy activation if trust is pinned | CLOSED — SOFTWARE LAB ONLY |
+| M7.2.C | A–B | Real packaged Edge boots and fsyncs a Property event; tampered signature and state denied, interrupted upgrade leaves active unchanged, injected failed health check triggers preauthorized rollback retaining journal; CLI/dashboard/x64/ARM64 tests | CLOSED — SOFTWARE LAB ONLY |
 
 Files: `src/core/m72-signed-update-policy.js`, `src/adapters/m72-trust-anchor.js`, added signed guard inside `src/runtime/m5-install.js`, `src/runtime/m72-signed-upgrade.js`, `src/runtime/m72-signed-release-smoke.js`, `bin/pef-m72-signed-release.js`, `test/m72-signed-release.test.js`. Command: `npm run m7:release`. Dashboard `m72Release`.
 
@@ -49,7 +49,7 @@ npm run dashboard     # Laboratorio integrado → M7.1/M7.2 actions
 npm test
 ```
 
-All tests operate with private ephemeral OS directories and do not install keys or systemd units on the Mac. CI artifacts `pef-m7-identity-release-x64` and `pef-m7-identity-release-arm64` are expected **only after the workflow runs**.
+All tests operate with private ephemeral OS directories and do not install keys or systemd units on the Mac. CI artifacts `pef-m7-identity-release-x64` and `pef-m7-identity-release-arm64` were uploaded in [CI #39286831769](https://github.com/krukmat/logistica/actions/runs/39286831769): x64 [artifact](https://github.com/krukmat/logistica/actions/runs/39286831769/artifacts/12202713938), ARM64 [artifact](https://github.com/krukmat/logistica/actions/runs/39286831769/artifacts/12203461977).
 
 ### Requirement/change tracking
 
@@ -57,4 +57,8 @@ All tests operate with private ephemeral OS directories and do not install keys 
 - **REQ-SEC-02:** added signed release policy on existing M5 installer. Classification CORE + MODULE. Remote TLS/mTLS remains M7.3.
 - **REQ-REC-02:** known-good signed rollback and anti-downgrade. Classification CORE/CONFIG. Physical powercut and secure boot pending.
 - **REQ-STA-01/02:** journal retained through signed rollback; no physical durability claim.
-- **REQ-OBS-01:** CLI/dashboard human-readable pass/fail, no keys in report. CI and cross-arch acceptance pending.
+- **REQ-OBS-01:** CLI/dashboard human-readable pass/fail, no keys in report. CI and cross-arch acceptance verified in GitHub Actions #39286831769.
+
+### Current-head final acceptance — 2026-10-19
+
+[GitHub Actions #39286831769](https://github.com/krukmat/logistica/actions/runs/39286831769) SUCCESS for `fc9ac7f72f70bd30a3106dad0aa2d65689f56185`: Linux ARM64 **216 PASS / 0 fail**, Linux x64 **215 PASS +1 skip / 0 fail**. Dashboard HTTP `m71Identity` and `m72Release` PASS. Independent CLI `npm run m7:identity` and `npm run m7:release` PASS on both architectures, with uploaded artifacts. Dedicated Linux systemd and namespace jobs and prehardware gate SUCCESS. `bin/pef-edge.js` now verifies the **active pinned M5 release and signed integrity** before loading runtime modules when executed from a versioned release; tampered packaged boot is rejected (regression at same SHA). These results close M7.1 and M7.2 **software lab only**, not physical trusted boot or TPM-protected rollback.

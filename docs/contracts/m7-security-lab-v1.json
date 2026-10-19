@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "kind": "PEF_M7_TRUST_SOFTWARE_LAB_CONTRACT_V1",
   "scope": "EPHEMERAL_LOCAL_AND_CI_ONLY",
-  "status": "IMPLEMENTED_CI_PENDING",
+  "status": "CLOSED_SOFTWARE_LAB_ONLY",
   "m71": {
-    "state": "IMPLEMENTED_CI_PENDING",
+    "state": "CLOSED_SOFTWARE_LAB_ONLY",
     "algorithm": "Ed25519",
     "privateKeyStorage": "OS_PRIVATE_FILE_0600_FSYNC",
     "identityBinding": [
@@ -21,7 +21,7 @@
     "evidenceKind": "PEF_M71_DEVICE_IDENTITY_LAB_V1"
   },
   "m72": {
-    "state": "IMPLEMENTED_CI_PENDING",
+    "state": "CLOSED_SOFTWARE_LAB_ONLY",
     "algorithm": "Ed25519",
     "authority": "PINNED_PUBLIC_KEY_ONLY",
     "authorityPrivateKeyInInstaller": false,
@@ -41,7 +41,9 @@
     "secureBootValidated": false,
     "action": "m72Release",
     "cli": "npm run m7:release",
-    "evidenceKind": "PEF_M72_SIGNED_RELEASE_LAB_V1"
+    "evidenceKind": "PEF_M72_SIGNED_RELEASE_LAB_V1",
+    "packagedBootIntegrityGateValidated": true,
+    "hardwareMonotonicRollbackProtection": false
   },
   "m73": {
     "state": "PROPOSED",
@@ -58,5 +60,19 @@
   },
   "hardwareValidated": false,
   "productionAuthorized": false,
-  "hostingPurchased": false
+  "hostingPurchased": false,
+  "ciEvidence": {
+    "runId": 39286831769,
+    "commit": "fc9ac7f72f70bd30a3106dad0aa2d65689f56185",
+    "linuxArm64": {
+      "pass": 216,
+      "fail": 0
+    },
+    "linuxX64": {
+      "pass": 215,
+      "skip": 1,
+      "fail": 0
+    },
+    "dashboardHttp": true
+  }
 }

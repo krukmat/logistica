@@ -1,6 +1,6 @@
 # M7.1–M7.2 security lab audit — 2026-10-19
 
-**Status at authoring: IMPLEMENTED / CI_PENDING; NOT CLOSED.**
+**Status: CLOSED — SOFTWARE LAB ONLY; verified current-head CI #39286831769.**
 
 ## Change and test inventory
 
@@ -17,6 +17,12 @@
 
 ## Evidence / decisions
 
-**CI acceptance not yet established.** The GitHub Actions workflow runs triggered by initial M7 source changes remain queued at the time of writing. Until a current-HEAD successful run, do not report CLOSED or LAB_PASS on the new work. M1–M6 green CI results from earlier commits do not validate M7.1/M7.2.
+**CI acceptance established.** [#39286831769](https://github.com/krukmat/logistica/actions/runs/39286831769) SUCCESS at commit `fc9ac7f72f70bd30a3106dad0aa2d65689f56185`; 216 PASS ARM64, 215 PASS +1 skip x64, 0 failures. New M7 dashboard HTTP and standalone CLI smoke gates passed; systemd, netns and prehardware jobs SUCCESS.
 
-**Next:** inspect first actual CI result, fix failures, retest, then update this audit and roadmap to CLOSED *in lab scope only*. No hardware acquisition or hosting.
+**Next:** M7.3 TLS/mTLS can be planned against the already real localhost M6 Cloud Lite. M7.4–M7.6 still unimplemented. No hardware acquisition or hosting.
+
+## Packaged runtime integrity gate and artifacts
+
+The final source changes [`d59ce4b9a1`](https://github.com/krukmat/logistica/commit/d59ce4b9a1), [`407949ecb0`](https://github.com/krukmat/logistica/commit/407949ecb0) and [`fc9ac7f72f`](https://github.com/krukmat/logistica/commit/fc9ac7f72f70bd30a3106dad0aa2d65689f56185) ensure that `bin/pef-edge.js` loads the packaged Edge runtime **only after** checking the active release directory and the installer's signed state/integrity. The final CI verifies tampered release boot denial as well as the existing M7.1 and M7.2 negative tests. CI artifacts: [x64](https://github.com/krukmat/logistica/actions/runs/39286831769/artifacts/12202713938) and [ARM64](https://github.com/krukmat/logistica/actions/runs/39286831769/artifacts/12203461977).
+
+**Important limits:** the entrypoint gate does not prevent a privileged actor from bypassing this Node entrypoint or rolling back `state.json`/the disk image. It is **not** a verified boot chain. No mTLS or production key storage tested. The older error `boot is not a function` in CI #39284165281 was corrected by exporting the M5 packaged process harness, then the current-head suite passed.
