@@ -11,9 +11,10 @@ const sha=data=>createHash("sha256").update(data).digest("hex");
 const encode=v=>Buffer.from(JSON.stringify(v,null,2)+"\n");
 function safeDir(p,{create=false}={}){
  if(typeof p!=="string"||!path.isAbsolute(p))throw Error("M5_ABSOLUTE_ROOT_REQUIRED");
- const parent=fs.realpathSync(os.tmpdir());
+ const anchor=path.resolve(os.tmpdir());
+ const parent=fs.realpathSync(anchor);
  const absolute=path.resolve(p);
- if(absolute===parent||!absolute.startsWith(parent+path.sep))
+ if(absolute===anchor||!absolute.startsWith(anchor+path.sep))
    throw Error("M5_TEMP_ROOT_ONLY");
  if(create&&!fs.existsSync(p))fs.mkdirSync(p,{recursive:true,mode:0o700});
  const real=fs.realpathSync(p);
