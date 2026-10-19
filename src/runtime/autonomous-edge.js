@@ -10,7 +10,7 @@ const {openRuntimeBackend}=require("./backend-registry.js");
 const {createWorkloadManager}=require("../core/workload-manager.js");
 const {createWorkloadSupervisor}=require("../core/workload-supervisor.js");
 const {createNodeProcessDriver}=require("../adapters/node-process-driver.js");
-const {demoManifest,propertyManifest}=require("./demo-workload.js");
+const {demoManifest,propertyManifest,hostManifest}=require("./demo-workload.js");
 const {openLabBoot}=require("./lab-boot-metadata.js");
 function createAutonomousEdgeHost({config,token,workloadDriver}={}){
   // Explicit driver injection is for trusted in-process host composition, not HTTP or JSON config.
@@ -25,7 +25,8 @@ function createAutonomousEdgeHost({config,token,workloadDriver}={}){
   const lock=acquireEdgeLock(cfg.storageDir);
   let engine=null,supervisor=null,ports=null,server=null,interval=null,closed=false;
   let lastSample=null,lastFault=null,samples=0,operating=false,started=false,port=null,labCloud=null;
-  const workloadId=cfg.workload.profile==="property"?"pef-property":"pef-receiver";
+  const workloadId=cfg.workload.profile==="property"?"pef-property":
+    cfg.workload.profile==="host"?"pef-host":"pef-receiver";
   const secret=Buffer.from(token,"utf8");
   const isAuthorized=req=>{
     const received=req.headers["x-pef-token"];
@@ -38,7 +39,8 @@ function createAutonomousEdgeHost({config,token,workloadDriver}={}){
     return {kind:"PEF_STANDALONE_EDGE_LAB",backend:cfg.backend,
       identity:runtime.identity,network:runtime.network,storage:runtime.storage,
       runtimeHealth:runtime.runtimeHealth,receipts:engine.listReceipts(),
-      propertyIncidents:engine.listPropertyIncidents(),activeOverlay:cfg.workload.profile||"receiver",
+      propertyIncidents:engine.listPropertyIncidents(),hostIncidents:engine.listHostIncidents(),
+      activeOverlay:cfg.workload.profile||"receiver",
       workloads:supervisor?supervisor.list():[],sampleCount:samples,lastFault,
       simulatedRoutes:cfg.backend==="virtual-lab"?ports.snapshot():null,
       remoteCloudConnected:false,transportProvisioned:false,
@@ -91,18 +93,21 @@ function createAutonomousEdgeHost({config,token,workloadDriver}={}){
     }
     if(req.method==="GET"&&pathname==="/state"){send(res,200,state());return;}
     if(req.method==="GET"&&pathname==="/receipts"){send(res,200,{receipts:engine.listReceipts()});return;}
-    if(req.method==="GET"&&pathname==="/property/incidents"){
-      send(res,200,{incidents:engine.listPropertyIncidents(),scope:"LAB_ONLY"});return;}
+    if(req.method==="GET"&&["/property/incidents","/host/incidents"].includes(pathname)){
+      send(res,200,{incidents:pathname==="/property/incidents"?engine.listPropertyIncidents():
+        engine.listHostIncidents(),scope:"LAB_ONLY"});return;}
     if(req.method!=="POST"){send(res,404,{ok:false,error:"NOT_FOUND"});return;}
     let body;
     try{body=await readBody(req);}catch(e){send(res,400,{ok:false,error:e.message});return;}
-    if(pathname==="/property/incidents"){
-      if(workloadId!=="pef-property"||!supervisor){
-        send(res,409,{ok:false,error:"PROPERTY_WORKLOAD_NOT_ACTIVE"});return;
+    if(pathname==="/property/incidents"||pathname==="/host/incidents"){
+      const requested=pathname==="/property/incidents"?"property":"host";
+      if(workloadId!=="pef-"+requested||!supervisor){
+        send(res,409,{ok:false,error:requested.toUpperCase()+"_WORKLOAD_NOT_ACTIVE"});return;
       }
-      const checked=await supervisor.processOperation(workloadId,"PROPERTY",body);
-      if(!checked.ok){send(res,400,{ok:false,error:checked.error});return;}
-      const result=engine.recordPropertyIncident(body);
+      const checked=await supervisor.processOperation(workloadId,requested.toUpperCase(),body);
+      if(!checked.ok){send(res,checked.error==="WORKLOAD_NOT_RUNNING"?409:400,
+        {ok:false,error:checked.error});return;}
+      const result=requested==="property"?engine.recordPropertyIncident(body):engine.recordHostIncident(body);
       send(res,receiptStatus(result),result);return;
     }
     if(pathname==="/receipts"||pathname==="/workloads/receipts"){
@@ -185,7 +190,9 @@ function createAutonomousEdgeHost({config,token,workloadDriver}={}){
           manager:createWorkloadManager(),driver:workloadDriver||createNodeProcessDriver(),
           autoReconcileMs:cfg.workload.reconcileMs
         });
-        const launched=await supervisor.start(workloadId==="pef-property"?propertyManifest():demoManifest(),{
+        const manifest=workloadId==="pef-property"?propertyManifest():
+          workloadId==="pef-host"?hostManifest():demoManifest();
+        const launched=await supervisor.start(manifest,{
           trusted:true,offline:engine.status().network.connectivity==="LOCAL_ONLY"});
         if(!launched.ok)throw Error("WORKLOAD_BOOT_FAILED:"+launched.lastError);
       }

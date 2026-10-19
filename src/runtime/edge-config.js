@@ -22,7 +22,7 @@ function validateEdgeConfig(v){
   if(!keys(v.workload,["enabled","reconcileMs","profile"])||
      typeof v.workload.enabled!=="boolean"||
      !integer(v.workload.reconcileMs,100,30000)||
-     (v.workload.profile!==undefined&&!["receiver","property"].includes(v.workload.profile)))
+     (v.workload.profile!==undefined&&!["receiver","property","host"].includes(v.workload.profile)))
     throw Error("INVALID_EDGE_WORKLOAD_OPTIONS");
   if(!keys(v.journal,["capacityBytes","controlReserveBytes"])||
     !integer(v.journal.capacityBytes,2048,100*1024*1024)||

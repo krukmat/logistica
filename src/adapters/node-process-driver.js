@@ -5,7 +5,8 @@ const {fork}=require("node:child_process");
 const path=require("node:path");
 const WORKERS=Object.freeze({
   "pef-receiver":path.resolve(__dirname,"../workloads/receiver-worker.js"),
-  "pef-property":path.resolve(__dirname,"../workloads/property-worker.js")
+  "pef-property":path.resolve(__dirname,"../workloads/site-operations-worker.js"),
+  "pef-host":path.resolve(__dirname,"../workloads/site-operations-worker.js")
 });
 function createNodeProcessDriver(){
   return {
@@ -15,7 +16,10 @@ function createNodeProcessDriver(){
          typeof onExit!=="function")throw Error("WORKLOAD_BINARY_NOT_ALLOWLISTED");
       const worker=WORKERS[manifest.workload_id];
       const child=fork(worker,[],{silent:true,execArgv:[],cwd:path.dirname(worker),
-        env:{PATH:process.env.PATH||"/usr/bin",LANG:"C"},serialization:"json"});
+        env:{PATH:process.env.PATH||"/usr/bin",LANG:"C",
+          ...(manifest.workload_id==="pef-property"||manifest.workload_id==="pef-host"?
+            {PEF_SITE_PROFILE:manifest.workload_id==="pef-property"?"property":"host",
+             PEF_WORKLOAD_ID:manifest.workload_id}:{})},serialization:"json"});
       let exited=false,stopping=false,nextId=0;
       const pending=new Map();
       function exit(reason){
@@ -57,9 +61,10 @@ function createNodeProcessDriver(){
           return await request("RECEIPT",input);
         },
         async processOperation(operation,input){
-          if(manifest.workload_id!=="pef-property"||operation!=="PROPERTY")
+          if(!((manifest.workload_id==="pef-property"&&operation==="PROPERTY")||
+               (manifest.workload_id==="pef-host"&&operation==="HOST")))
             return {ok:false,error:"OPERATION_NOT_ALLOWED"};
-          return await request("PROPERTY",{input});
+          return await request("SITE_OPERATION",{input});
         },
         async injectCrash(){
           if(exited)return {ok:false,error:"WORKER_UNAVAILABLE"};

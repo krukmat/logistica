@@ -19,4 +19,11 @@ function propertyManifest(){return {
   health:{liveness:"ipc-heartbeat",readiness:"ipc-ready",
     restart_policy:{strategy:"bounded",max_attempts:2,window_seconds:60,backoff_seconds:1}}
 };}
-module.exports={demoManifest,propertyManifest};
+function hostManifest(){
+  const base=propertyManifest();
+  return {...base,workload_id:"pef-host",
+    resources:{...base.resources,cpu_request_millicores:100,cpu_limit_millicores:180,
+      memory_request_mib:32,memory_limit_mib:80,
+      storage_request_mib:8,storage_limit_mib:24}};
+}
+module.exports={demoManifest,propertyManifest,hostManifest};
