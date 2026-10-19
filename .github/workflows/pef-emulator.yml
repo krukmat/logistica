@@ -50,6 +50,7 @@ jobs:
         run: |
           node bin/pef-m4-commonality.js > "$RUNNER_TEMP/pef-m4-commonality.json"
           node -e 'const r=require(process.argv[1]);if(!r.ok||r.status!=="LAB_PASS"||r.hardwareValidated!==false||r.profiles.property.runtime.status!=="LAB_PASS"||r.profiles.host.runtime.status!=="LAB_PASS")process.exit(1)' "$RUNNER_TEMP/pef-m4-commonality.json"
+          node -e 'const r=require(process.argv[1]);console.log("M4_MEASURED="+JSON.stringify({source:r.source,property:r.profiles.property.runtime.observedMetrics,host:r.profiles.host.runtime.observedMetrics}))' "$RUNNER_TEMP/pef-m4-commonality.json"
       - name: Upload M4.3 measured source/resources and failure matrix
         uses: actions/upload-artifact@v4
         with:

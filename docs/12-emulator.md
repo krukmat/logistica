@@ -248,3 +248,7 @@ El backend Property es `NODE_PROCESS_ONLY`; no se ha aplicado cgroup/netns/chroo
 El Control Panel en **Laboratorio integrado → M4.2 Host** ejecuta `hostSmoke`, que arranca el **mismo Edge autónomo real** con `workload.profile="host"` y el nuevo proceso autorizado `pef-host`. Valida incidencias `OPEN → ACK` fsynced, múltiples rechazos fail-closed, WAN virtual offline, journal reopen e idempotencia y replay a Cloud mock. Resultado trazable: `lab.host.lastEvidence` (NO hardware). `npm run m4:host` es la CLI autónoma para la misma prueba.
 
 El motor común y los contratos están en `src/core/site-operations.js` y `src/core/site-operation-contract.js`. Se conserva M4.1 Property, incluido formato histórico de sus eventos. El nuevo perfil NO tiene Linux cgroup/netns/chroot certificado; sólo `NODE_PROCESS_ONLY` en Mac/CI Node. [Tasks](tasks/m4-host-overlay.md).
+
+## M4.3 — Matriz Property/Host, pruebas y observaciones
+
+La acción `m4Commonality` en el panel integrado ejecuta `src/runtime/m4-commonality.js`: historial Property, regresión de identidad, fallo de hijo real (Node), backoff y recuperación, política de supervisor con reloj simulado, fallo fsync inyectado sobre archivo temporal, capacidad/admisión, enlace WAN virtual y Cloud mock. `lab.m4Commonality.lastEvidence` muestra resultado por perfil, contadores reales de RSS/CPU worker, latencia HTTP y una métrica LOC **acotada a rutas explícitas**. No equivale a pruebas físicas de corte o sandbox Host/Property. [Guía](tasks/m4-commonality-resilience.md).
