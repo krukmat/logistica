@@ -65,7 +65,8 @@ function createFileRegistryStore({dir}={}){
    read(){ensure();return readDevices(root);},
    append(record){
      ensure();
-     const current=readDevices(root),id=checkedIdentity(record);
+     const current=readDevices(root),id=checkedIdentity({
+       siteId:record.siteId,deviceId:record.deviceId,configRevision:record.configRevision});
      if(!HEX.test(record.credentialHash))throw Error("CLOUD_LITE_REGISTRY_HASH_INVALID");
      if(current.some(x=>keyOf(x)===keyOf(id)))throw Error("DEVICE_ALREADY_ENROLLED");
      if(current.length>=MAX_DEVICES)throw Error("REGISTRY_CAPACITY_REACHED");
