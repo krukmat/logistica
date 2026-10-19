@@ -51,6 +51,15 @@ jobs:
         run: npm test
       - name: M6.1 real Cloud Lite localhost HTTP registry + fsync + restart proof
         run: npm run m6:registry > "$RUNNER_TEMP/pef-m61-registry-x64.json"
+      - name: M6.2 local durable event ingestion x64
+        run: npm run m6:ingest > "$RUNNER_TEMP/pef-m62-ingest-x64.json"
+      - name: Upload M6.2 x64 event ingest evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m62-cloud-lite-ingest-x64
+          path: ${{ runner.temp }}/pef-m62-ingest-x64.json
+          if-no-files-found: error
       - name: Upload Cloud Lite registry x64 evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -191,6 +200,15 @@ jobs:
         run: npm test
       - name: M6.1 native ARM64 Cloud Lite loopback registry and restart proof
         run: npm run m6:registry > "$RUNNER_TEMP/pef-m61-registry-arm64.json"
+      - name: M6.2 native ARM64 event ingest and fsync
+        run: npm run m6:ingest > "$RUNNER_TEMP/pef-m62-ingest-arm64.json"
+      - name: Upload M6.2 ARM64 ingest evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m62-cloud-lite-ingest-arm64
+          path: ${{ runner.temp }}/pef-m62-ingest-arm64.json
+          if-no-files-found: error
       - name: Upload Cloud Lite ARM64 registry evidence
         if: always()
         uses: actions/upload-artifact@v4
