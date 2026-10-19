@@ -49,6 +49,19 @@ jobs:
         run: bash -n scripts/lab/m5-systemd-smoke.sh scripts/lab/m56-systemd-kernel-smoke.sh scripts/arm64-vm/m54-lima-service.sh scripts/arm64-vm/guest-m54-service.sh
       - name: Node regression suite
         run: npm test
+      - name: M7.1 cryptographic device identity fsync and mutation x64
+        run: npm run m7:identity > "$RUNNER_TEMP/pef-m71-identity-x64.json"
+      - name: M7.2 signed staged Edge boot and health-based rollback x64
+        run: npm run m7:release > "$RUNNER_TEMP/pef-m72-release-x64.json"
+      - name: Upload signed identity and release evidence x64
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pef-m7-identity-release-x64
+          path: |
+            ${{ runner.temp }}/pef-m71-identity-x64.json
+            ${{ runner.temp }}/pef-m72-release-x64.json
+          if-no-files-found: error
       - name: M6.1 real Cloud Lite localhost HTTP registry + fsync + restart proof
         run: npm run m6:registry > "$RUNNER_TEMP/pef-m61-registry-x64.json"
       - name: M6.2 local durable event ingestion x64
@@ -211,6 +224,19 @@ jobs:
         run: bash -n scripts/arm64-vm/lima.sh scripts/arm64-vm/guest-run.sh scripts/arm64-vm/guest-network-lab.sh scripts/arm64-vm/guest-d3.sh scripts/arm64-vm/guest-load.sh scripts/arm64-vm/guest-compare.sh scripts/arm64-vm/guest-e1-e2.sh scripts/arm64-vm/guest-e5.sh scripts/arm64-vm/guest-f1-f2.sh
       - name: ARM64 Core test suite
         run: npm test
+      - name: M7.1 native ARM64 Ed25519 identity lifecycle
+        run: npm run m7:identity > "$RUNNER_TEMP/pef-m71-identity-arm64.json"
+      - name: M7.2 native ARM64 signed release and explicit authorized rollback
+        run: npm run m7:release > "$RUNNER_TEMP/pef-m72-release-arm64.json"
+      - name: Upload signed identity and release evidence ARM64
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pef-m7-identity-release-arm64
+          path: |
+            ${{ runner.temp }}/pef-m71-identity-arm64.json
+            ${{ runner.temp }}/pef-m72-release-arm64.json
+          if-no-files-found: error
       - name: M6.1 native ARM64 Cloud Lite loopback registry and restart proof
         run: npm run m6:registry > "$RUNNER_TEMP/pef-m61-registry-arm64.json"
       - name: M6.2 native ARM64 event ingest and fsync
