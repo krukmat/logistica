@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "kind": "PEF_M7_TRUST_SOFTWARE_LAB_CONTRACT_V1",
+  "scope": "EPHEMERAL_LOCAL_AND_CI_ONLY",
+  "status": "IMPLEMENTED_CI_PENDING",
+  "m71": {
+    "state": "IMPLEMENTED_CI_PENDING",
+    "algorithm": "Ed25519",
+    "privateKeyStorage": "OS_PRIVATE_FILE_0600_FSYNC",
+    "identityBinding": [
+      "siteId",
+      "deviceId",
+      "configRevision"
+    ],
+    "createOnce": true,
+    "corruptFailClosed": true,
+    "hardwareBacked": false,
+    "remoteAttested": false,
+    "action": "m71Identity",
+    "cli": "npm run m7:identity",
+    "evidenceKind": "PEF_M71_DEVICE_IDENTITY_LAB_V1"
+  },
+  "m72": {
+    "state": "IMPLEMENTED_CI_PENDING",
+    "algorithm": "Ed25519",
+    "authority": "PINNED_PUBLIC_KEY_ONLY",
+    "authorityPrivateKeyInInstaller": false,
+    "signatureBinds": [
+      "rootId",
+      "mode",
+      "version",
+      "manifest digest",
+      "ordinal",
+      "sequence",
+      "predecessor"
+    ],
+    "antiRollbackScope": "SOFTWARE_INSTALL_STATE_HIGH_WATER_ONLY",
+    "trustedRootUnsignedFallback": false,
+    "knownGoodRollback": "EXPLICIT_SIGNED_TRANSITION",
+    "healthGate": "INJECTED_FAILURE_AFTER_REAL_PACKAGE_BOOT",
+    "secureBootValidated": false,
+    "action": "m72Release",
+    "cli": "npm run m7:release",
+    "evidenceKind": "PEF_M72_SIGNED_RELEASE_LAB_V1"
+  },
+  "m73": {
+    "state": "PROPOSED",
+    "remoteTlsValidated": false
+  },
+  "m74": {
+    "state": "PROPOSED"
+  },
+  "m75": {
+    "state": "PROPOSED"
+  },
+  "m76": {
+    "state": "PROPOSED"
+  },
+  "hardwareValidated": false,
+  "productionAuthorized": false,
+  "hostingPurchased": false
+}
