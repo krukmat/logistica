@@ -18,7 +18,7 @@ function validateIntegrated(report){
  if(report?.kind!=="PEF_M4_INTEGRATED_LAB_V1"||report.schemaVersion!==1||
    report.status!=="LAB_PASS"||report.ok!==true||
    !/^[0-9a-f-]{36}$/.test(report.runId||"")||
-   !Number.isNaN(Date.parse(report.createdAt))===false||
+   Number.isNaN(Date.parse(report.createdAt))||
    !["property","host"].every(p=>report[p]?.status==="LAB_PASS"&&report[p]?.ok===true)||
    !checksValid(report.property.checks,EXPECTED.property)||
    !checksValid(report.host.checks,EXPECTED.host)||

@@ -38,7 +38,9 @@
     "m3:bundle:verify-video": "node bin/pef-m3-bundle.js --verify-video",
     "m4:property": "node bin/pef-m4-property.js",
     "m4:host": "node bin/pef-m4-host.js",
-    "m4:commonality": "node bin/pef-m4-commonality.js"
+    "m4:commonality": "node bin/pef-m4-commonality.js",
+    "m4:bundle": "node bin/pef-m4-bundle.js",
+    "m4:bundle:verify": "node bin/pef-m4-bundle.js --verify"
   },
   "license": "UNLICENSED",
   "devDependencies": {
