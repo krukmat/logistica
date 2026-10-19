@@ -34,8 +34,8 @@ function nextSecureState(current,permit,trustRootId){
  if(permit.mode==="rollback"&&(!current||permit.version!==current.previousVersion||
    permit.digest!==current.previousHash||permit.ordinal!==current.previousReleaseOrdinal))
    throw Error("M72_ROLLBACK_NOT_KNOWN_GOOD");
- if(permit.mode==="rollback"&&!current.lastKnownGood)
-   throw Error("M72_ROLLBACK_NOT_HEALTH_APPROVED");
+ if(permit.mode==="rollback"&&!current.previousKnownGood)
+   throw Error("M72_ROLLBACK_NOT_KNOWN_GOOD");
  if(permit.mode==="install"&&permit.ordinal<1)throw Error("M72_ORDINAL_INVALID");
  return {sequence:permit.sequence,ordinal:permit.ordinal,
   floorOrdinal:Math.max(current?.floorOrdinal||0,permit.ordinal),
