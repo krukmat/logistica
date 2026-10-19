@@ -1,6 +1,6 @@
 # M5.4–M5.5 — Linux service boot and kernel-isolated Site overlays
 
-**2026-10-19 · main** · **M5.4:** SERVICE CI LAB_PASS, complete VM OS reboot NOT_RUN / PARTIAL. **M5.5:** CI kernel isolation Property and Host LAB_PASS; physical M5.3 remains BLOCKED.
+**2026-10-19 · main** · **M5.4:** CLOSED — SOFTWARE LAB ONLY, actual Lima ARM64 whole-VM restart LAB_PASS (operator-reported). **M5.5:** CI kernel isolation Property and Host LAB_PASS; physical M5.3 remains BLOCKED.
 
 ## M5.4 — Linux service lifecycle
 
@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | M5.4.a | Render allowlisted systemd unit, offline-compatible boot, least privilege and bounded restart without changing Core | IMPLEMENTED; x64/ARM64 Node tests PASS |
 | M5.4.b | Actual systemd PID1 on ephemeral GitHub-hosted Linux, run staged autonomous Edge, fsync operation, SIGKILL/restart and reopen | **LAB_PASS** CI #39238362163 and #39239226280 |
-| M5.4.c | Prepare/stop-start Lima ARM64 VM, service automatically restarts on OS boot; ensure boot_id changes, session changes, journal persists; cleanup | **IMPLEMENTED, NOT_RUN** on actual Lima guest; awaits user execution |
+| M5.4.c | Prepare/stop-start Lima ARM64 VM, service automatically restarts on OS boot; ensure boot_id changes, session changes, journal persists; cleanup | **CLOSED LAB:** operator executed complete Lima stop/start, verified all 5 checks and cleaned test service |
 
 M5.4.b is not a full reboot. The CI script installs a *temporary* service only under `/run/systemd/system/` and cleans it on exit; it is protected by `GITHUB_HOSTED_EPHEMERAL_ONLY`, GitHub-hosted CI, root and systemd PID1 checks. No code ever installs a Mac service.
 
@@ -27,7 +27,7 @@ bash scripts/arm64-vm/m54-lima-service.sh cleanup r28s-1g
 unset PEF_M54_VM_ACK
 ```
 
-**Gate:** `PEF_M54_LIMA_OS_BOOT_V1` with `status=LAB_PASS`, `VM_OS_BOOT_ID_CHANGED`, `SERVICE_AUTOSTARTED`, `NEW_EDGE_SESSION`, `JOURNAL_PERSISTED`, `WAN_OFFLINE_LOCAL_SERVICE` all true. Only then can M5.4.c be marked VALIDATED. If VM prerequisites are missing, the task is BLOCKED and no hardware claim is allowed. Cleanup is provided but not automatic after the reboot: the operator should inspect the evidence first.
+**Gate:** `PEF_M54_LIMA_OS_BOOT_V1` with `status=LAB_PASS`, `VM_OS_BOOT_ID_CHANGED`, `SERVICE_AUTOSTARTED`, `NEW_EDGE_SESSION`, `JOURNAL_PERSISTED`, `WAN_OFFLINE_LOCAL_SERVICE` all true. Operator has now reported exactly this result; M5.4.c is VALIDATED in the VM lab scope. Any future VM run still requires its own prerequisites and independent evidence; no hardware claim is allowed. Cleanup is provided but not automatic after the reboot: the operator should inspect the evidence first.
 
 **Limit:** This is a real VM OS restart, *not* a physical power interruption or a field-installed device. The lab service's unit has `PrivateTmp=false` and `ProtectHome=false` because it references guest-owned staging paths. Hardened production system service and trusted boot remain M5.3/production tasks.
 
@@ -53,3 +53,7 @@ The driver verifies sandbox process membership plus UID, inaccessible host canar
 `npm run dashboard` → Laboratorio integrado → **M5.4** renders/reviews systemd unit contract; **M5.5** shows Property/Host kernel budget plans and directs to CI evidence, without privileged Mac calls. The real M5.4 systemd and M5.5 kernel tests run in CI only. Dashboard HTTP tests: `test/dashboard-integrated.test.js`, unit tests: `test/m5-systemd.test.js`, `test/m5-isolation*.test.js`. CI artifacts: `pef-m54-systemd-ci`, `pef-netns-evidence` containing `pef-m55-evidence.json`. CI #39239226280 passed, with Node x64 189 PASS+1 skip and native ARM64 190 PASS, M5.4 systemd SUCCESS and Linux S3 + M5.5 kernel 26/26 PASS.
 
 Dependencies M5.1–M5.2 and original S3 CI isolation all passed. Requirements affected: REQ-WRK-01/02/03, REQ-LOC-01, REQ-STA-01/02, REQ-OBS-01. Change added; classification CONFIG/MODULE/RESOURCE, Core only unchanged. Physical M5.3, production service provisioning, kernel quotas for disk, secure boot, device NIC and powercut **NOT_RUN**.
+
+### Operator VM acceptance record — 2026-10-19
+
+On pre-existing Lima `pef-r28s-1g`, the operator ran `prepare`, `reboot` (Lima stop/start), then `cleanup`. The console explicitly reported `M54_GUEST_PREPARED=LAB_PASS_VM_REBOOT_NOT_RUN` **before** reboot and subsequently returned `PEF_M54_LIMA_OS_BOOT_V1` with `status=LAB_PASS`, `ok=true`, `platform=linux`, `arch=arm64`, `vmRebootValidated=true` and **5/5 checks true**: `VM_OS_BOOT_ID_CHANGED`, `SERVICE_AUTOSTARTED`, `NEW_EDGE_SESSION`, `JOURNAL_PERSISTED`, `WAN_OFFLINE_LOCAL_SERVICE`. Cleanup printed `M54_GUEST_CLEANUP=PASS` and removed the test unit enablement symlink. This evidence comes from user-shared CLI logs (not independent server telemetry). **M5.4 now CLOSED SOFTWARE LAB ONLY.** No powercut or field-device certification. No follow-up VM reboot is required for M5.4 lab acceptance.
