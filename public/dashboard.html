@@ -254,6 +254,15 @@
           <button id="m61-registry-run" class="secondary" type="button">Probar registry local M6.1</button>
           <pre id="m61-registry-evidence">M6.1 NOT_RUN · Cloud mock sigue activo</pre>
         </div>
+        <div class="lab-detail" id="m62-ingest-panel">
+          <h4>M6.2 — Cloud Lite: ingestión durable y deduplicación</h4>
+          <p class="micro">Ejecuta HTTP autenticado y log fsynced real en loopback.
+            Verifica ACK sólo después de fsync, replay idempotente, conflicto
+            de eventId, reinicio y log corrupto. <strong>LAB_ONLY</strong>:
+            aún no usa el transporte Edge HTTP M6.3 ni sustituye el mock.</p>
+          <button id="m62-ingest-run" class="secondary" type="button">Probar ingesta y ACK durable M6.2</button>
+          <pre id="m62-ingest-evidence">M6.2 NOT_RUN · M6.3 Edge transport pendiente</pre>
+        </div>
         <div class="lab-detail workload-panel" id="workload-panel">
           <h4>S — Workload Runtime · proceso local (NO sandbox)</h4>
           <p class="micro">Workload permitido: <code>pef-receiver</code>. El Core valida su manifest, recursos y política offline; el supervisor inicia un proceso Node aislado sólo por proceso. <strong>CPU/RAM, filesystem y red todavía no están aislados por Linux</strong>.</p>
