@@ -34,7 +34,7 @@
 
 ## Mac operator evidence — 2026-10-19
 
-**Provenance:** operator-provided terminal output of `npm run m4:bundle`, distinct from CI. The CLI created a local M4.4 bundle and invoked its own verifier before returning success. The underlying bytes were **not uploaded or independently inspected** in this interaction. The command `m4:bundle:verify` has **not yet been separately reported** by the operator.
+**Provenance:** operator-provided terminal output of `npm run m4:bundle`, distinct from CI. The CLI created a local M4.4 bundle and invoked its own verifier before returning success. The underlying bytes were **not uploaded or independently inspected** in this interaction. The operator subsequently performed a **separate CLI verification** of this same bundle; see the record below.
 
 - CLI: `kind=PEF_M4_BUNDLE_CLI_V1`, `ok=true`.
 - Local relative output: `artifacts/m4/run-AwrpYG` (Mac operator-reported; the original absolute home directory is intentionally omitted from this public record).
@@ -46,3 +46,21 @@
 - All conclusions retain the existing constraints: virtual WAN, local Cloud mock, no Property/Host Linux kernel isolation, no physical powercut, device, PKI or 72-hour retention validation.
 
 **Result:** operator Mac smoke `LAB_PASS` recorded; M4.1–M4.4 remain **CLOSED — SOFTWARE LAB ONLY**, with independent CI results linked above. M5 device/installation validation remains open.
+
+### Separate verifier invocation — operator-reported 2026-10-19
+
+The operator ran `npm run m4:bundle:verify -- artifacts/m4/run-AwrpYG` **after** generating the bundle. Terminal output independently invokes the verification routine without rerunning the underlying M4 Property/Host scenarios.
+
+| Observed result | Value |
+| --- | --- |
+| Verification kind | `PEF_M4_BUNDLE_VERIFIED_V1` |
+| ok / status | `true` / `LAB_PASS` |
+| runId | `aecea94d-b8c2-4461-b4a2-469e31ec2268` |
+| Evidence commit | `fc113ccfa6f4c7dabfd9c0decbe969224474e6eb` |
+| assertions / content files | `92` / `4` |
+| integrity scope | `SHA256_NOT_SIGNATURE` |
+| physicalValidated | `false` |
+
+The runId and commit exactly match the previously recorded `npm run m4:bundle` output. This is a separate **operator-reported verifier execution**, not independent possession or inspection of the bundle by the auditor, and not a digital signature or product/hardware certification.
+
+**M4.4 Mac acceptance:** generation PASS + separate verification PASS; M4 remains **CLOSED — SOFTWARE LAB ONLY**.
