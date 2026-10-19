@@ -224,3 +224,9 @@ El mismo Core de PEF ejecuta ahora un perfil **Property** opcional: `pef-propert
 En el **dashboard → Laboratorio integrado → M4.1**, ejecutar la prueba para observar WAN sintética desconectada, comandos inválidos/orphan/conflictos rechazados, idempotencia, reapertura con incidente retenido y replay hacia Cloud mock. Código en `src/core/property-incidents.js`, runner real `src/emulator/lab/property-smoke.js`, tests `test/property-overlay.test.js` y [task](docs/tasks/m4-property-overlay.md). No demuestra sensores, sandbox Linux Property, WAN/cloud reales, powercut ni hardware certificado.
 
 **M4.1 LAB CLOSED:** `npm run m4:property` ejecuta el mismo escenario standalone sin dashboard y devuelve un reporte JSON con checks. [CI #39209710426](https://github.com/krukmat/logistica/actions/runs/39209710426) SUCCESS: ARM64 163/163, x64 162 PASS + 1 skip y otros gates Linux/prehádware en verde. [Auditoría](docs/audit/m4-property-2026-10-19.md). Siguiente: M4.2 Host.
+
+## M4.2 — Host (software lab; CI pendiente)
+
+`npm run m4:host` reproduce una incidencia local de mantenimiento (`OPEN` de unidad/categoría → `ACK`) a través del Edge HTTP autónomo, workload `pef-host` y Journal compartido, durante una caída de WAN **sintética** y una sincronización posterior a Cloud mock. Alternativamente, **dashboard → Laboratorio integrado → M4.2 Host** muestra el mismo escenario y evidencias. Cualquier proceso/driver Host estático se ejecuta sin sandbox Linux; recursos reservados por política, no impuestos por kernel.
+
+**Diseño:** `src/core/site-operations.js` + `src/core/site-operation-contract.js` reemplazan la duplicación de reglas y persistencia Property/Host; la API previa `src/core/property-incidents.js` sigue funcionando sin modificar IDs/eventos Property. `src/workloads/site-operations-worker.js` sirve ambos perfiles mediante un registro estático. [Plan](docs/tasks/m4-host-overlay.md). M4.3 cuantificará reutilización; M2 Cloud Lite hosted sigue aplazado.

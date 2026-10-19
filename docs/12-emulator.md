@@ -242,3 +242,9 @@ El panel **Laboratorio integrado → M3.3–M3.4** activa `m3Recovery` y lanza u
 `Laboratorio integrado → M4.1` activa `propertySmoke`, que levanta **otro Edge autónomo HTTP real** y el proceso `pef-property` con el mismo Supervisor, resource admission y OS-file journal. Comprueba API autenticada, alerta/ACK fsynced, WAN offline, reapertura e idempotencia, y eventual replay a Cloud mock. `lab.property.lastEvidence` contiene los checks observados y el estado `LAB_PASS|LAB_FAIL`; este escenario no altera la sesión principal del panel. Es visible vía `m4-property-smoke` y está registrado en el [integration gate](contracts/emulator-integration-v1.json).
 
 El backend Property es `NODE_PROCESS_ONLY`; no se ha aplicado cgroup/netns/chroot al nuevo workload ni se ha medido consumo físico. `docs/tasks/m4-property-overlay.md` define contrato y límites.
+
+## M4.2 — Host: segundo perfil sobre el mismo motor
+
+El Control Panel en **Laboratorio integrado → M4.2 Host** ejecuta `hostSmoke`, que arranca el **mismo Edge autónomo real** con `workload.profile="host"` y el nuevo proceso autorizado `pef-host`. Valida incidencias `OPEN → ACK` fsynced, múltiples rechazos fail-closed, WAN virtual offline, journal reopen e idempotencia y replay a Cloud mock. Resultado trazable: `lab.host.lastEvidence` (NO hardware). `npm run m4:host` es la CLI autónoma para la misma prueba.
+
+El motor común y los contratos están en `src/core/site-operations.js` y `src/core/site-operation-contract.js`. Se conserva M4.1 Property, incluido formato histórico de sus eventos. El nuevo perfil NO tiene Linux cgroup/netns/chroot certificado; sólo `NODE_PROCESS_ONLY` en Mac/CI Node. [Tasks](tasks/m4-host-overlay.md).

@@ -85,3 +85,9 @@ La interfaz vertical sigue siendo única. El **esquema versionado** de manifiest
 El flujo mínimo es `REGISTER → VALIDATE_SCHEMA → VALIDATE_TRUST_AND_POLICY → FIT_RESOURCES_AND_INTENTS → ADMIT|REJECT → RUN → HEALTH → BOUNDED_RECOVERY`. `INSUFFICIENT_P2_STORAGE` y `CORE_RESERVE_AT_RISK` obligan a rechazo, no overcommit silencioso. Quotas P0/P1 protegidas, P2/P3 workload; prioridad `essential` no eleva datos a P1 ni excluye fallos durante outage.
 
 **Fuente detallada:** [W1.5.E](06-resource-envelope.md#w15e--workload-resource-model-e1e4). **Pruebas E-01–E-06 pendientes de W1.7**. Los valores numéricos del ejemplo son únicamente fixture sintético.
+
+## M4.2 — Validación del diseño con Site Operations Engine (2026-10-19)
+
+El PoC incorpora dos variantes del **mismo** modelo de operaciones: Property `ALERT/ACK` y Host `OPEN/ACK`. El contrato diferenciador está en `src/core/site-operation-contract.js` (categorías y campos) y el motor durable compartido en `src/core/site-operations.js`. Ambos utilizan `createEdgeRuntime`, `createWorkloadSupervisor`, `createWorkloadManager`, `os-file-journal` y Cloud mock; el `NodeProcessDriver` autoriza dos IDs verticales pero comparte un único script de worker. [Tasks y límites](tasks/m4-host-overlay.md).
+
+Esto acredita **reutilización por arquitectura y por código**, pero no establece aún un porcentaje cuantitativo, ni certifica RAM/CPU/sandbox del perfil Host: corresponde medirlo en M4.3. Ningún PMS, guest-network hardware o Cloud Lite remoto se integra.
