@@ -596,6 +596,22 @@
       "implementation": "src/runtime/m63-edge-cloud-lite-smoke.js",
       "test": "test/m63-sync.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "M6.4",
+      "mode": "lab",
+      "title": "Full local authenticated Cloud Lite fault matrix for Property and Host, backend outages, corrupted HMAC and durable replay",
+      "controlIds": [
+        "m64-matrix-panel",
+        "m64-matrix-run",
+        "m64-matrix-evidence"
+      ],
+      "actions": [
+        "m64Matrix"
+      ],
+      "implementation": "src/runtime/m64-cloud-lite-matrix.js",
+      "test": "test/m64-matrix.test.js",
+      "hardwareValidated": false
     }
   ]
 }

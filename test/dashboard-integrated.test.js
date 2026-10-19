@@ -653,3 +653,20 @@ test("M6.3 dashboard real Edge→Cloud Lite exercises authenticated loopback rep
  assert.equal(response.result.defaultMockDeleted,false);
  assert.equal(response.lab.m63Sync.currentDemoCloudStillMock,true);
 }));
+
+test("M6.4 dashboard integrates real HTTP local Cloud Lite outage, authentication, forged proof and recovery matrix",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text(),client=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["m64-matrix-panel","m64-matrix-run","m64-matrix-evidence"])
+  assert.ok(html.includes('id="'+id+'"'),id);
+ assert.match(client,/labAction\("m64Matrix"\)/);
+ await call({command:"mode",mode:"lab"});
+ const response=await call({command:"lab",action:"m64Matrix"});
+ assert.equal(response.httpStatus,200);
+ assert.equal(response.result.status,"LAB_PASS",JSON.stringify(response.result));
+ assert.equal(response.result.assertions,15);
+ assert.equal(response.result.profiles.property.FORGED_PROOF_FAIL_CLOSED,true);
+ assert.equal(response.result.profiles.host.CLOUD_OUTAGE_RETAINS_JOURNAL,true);
+ assert.equal(response.result.profiles.host.AUTHENTICATED_REPLAY_DEDUP,true);
+ assert.equal(response.lab.m64Matrix.lastEvidence.status,"LAB_PASS");
+ assert.equal(response.result.legacyCloudMockRemoved,false);
+}));

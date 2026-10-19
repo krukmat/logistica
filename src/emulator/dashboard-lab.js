@@ -25,6 +25,7 @@ const {runM56IntegrationInspection}=require("../runtime/m56-integration-contract
 const {runM61RegistrySmoke}=require("../runtime/m61-registry-smoke.js");
 const {runM62IngestSmoke}=require("../runtime/m62-ingest-smoke.js");
 const {runM63EdgeSyncSmoke}=require("../runtime/m63-edge-cloud-lite-smoke.js");
+const {runM64CloudLiteMatrix}=require("../runtime/m64-cloud-lite-matrix.js");
 const {runPredeviceConformance}=require("../runtime/predevice-conformance.js");
 const {runGoldenTraces}=require("../runtime/golden-traces.js");
 const {runDeviceIntegrationRehearsal}=require("../runtime/device-integration-rehearsal.js");
@@ -39,12 +40,12 @@ const CAPABILITIES=Object.freeze([
   "ci-linux-supervised-worker","autonomous-edge-host","boot-reopen-without-dashboard",
   "predevice-port-conformance","golden-trace-parity","safe-device-integration-preflight",
   "hardware-candidate-screening","m3-headless-lifecycle","m3-policy-safe-recovery",
-  "m3-operational-diagnostics","m3-same-run-evidence","m4-property-offline-workload","m4-host-offline-workload","m4-commonality-and-faults","m4-integrated-evidence-bundle","m5-packaged-install-rollback","m54-systemd-contract","m55-kernel-profile-plan","m56-systemd-kernel-contract","m61-cloud-lite-local-registry","m62-cloud-lite-durable-ingest","m63-edge-real-cloud-lite-sync"
+  "m3-operational-diagnostics","m3-same-run-evidence","m4-property-offline-workload","m4-host-offline-workload","m4-commonality-and-faults","m4-integrated-evidence-bundle","m5-packaged-install-rollback","m54-systemd-contract","m55-kernel-profile-plan","m56-systemd-kernel-contract","m61-cloud-lite-local-registry","m62-cloud-lite-durable-ingest","m63-edge-real-cloud-lite-sync","m64-cloud-lite-failure-matrix"
 ]);
 const IDENTITY=Object.freeze({siteId:"demo-site",deviceId:"demo-edge",configRevision:"cfg-demo-1"});
 function createDashboardLab({tmpParent=os.tmpdir()}={}){
   let dir=null,edge=null,cloud=null,history=[],route=null,revision=0,closed=false,busy=false;
-  let cloudAvailable=true,profile="normal",lastResult=null,wan=null,boot=null,supervisor=null,autonomousEvidence=null,m3Evidence=null,m3RecoveryEvidence=null,m3OperationsEvidence=null,propertyEvidence=null,hostEvidence=null,m43Evidence=null,m44Evidence=null,m5Evidence=null,m54Evidence=null,m55Evidence=null,m56Evidence=null,m61Evidence=null,m62Evidence=null,m63Evidence=null,predeviceEvidence=null,goldenTraceEvidence=null,devicePreflightEvidence=null,candidateEvidence=null;
+  let cloudAvailable=true,profile="normal",lastResult=null,wan=null,boot=null,supervisor=null,autonomousEvidence=null,m3Evidence=null,m3RecoveryEvidence=null,m3OperationsEvidence=null,propertyEvidence=null,hostEvidence=null,m43Evidence=null,m44Evidence=null,m5Evidence=null,m54Evidence=null,m55Evidence=null,m56Evidence=null,m61Evidence=null,m62Evidence=null,m63Evidence=null,m64Evidence=null,predeviceEvidence=null,goldenTraceEvidence=null,devicePreflightEvidence=null,candidateEvidence=null;
   function guard(){if(closed)throw Error("LAB_CLOSED");}
   function start(next="normal"){
     if(!["normal","pressure"].includes(next))throw Error("UNSUPPORTED_LAB_PROFILE");
@@ -52,7 +53,7 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
     if(edge)edge.close();
     if(dir)fs.rmSync(dir,{recursive:true,force:true});
     dir=fs.mkdtempSync(path.join(tmpParent,"pef-visual-lab-"));
-    profile=next;history=[];lastResult=null;route=null;revision=0;cloudAvailable=true;autonomousEvidence=null;m3Evidence=null;m3RecoveryEvidence=null;m3OperationsEvidence=null;m43Evidence=null;m44Evidence=null;m5Evidence=null;m54Evidence=null;m55Evidence=null;m56Evidence=null;m61Evidence=null;m62Evidence=null;m63Evidence=null;propertyEvidence=null;hostEvidence=null;predeviceEvidence=null;goldenTraceEvidence=null;devicePreflightEvidence=null;candidateEvidence=null;
+    profile=next;history=[];lastResult=null;route=null;revision=0;cloudAvailable=true;autonomousEvidence=null;m3Evidence=null;m3RecoveryEvidence=null;m3OperationsEvidence=null;m43Evidence=null;m44Evidence=null;m5Evidence=null;m54Evidence=null;m55Evidence=null;m56Evidence=null;m61Evidence=null;m62Evidence=null;m63Evidence=null;m64Evidence=null;propertyEvidence=null;hostEvidence=null;predeviceEvidence=null;goldenTraceEvidence=null;devicePreflightEvidence=null;candidateEvidence=null;
     wan={primary:{link:true,upstream:true},backup:{link:true,upstream:true}};
     const proofKey=randomBytes(32);
     cloud=createLabCloudReplica({siteId:IDENTITY.siteId,deviceId:IDENTITY.deviceId,
@@ -115,6 +116,8 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
       m3Recovery:{kind:"PEF_M3_RECOVERY_SMOKE_V1",scope:"SOFTWARE_LAB_ONLY",
         lastEvidence:m3RecoveryEvidence,policyScope:"SUPERVISOR_POLICY_ONLY",
         physicalValidated:false,remoteRecoveryAllowed:false},
+      m64Matrix:{kind:"PEF_M64_CLOUD_LITE_FAULT_MATRIX_V1",scope:"REAL_LOOPBACK_FAULT_MATRIX",lastEvidence:m64Evidence,
+        signedAck:"LAB_HMAC_TOKEN_BOUND",externalTlsValidated:false,hardwareValidated:false},
       m63Sync:{kind:"PEF_M63_EDGE_CLOUD_LITE_LOCAL_SYNC_V1",scope:"REAL_LOOPBACK_HTTP_CLOUD",lastEvidence:m63Evidence,
         currentDemoCloudStillMock:true,realEdgeCloudTransportAvailable:true,physicalValidated:false},
       m62Ingest:{kind:"PEF_M62_CLOUD_LITE_DURABLE_INGEST_V1",scope:"LOCALHOST_DURABLE_INGEST",lastEvidence:m62Evidence,
@@ -181,6 +184,9 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
         case "m3Recovery":
           m3RecoveryEvidence=await runM3RecoverySmoke();
           return emit("m3-config-safe-mode",m3RecoveryEvidence);
+        case "m64Matrix":
+          m64Evidence=await runM64CloudLiteMatrix();
+          return emit("m64-cloud-lite-failure-matrix",m64Evidence);
         case "m63Sync":
           m63Evidence=await runM63EdgeSyncSmoke();
           return emit("m63-edge-real-cloud-lite-sync",m63Evidence);

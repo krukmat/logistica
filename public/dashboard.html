@@ -273,6 +273,17 @@
           <button id="m63-sync-run" class="secondary" type="button">Probar Edge ↔ Cloud Lite M6.3</button>
           <pre id="m63-sync-evidence">M6.3 NOT_RUN · Cloud Lite real en loopback</pre>
         </div>
+        <div class="lab-detail" id="m64-matrix-panel">
+          <h4>M6.4 — Matriz integral Cloud Lite local</h4>
+          <p class="micro">Ejecuta Property y Host en Edge autónomo contra Cloud Lite HTTP real
+            en loopback. Verifica caída y reinicio de Cloud, credencial falsa,
+            ACK HMAC falsificado, reconciliación sin duplicados y recuperación
+            del journal tras reiniciar Edge. Incluye M6.1–M6.3 sin borrar
+            los mocks antiguos. <strong>LAB_ONLY</strong>, sin TLS remoto,
+            hardware físico ni servicios de pago.</p>
+          <button id="m64-matrix-run" class="secondary" type="button">Ejecutar matriz de resiliencia M6.4</button>
+          <pre id="m64-matrix-evidence">M6.4 NOT_RUN · backend local real</pre>
+        </div>
         <div class="lab-detail workload-panel" id="workload-panel">
           <h4>S — Workload Runtime · proceso local (NO sandbox)</h4>
           <p class="micro">Workload permitido: <code>pef-receiver</code>. El Core valida su manifest, recursos y política offline; el supervisor inicia un proceso Node aislado sólo por proceso. <strong>CPU/RAM, filesystem y red todavía no están aislados por Linux</strong>.</p>
