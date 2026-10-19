@@ -78,7 +78,7 @@ function createFileRegistryStore({dir}={}){
        fd=fs.openSync(tmp,fs.constants.O_WRONLY|fs.constants.O_CREAT|fs.constants.O_EXCL|(fs.constants.O_NOFOLLOW||0),0o600);
        fs.writeFileSync(fd,content);fs.fsyncSync(fd);fs.closeSync(fd);fd=null;
        fs.renameSync(tmp,path.join(root,FILE));syncDirectory(root);
-     }finally{if(fd!==undefined)fs.closeSync(fd);if(fs.existsSync(tmp))fs.unlinkSync(tmp);}
+     }finally{if(fd!==undefined&&fd!==null)fs.closeSync(fd);if(fs.existsSync(tmp))fs.unlinkSync(tmp);}
      return {persisted:true,fsyncCompleted:true,registered:devices.length};
    },
    close(){if(closed)return;closed=true;owner.release();}

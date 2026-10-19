@@ -1,6 +1,6 @@
 "use strict";
 // M6.1 actual localhost HTTP and fsync-backed registry; ephemeral, no external services.
-const fs=require("node:fs"),os=require("node:os"),path=require("node:path");
+const fs=require("node:fs"),os=require("node:os"),path=require("node:path"),http=require("node:http");
 const {randomBytes}=require("node:crypto");
 const {createCloudLiteRegistryServer}=require("./cloud-lite-registry-server.js");
 async function runM61RegistrySmoke(){
@@ -53,7 +53,12 @@ async function runM61RegistrySmoke(){
   checks.SINGLE_WRITER_LOCK=false;
   try{createCloudLiteRegistryServer({dir:root,adminToken:admin});}
   catch(e){checks.SINGLE_WRITER_LOCK=e.message==="EDGE_ALREADY_RUNNING";}
-  const hostClaim=await fetch(url+"/health",{headers:{Host:"example.com"}}).then(x=>x.status);
+  const hostClaim=await new Promise((resolve,reject)=>{
+    const target=new URL(url);
+    const req=http.request({host:"127.0.0.1",port:Number(target.port),path:"/health",
+      headers:{Host:"example.com"}},res=>{res.resume();resolve(res.statusCode);});
+    req.once("error",reject);req.end();
+  });
   checks.HOST_HEADER_REJECTED=hostClaim===403;
   phases.push({phase:"BEFORE_RESTART",registered:1,authorized:true});
   await cloud.close();cloud=null;
