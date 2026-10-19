@@ -81,6 +81,8 @@ done < <(ldd "$node_bin" | awk '{for(i=1;i<=NF;i++)if($i ~ /^\//){print $i;break
 cp "$PEF_S3_REPO_ROOT/src/core/workload-manager.js" "$root/app/src/core/"
 cp "$PEF_S3_REPO_ROOT/src/core/local-receipts.js" "$root/app/src/core/"
 cp "$PEF_S3_REPO_ROOT/src/core/event-envelope.js" "$root/app/src/core/"
+# Event-envelope now imports a pure, allowlisted site-operations contract; copy code only.
+cp "$PEF_S3_REPO_ROOT/src/core/site-operation-contract.js" "$root/app/src/core/"
 cp "$PEF_S3_REPO_ROOT/src/adapters/os-file-journal.js" "$root/app/src/adapters/"
 cp "$PEF_S3_REPO_ROOT/src/runtime/demo-workload.js" "$root/app/src/runtime/"
 cp "$PEF_S3_REPO_ROOT/scripts/lab/isolated-receiver.js" "$root/app/"
