@@ -53,6 +53,15 @@ jobs:
         run: npm run m7:identity > "$RUNNER_TEMP/pef-m71-identity-x64.json"
       - name: M7.2 signed staged Edge boot and health-based rollback x64
         run: npm run m7:release > "$RUNNER_TEMP/pef-m72-release-x64.json"
+      - name: M7.3 actual mutual TLS 1.3 Cloud Lite Edge matrix x64
+        run: npm run m7:mtls > "$RUNNER_TEMP/pef-m73-mtls-x64.json"
+      - name: Upload M7.3 mutual TLS evidence x64
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pef-m73-mtls-x64
+          path: ${{ runner.temp }}/pef-m73-mtls-x64.json
+          if-no-files-found: error
       - name: Upload signed identity and release evidence x64
         if: always()
         uses: actions/upload-artifact@v4
@@ -228,6 +237,15 @@ jobs:
         run: npm run m7:identity > "$RUNNER_TEMP/pef-m71-identity-arm64.json"
       - name: M7.2 native ARM64 signed release and explicit authorized rollback
         run: npm run m7:release > "$RUNNER_TEMP/pef-m72-release-arm64.json"
+      - name: M7.3 native ARM64 mutual TLS 1.3 Cloud Lite Edge matrix
+        run: npm run m7:mtls > "$RUNNER_TEMP/pef-m73-mtls-arm64.json"
+      - name: Upload M7.3 mutual TLS evidence ARM64
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pef-m73-mtls-arm64
+          path: ${{ runner.temp }}/pef-m73-mtls-arm64.json
+          if-no-files-found: error
       - name: Upload signed identity and release evidence ARM64
         if: always()
         uses: actions/upload-artifact@v4
