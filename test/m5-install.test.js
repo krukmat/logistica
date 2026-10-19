@@ -52,3 +52,37 @@ test("M5.1 rejects symlinked installation tree and release/data paths",()=>{
    assert.equal(fs.existsSync(path.join(root,"state.json")),false);
  }finally{fs.rmSync(root,{recursive:true,force:true});fs.rmSync(external,{recursive:true,force:true});}
 });
+
+test("M5.1 accepts canonical macOS tmp path after creating under /var alias",()=>{
+ // Emulates os.tmpdir() = /var/folders/... while realpath is /private/var/folders/...
+ // Both forms must work in one operation, without allowing symlinked child folders.
+ const previous=os.tmpdir;
+ const sandbox=fs.mkdtempSync(path.join(previous(),"pef-m5-tmp-alias-"));
+ const realAnchor=path.join(sandbox,"private","var","folders","T");
+ const aliasParent=path.join(sandbox,"var");
+ const aliasAnchor=path.join(aliasParent,"folders","T");
+ try{
+   fs.mkdirSync(realAnchor,{recursive:true});
+   fs.symlinkSync(path.join(sandbox,"private","var"),aliasParent,"dir");
+   os.tmpdir=()=>aliasAnchor;
+   const original=fs.mkdtempSync(path.join(aliasAnchor,"pef-m5-alias-"));
+   const first=applyRelease({root:original,version:"v1",mode:"install"});
+   assert.ok(original.startsWith(aliasAnchor+path.sep));
+   assert.ok(first.root.startsWith(realAnchor+path.sep));
+   assert.equal(verifyInstall(original).digest,first.digest);
+   assert.equal(verifyInstall(first.root).digest,first.digest);
+   const repeated=applyRelease({root:original,version:"v1",mode:"install"});
+   assert.equal(repeated.idempotent,true);
+   const updated=applyRelease({root:first.root,version:"v2",mode:"upgrade"});
+   assert.equal(updated.activeVersion,"v2");
+   assert.equal(verifyInstall(original).activeVersion,"v2");
+   const rolled=applyRelease({root:original,version:"v1",mode:"rollback"});
+   assert.equal(rolled.activeVersion,"v1");
+   assert.throws(()=>applyRelease({root:path.join(sandbox,"foreign"),version:"v1",mode:"install"}),/M5_TEMP_ROOT_ONLY/);
+   fs.symlinkSync(sandbox,path.join(original,"redirect"));
+   assert.throws(()=>applyRelease({root:path.join(original,"redirect","other"),version:"other",mode:"install"}),/M5_UNSAFE_ROOT/);
+ }finally{
+   os.tmpdir=previous;
+   fs.rmSync(sandbox,{recursive:true,force:true});
+ }
+});
