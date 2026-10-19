@@ -43,3 +43,21 @@ El artifact [M4.3 en CI #39218335525](https://github.com/krukmat/logistica/actio
 - M4.4 demostración conjunta y firma del bundle de evidencia **pendiente**. M4.3 cerrado únicamente en laboratorio; no implica habilitar producción ni compras.
 
 [Contrato, tasks y límites](../tasks/m4-commonality-resilience.md).
+
+## Muestras cuantitativas de CI (misma ejecución)
+
+[CI #39219003980](https://github.com/krukmat/logistica/actions/runs/39219003980), job `emulator`, imprimió `M4_MEASURED` tras crear el artifact `m4-commonality-lab-39219003980`. Los números se transcriben de **esa ejecución** (Linux x64 GitHub-hosted), no de tu Mac ni de un device PEF.
+
+| Métrica | Property | Host | Unidad/alcance |
+| --- | ---: | ---: | --- |
+| RSS inicial del worker | 46.141.440 | 46.264.320 | bytes, hijo Node |
+| RSS después de recuperación | 46.268.416 | 46.231.552 | bytes, **nuevo proceso** |
+| CPU user inicial | 13.641 | 15.385 | µs acumulados del worker inicial |
+| CPU system inicial | 5.846 | 5.128 | µs acumulados del worker inicial |
+| HTTP ALERT/OPEN | 7,051 | 2,200 | ms de esta única petición |
+| HTTP ACK | 2,071 | 1,632 | ms de esta única petición |
+| Restart observado (polling) | 1.091,33 | 1.159,08 | ms, proceso y ventana de supervisión |
+| Journal antes de reapertura | 1.647 | 1.596 | bytes del journal local |
+| Journal tras replay | 4.079 | 3.967 | bytes, incluye registros CLOUD_ACK |
+
+El aumento de bytes tras replay es **esperado**: un cursor de Cloud ACK también se registra de forma duradera, aunque no queden eventos pendientes. Los contadores CPU de los workers antes y después **no son una serie temporal de un solo PID**; se reinició el proceso. Se trata de una muestra mínima de CI sin calentamiento, percentiles, repetición estadística, límite de memoria del dispositivo, energía ni cargas reales. Se preserva el JSON por ejecución y los métodos/campos en [task](../tasks/m4-commonality-resilience.md).
