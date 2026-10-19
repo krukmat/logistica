@@ -520,3 +520,23 @@ test("M4.3 dashboard HTTP action runs same Core recovery/fault/metrics matrix",(
  assert.equal(report.lab.m4Commonality.lastEvidence.status,"LAB_PASS");
  assert.equal(report.lab.m4Commonality.physicalValidated,false);
 }));
+
+test("M4.4 dashboard HTTP runs one integrated Edge scenario and shows verified bundle",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text(),client=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["m4-integrated-panel","m4-integrated-run","m4-integrated-evidence"])
+   assert.ok(html.includes('id="'+id+'"'),id);
+ assert.match(client,/labAction\("m4Integrated"\)/);
+ await call({command:"mode",mode:"lab"});
+ const response=await call({command:"lab",action:"m4Integrated"});
+ assert.equal(response.httpStatus,200);
+ assert.equal(response.result.kind,"PEF_M4_BUNDLE_VERIFIED_V1");
+ assert.equal(response.result.ok,true);
+ assert.equal(response.result.assertions,92);
+ assert.equal(response.result.property,"LAB_PASS");
+ assert.equal(response.result.host,"LAB_PASS");
+ assert.equal(response.result.commonality,"LAB_PASS");
+ assert.match(response.result.bundleDir,/run-/);
+ assert.equal(response.result.signatureValidated,false);
+ assert.equal(response.lab.m4Integrated.lastEvidence.runId,response.result.runId);
+ assert.equal(response.lab.m4Integrated.physicalValidated,false);
+}));
