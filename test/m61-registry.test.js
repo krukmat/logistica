@@ -32,7 +32,9 @@ test("M6.1 file registry rejects unsupported paths and malformed persisted state
     credentialHash:"a".repeat(64)}),/DEVICE_ALREADY_ENROLLED/);
   store.close();
   const filename=path.join(root,"pef-cloud-lite-registry-v1.json");
-  assert.deepEqual(createFileRegistryStore({dir:root}).read().map(x=>x.deviceId),["d1"]);
+  const reopened=createFileRegistryStore({dir:root});
+  assert.deepEqual(reopened.read().map(x=>x.deviceId),["d1"]);
+  reopened.close();
   // An interrupted writer must fail closed on a corrupted registry.
   fs.writeFileSync(filename,"{broken json\n",{mode:0o600});
   assert.throws(()=>createFileRegistryStore({dir:root}),/CLOUD_LITE_REGISTRY_CORRUPT/);
