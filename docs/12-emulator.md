@@ -276,3 +276,7 @@ En Lab integrado → **M6.1**, la acción `m61Registry` crea un servicio HTTP re
 ## M6.3–M6.4 — Cloud Lite real y resiliencia
 
 Dashboard → Laboratorio integrado → **M6.3** (`m63Sync`) inicia Edge real y Cloud Lite HTTP loopback para Property/Host y valida offline, token, ACK autenticado, dedup/reinicio. **M6.4** (`m64Matrix`) ejecuta matriz adicional sobre servidor de Cloud que se detiene/reinicia, intento con token inválido, ACK falsificado y local journal que no avanza. Los dos servicios reales se cierran y eliminan sus directorios temporales al finalizar. El `cloud` de las otras escenas antiguas sigue siendo el mock. [Auditoría](audit/m6-2-4-cloud-lite-local-2026-10-19.md).
+
+## M7.1–M7.2 — Identidad y signed M5 (software-only)
+
+Dentro de Laboratorio integrado, **M7.1** (`m71Identity`) crea una identidad software Ed25519 temporal, firma desafíos ligados al device y valida reapertura/corrupción. **M7.2** (`m72Release`) ejecuta un release temporal firmando permisos en una autoridad efímera de laboratorio, verifica package M5, arranca un Edge real, simula fallo de health-check y realiza rollback autorizado. El dashboard no instala software, no importa claves permanentes ni cambia el systemd del Mac. Ambas tareas: IMPLEMENTED / CI_PENDING. [Contrato](contracts/m7-security-lab-v1.json) y [auditoría](audit/m7-identity-and-signed-release-2026-10-19.md).

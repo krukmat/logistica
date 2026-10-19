@@ -96,3 +96,7 @@ M6.1: registro de dispositivos y autenticación por token en servidor HTTP real 
 M6.1/M6.2/M6.3 CLOSED SOFTWARE LAB (registry, ingesta durable y Edge real → HTTP Cloud Lite con HMAC/replay), M6.4 matriz real Property+Host PASS en CI #39271578783, integración dashboard/artefactos en verificación final. Cloud legacy mock sigue en demos antiguas; nuevo flujo no lo utiliza. Sin hosting ni hardware físico. Véase [plan](tasks/m6-cloud-lite-local.md).
 
 **M6 closure:** M6.1–M6.4 CLOSED SOFTWARE LAB ONLY tras [CI #39272167885](https://github.com/krukmat/logistica/actions/runs/39272167885): ARM64 210 PASS, x64 209 PASS+1 skip, tablero y CLI x64/ARM64 con artifacts. El estado de verificación pendiente de líneas anteriores queda supersedido. Aún no hay cloud externo, costes nuevos de hosting, TLS remoto ni hardware físico. [Task](tasks/m6-cloud-lite-local.md).
+
+## M7 — identidad Ed25519 y firma de releases, estado preliminar (2026-10-19)
+
+M7.1/M7.2 IMPLEMENTED / CI_PENDING: keypair persistente local Ed25519 y signed upgrade/rollback con alta de autoridad software sin reemplazar instalador M5; dashboard CLI y CI añadidos. M7.3–M7.6 PROPOSED. Diferenciar `fsync` + software trust de TPM/secure boot y powercut. No se contrató Cloud ni hardware. [Tareas](tasks/m7-security-pilot.md) · [auditoría](audit/m7-identity-and-signed-release-2026-10-19.md).

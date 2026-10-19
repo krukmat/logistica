@@ -278,3 +278,9 @@ M6.1 **no reemplaza todavía el Cloud mock**: no hay ingestión/ACK de eventos (
 **LAB ONLY**: Cloud real pero restringido a loopback, WAN sintética, Cloud mock aún presente en demostraciones legacy, sin TLS remoto, powercut real, PKI ni garantía de 72 horas. Infraestructura externa nueva: ninguna.
 
 **Cierre M6:** [CI #39272167885](https://github.com/krukmat/logistica/actions/runs/39272167885) SUCCESS: 210/210 native ARM64, 209 PASS +1 skip Linux x64, dashboard M6.3/M6.4 y CLI reales, artifacts x64/ARM64. **M6.1–M6.4 CLOSED SOFTWARE LAB ONLY**. La nota anterior sobre gates pendientes ha sido supersedida; Cloud Lite sigue siendo local sin hosting externo ni TLS remoto.
+
+## M7.1–M7.2 — Identidad Ed25519 y releases autorizados (CI pendiente)
+
+`npm run m7:identity` prueba un keystore Ed25519 **software** create-once con fsync y challenge firmado; `npm run m7:release` usa el **mismo instalador M5** bajo una clave pública de autoridad anclada para rechazar firmas manipuladas, ordinals de downgrade y activaciones sin permiso, y revierte a known-good firmado después de un health-check negativo **inyectado** tras arrancar un paquete Edge real. En `npm run dashboard` → Laboratorio integrado se exponen `m71Identity` y `m72Release` y sus evidencias sin la clave privada. [Task M7](docs/tasks/m7-security-pilot.md), [auditoría](docs/audit/m7-identity-and-signed-release-2026-10-19.md) y [contrato](docs/contracts/m7-security-lab-v1.json).
+
+**Estado de aceptación:** IMPLEMENTED / CI_PENDING; no confundir código publicado con pruebas superadas. La clave privada local no es TPM/HSM, el high-water es software y no se certifican secure boot, TLS/mTLS, hardware ni resistencia frente a rollback del disco completo. La ruta M5 unsigned sólo continúa en raíces sin trust anchor, para regresión antigua. M7.3–M7.6 siguen PROPOSED. Sin nuevos costes de hosting.
