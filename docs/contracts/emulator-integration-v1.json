@@ -452,6 +452,22 @@
       "implementation": "src/core/site-operations.js",
       "test": "test/host-overlay.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "M4.3",
+      "mode": "lab",
+      "title": "Measured shared Site Operations parity and fault matrix in both autonomous overlays",
+      "controlIds": [
+        "m4-commonality-panel",
+        "m4-commonality-run",
+        "m4-commonality-evidence"
+      ],
+      "actions": [
+        "m4Commonality"
+      ],
+      "implementation": "src/runtime/m4-commonality.js",
+      "test": "test/m4-commonality.test.js",
+      "hardwareValidated": false
     }
   ]
 }

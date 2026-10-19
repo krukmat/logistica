@@ -46,6 +46,16 @@ jobs:
         run: node --check public/dashboard.js
       - name: Node regression suite
         run: npm test
+      - name: M4.3 dual-overlay commonality and fault evidence (lab only)
+        run: |
+          node bin/pef-m4-commonality.js > "$RUNNER_TEMP/pef-m4-commonality.json"
+          node -e 'const r=require(process.argv[1]);if(!r.ok||r.status!=="LAB_PASS"||r.hardwareValidated!==false||r.profiles.property.runtime.status!=="LAB_PASS"||r.profiles.host.runtime.status!=="LAB_PASS")process.exit(1)' "$RUNNER_TEMP/pef-m4-commonality.json"
+      - name: Upload M4.3 measured source/resources and failure matrix
+        uses: actions/upload-artifact@v4
+        with:
+          name: m4-commonality-lab-${{ github.run_id }}
+          path: ${{ runner.temp }}/pef-m4-commonality.json
+          if-no-files-found: error
       - name: Pre-device port contract rehearsal
         run: npm run ports:conformance -- --output "$RUNNER_TEMP/pef-predevice-ports.json"
       - name: Upload predevice evidence

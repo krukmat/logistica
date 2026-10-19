@@ -16,6 +16,7 @@ const {runM3LifecycleSmoke}=require("./lab/m3-lifecycle-smoke.js");
 const {runM3RecoverySmoke}=require("./lab/m3-recovery-smoke.js");
 const {runPropertySmoke}=require("./lab/property-smoke.js");
 const {runHostSmoke}=require("./lab/host-smoke.js");
+const {runM4Commonality}=require("../runtime/m4-commonality.js");
 const {runPredeviceConformance}=require("../runtime/predevice-conformance.js");
 const {runGoldenTraces}=require("../runtime/golden-traces.js");
 const {runDeviceIntegrationRehearsal}=require("../runtime/device-integration-rehearsal.js");
@@ -30,12 +31,12 @@ const CAPABILITIES=Object.freeze([
   "ci-linux-supervised-worker","autonomous-edge-host","boot-reopen-without-dashboard",
   "predevice-port-conformance","golden-trace-parity","safe-device-integration-preflight",
   "hardware-candidate-screening","m3-headless-lifecycle","m3-policy-safe-recovery",
-  "m3-operational-diagnostics","m3-same-run-evidence","m4-property-offline-workload","m4-host-offline-workload"
+  "m3-operational-diagnostics","m3-same-run-evidence","m4-property-offline-workload","m4-host-offline-workload","m4-commonality-and-faults"
 ]);
 const IDENTITY=Object.freeze({siteId:"demo-site",deviceId:"demo-edge",configRevision:"cfg-demo-1"});
 function createDashboardLab({tmpParent=os.tmpdir()}={}){
   let dir=null,edge=null,cloud=null,history=[],route=null,revision=0,closed=false,busy=false;
-  let cloudAvailable=true,profile="normal",lastResult=null,wan=null,boot=null,supervisor=null,autonomousEvidence=null,m3Evidence=null,m3RecoveryEvidence=null,m3OperationsEvidence=null,propertyEvidence=null,hostEvidence=null,predeviceEvidence=null,goldenTraceEvidence=null,devicePreflightEvidence=null,candidateEvidence=null;
+  let cloudAvailable=true,profile="normal",lastResult=null,wan=null,boot=null,supervisor=null,autonomousEvidence=null,m3Evidence=null,m3RecoveryEvidence=null,m3OperationsEvidence=null,propertyEvidence=null,hostEvidence=null,m43Evidence=null,predeviceEvidence=null,goldenTraceEvidence=null,devicePreflightEvidence=null,candidateEvidence=null;
   function guard(){if(closed)throw Error("LAB_CLOSED");}
   function start(next="normal"){
     if(!["normal","pressure"].includes(next))throw Error("UNSUPPORTED_LAB_PROFILE");
@@ -43,7 +44,7 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
     if(edge)edge.close();
     if(dir)fs.rmSync(dir,{recursive:true,force:true});
     dir=fs.mkdtempSync(path.join(tmpParent,"pef-visual-lab-"));
-    profile=next;history=[];lastResult=null;route=null;revision=0;cloudAvailable=true;autonomousEvidence=null;m3Evidence=null;m3RecoveryEvidence=null;m3OperationsEvidence=null;predeviceEvidence=null;goldenTraceEvidence=null;devicePreflightEvidence=null;candidateEvidence=null;
+    profile=next;history=[];lastResult=null;route=null;revision=0;cloudAvailable=true;autonomousEvidence=null;m3Evidence=null;m3RecoveryEvidence=null;m3OperationsEvidence=null;m43Evidence=null;propertyEvidence=null;hostEvidence=null;predeviceEvidence=null;goldenTraceEvidence=null;devicePreflightEvidence=null;candidateEvidence=null;
     wan={primary:{link:true,upstream:true},backup:{link:true,upstream:true}};
     const proofKey=randomBytes(32);
     cloud=createLabCloudReplica({siteId:IDENTITY.siteId,deviceId:IDENTITY.deviceId,
@@ -106,6 +107,9 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
       m3Recovery:{kind:"PEF_M3_RECOVERY_SMOKE_V1",scope:"SOFTWARE_LAB_ONLY",
         lastEvidence:m3RecoveryEvidence,policyScope:"SUPERVISOR_POLICY_ONLY",
         physicalValidated:false,remoteRecoveryAllowed:false},
+      m4Commonality:{kind:"PEF_M4_COMMONALITY_RESILIENCE_V1",
+        scope:"SOFTWARE_LAB_ONLY",lastEvidence:m43Evidence,physicalValidated:false,
+        propertyHostLinuxIsolationValidated:false},
       host:{kind:"PEF_M4_HOST_SMOKE_V1",scope:"SOFTWARE_LAB_ONLY",
         lastEvidence:hostEvidence,physicalValidated:false,cloudMockOnly:true},
       property:{kind:"PEF_M4_PROPERTY_SMOKE_V1",scope:"SOFTWARE_LAB_ONLY",
@@ -154,6 +158,9 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
         case "m3Recovery":
           m3RecoveryEvidence=await runM3RecoverySmoke();
           return emit("m3-config-safe-mode",m3RecoveryEvidence);
+        case "m4Commonality":
+          m43Evidence=await runM4Commonality();
+          return emit("m4-commonality-and-faults",m43Evidence);
         case "hostSmoke":
           hostEvidence=await runHostSmoke();
           return emit("m4-host-offline-workload",hostEvidence);

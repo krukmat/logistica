@@ -503,3 +503,20 @@ test("M4.2 dashboard HTTP action runs Host standalone Edge and common Site Opera
  assert.equal(result.lab.host.lastEvidence.sharedEngine,"src/core/site-operations.js");
  assert.equal(result.lab.host.physicalValidated,false);
 }));
+
+test("M4.3 dashboard HTTP action runs same Core recovery/fault/metrics matrix",()=>withPanel(async({url,call})=>{
+ const html=await (await fetch(url)).text(),js=await (await fetch(url+"dashboard.js")).text();
+ for(const id of ["m4-commonality-panel","m4-commonality-run","m4-commonality-evidence"])
+   assert.ok(html.includes('id="'+id+'"'),id);
+ assert.match(js,/labAction\("m4Commonality"\)/);
+ await call({command:"mode",mode:"lab"});
+ const report=await call({command:"lab",action:"m4Commonality"});
+ assert.equal(report.httpStatus,200);
+ assert.equal(report.result.status,"LAB_PASS",JSON.stringify(report.result));
+ assert.equal(report.result.parity.checks.LEGACY_PROPERTY_ENVELOPE,true);
+ assert.equal(report.result.profiles.property.runtime.checks.REAL_CHILD_RESTART,true);
+ assert.equal(report.result.profiles.host.runtime.checks.MOCK_DUPLICATE_REPLAY,true);
+ assert.equal(report.result.profiles.host.storage.checks.FSYNC_FAILURE_NO_ACK,true);
+ assert.equal(report.lab.m4Commonality.lastEvidence.status,"LAB_PASS");
+ assert.equal(report.lab.m4Commonality.physicalValidated,false);
+}));

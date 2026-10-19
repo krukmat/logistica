@@ -180,6 +180,17 @@
           <button id="m4-host-smoke" type="button" class="secondary">Probar Host offline → ACK → reinicio → replay</button>
           <pre id="m4-host-evidence">M4.2 NOT_RUN · no certifica infraestructura física</pre>
         </div>
+        <div class="lab-detail" id="m4-commonality-panel">
+          <h4>M4.3 — Paridad, resiliencia y métricas de reutilización</h4>
+          <p class="micro">Ejecuta el mismo Edge autónomo con perfiles Property/Host y prueba
+            eventos históricos, aislamiento de perfiles, crash real de hijos Node, health,
+            backoff, reinicio, pérdida de ACK en Cloud mock y fallos de fsync del SO
+            inyectados. Muestra código reutilizado (muestra acotada), CPU/RSS y latencias
+            medidas. <strong>LAB_ONLY</strong>: no benchmark de producto, no cgroups
+            Property/Host, no cortes físicos, ni Cloud remoto.</p>
+          <button id="m4-commonality-run" type="button" class="secondary">Ejecutar matriz M4.3 Property + Host</button>
+          <pre id="m4-commonality-evidence">M4.3 NOT_RUN · sin certificación física</pre>
+        </div>
         <div class="lab-detail workload-panel" id="workload-panel">
           <h4>S — Workload Runtime · proceso local (NO sandbox)</h4>
           <p class="micro">Workload permitido: <code>pef-receiver</code>. El Core valida su manifest, recursos y política offline; el supervisor inicia un proceso Node aislado sólo por proceso. <strong>CPU/RAM, filesystem y red todavía no están aislados por Linux</strong>.</p>
