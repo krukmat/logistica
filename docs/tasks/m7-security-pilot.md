@@ -91,3 +91,31 @@ unset PEF_M75_LONGRUN_ACK
 ### M7.5 operator result — 2026-10-20
 
 The operator ran `npm run m7:stress -- --hours 2` on macOS ARM64 with explicit opt-in. `PEF_M75_OPERATOR_LONG_SOAK_V1` returned `LAB_PASS`, `elapsedMs=7200025`, `sampleCount=119`, `failures=0`. This meets **two-hour periodic functional soak lab gate**, not a sustained-load or memory-stability gate. RSS observations grew from 92,078,080 to 148,602,880 bytes; **M7.5.D memory attribution OPEN**. **M7.5.E sustained load characterization OPEN**, 24h and 72h NOT_RUN. The M7.6 executable gate still hardcodes `TWO_HOUR_ENDURANCE=false` until validated external evidence ingestion, therefore it must not be misinterpreted as a failed operator soak. Field pilot remains NO-GO. [Operator audit](../audit/m75-operator-2hour-soak-2026-10-20.md).
+
+## M7.5.D/E and M7.6.A — targeted continuation (2026-10-20)
+
+No physical pilot or hosted infrastructure is authorized. All tests use loopback, ephemeral software credentials and synthetic WAN.
+
+| ID | Dependencies | Executed delivery / remaining gate | State |
+| --- | --- | --- | --- |
+| **M7.5.D1** | M7.5 periodic run | Samples `rss/heapUsed/heapTotal/external/arrayBuffers`, PID and active resource kinds before/after each real M6.4 cycle; replaces duration-based replay assertion with verified Property/Host scenario results | IMPLEMENTED, CI evidence to be checked |
+| **M7.5.D2** | D1 | Attribute worker subprocess RSS, sockets and potentially retained heap separately; compare GC-controlled baselines without asserting a leak from parent RSS | OPEN |
+| **M7.5.D3** | D1–D2 | Run comparable sampling series, characterize plateau/trend and publish thresholds grounded in measured workload | OPEN |
+| **M7.5.E1** | M6 + M7.3 + D1 | Persistent local TLS1.3/mTLS Cloud Lite with Property and Host Edge processes, paced incident/ACK writes, synthetic WAN restore, actual HTTP server outage/restart, replay, fsync and Edge reopen | IMPLEMENTED, CI integration gate pending |
+| **M7.5.E2** | E1 | Six-second bounded test accessible from dashboard and `npm run m7:sustained -- --seconds 6`; automated regression x64/ARM64 | IMPLEMENTED, CI acceptance pending |
+| **M7.5.E3** | E2 | Operator-controlled 15–30 minute paced study with reproducible rate/payload, worker attribution, resource series and thresholds; **never auto-launch** | NOT_RUN |
+| **M7.6.A1** | operator JSON + D1 | Read-only operator JSON inspector checks identity/scope, duration, sample chronology, observed failure count and 2h periodic coverage; SHA256 fingerprint is NOT authenticity | IMPLEMENTED, CI acceptance pending |
+| **M7.6.A2** | A1 | Existing `m7:pilot` CLI optionally reads `--evidence /absolute/file.json`; dashboard allows local JSON input with no persistence or privileged access | IMPLEMENTED, CI acceptance pending |
+| **M7.6.A3** | A2 | Reject malformed/falsified shape with negative automated tests; preserve `TWO_HOUR_ENDURANCE=false` because periodic load != sustained 2h | IMPLEMENTED, CI acceptance pending |
+
+For the six-second M7.5.E test:
+```bash
+git switch main && git pull
+npm run m7:sustained -- --seconds 6
+npm run m7:pilot -- --evidence /absolute/m75-long-soak.json
+npm run dashboard  # lab → M7.5.E and M7.6 operator import
+```
+
+Longer runs are explicitly opt-in. The CLI requires `PEF_M75_LONGRUN_ACK=EXPLICIT_OPERATOR_LONG_SOAK_LOCAL` beyond 30 seconds, and limits execution to 1800 seconds; no unattended 2–24h test is scheduled. **The prior 2h operator JSON was described in an audit but raw samples are not committed**, so M7.6 does not automatically mark that external file as inspected. Even a shape-valid import has `authenticityVerified=false`, `continuousLoadValidated=false`, and `fieldPilotAuthorized=false`. Memory metrics cover the harness parent PID, not isolated Edge/worker RSS. Hardware/72h/powercut/energy gates remain NO-GO.
+
+[Targeted test implementation](../../src/runtime/m75-sustained.js) · [operator validator](../../src/runtime/m76-evidence-import.js) · [original 2h audit](../audit/m75-operator-2hour-soak-2026-10-20.md). Next after green CI and targeted characterization: **M8.1 persistent ARM64 virtual-appliance integration**, explicitly a software pilot, not M5.3 hardware certification.
