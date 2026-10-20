@@ -116,6 +116,27 @@ async function runM75Sustained({durationSeconds=6,intervalMs=800}={}){
    }
    if(progress>=0.43&&!down){
     await cloud.close();cloud=null;down=true;faults.push("REAL_CLOUD_LITE_HTTP_DOWN");
+    // An overloaded CI event loop may cross both fault thresholds in one iteration.
+    // Prove an *actual* durable write and failed sync while Cloud is down before restart.
+    const outageProfile=profiles[index%2];
+    const outageId="M75-"+outageProfile+"-cloud-down-"+index;
+    const outageBody=outageProfile==="property"?
+     {operation:"ALERT",incidentId:outageId,assetId:"PUMP-01",severity:"WARNING"}:
+     {operation:"OPEN",incidentId:outageId,unitId:"CABIN-07",
+      category:"MAINTENANCE",severity:"WARNING"};
+    const opened=await edgeCall(outageProfile,outageProfile+"/incidents",outageBody);
+    const acknowledged=await edgeCall(outageProfile,outageProfile+"/incidents",
+     {operation:"ACK",incidentId:outageId});
+    const durableWhileDown=opened.http===201&&opened.fsyncCompleted===true&&
+     acknowledged.http===201&&acknowledged.fsyncCompleted===true;
+    if(!durableWhileDown)localFailures++;
+    else counts[outageProfile]+=2;
+    const failed=await edgeCall(outageProfile,"lab/cloud-lite/sync",{})
+      .catch(()=>({http:503}));
+    const observed=await edgeCall(outageProfile,"state",null);
+    outageObserved=durableWhileDown&&[409,503].includes(failed.http)&&
+     observed.storage.pending>=2;
+    cloudOutageFailures++;
    }
    if(progress>=0.75&&!recovery){
     await openCloud();recovery=true;cloudRecovered=true;
