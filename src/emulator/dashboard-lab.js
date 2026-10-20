@@ -212,7 +212,7 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
           m75Evidence=await runM75ShortSoak({cycles:2});
           return emit("m75-short-stress",m75Evidence);
         case "m76Pilot":
-          m76Evidence=await runM76PilotGate();
+          m76Evidence=await runM76PilotGate({operatorEvidence:body.operatorEvidence||null});
           return emit("m76-software-pilot-gate",m76Evidence);
         case "m74Operations":
           m74Evidence=await runM74OperationalSmoke();

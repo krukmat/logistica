@@ -696,11 +696,12 @@
     {
       "task": "M7.6",
       "mode": "lab",
-      "title": "Evidence-backed conservative GO only for software lab, field pilot remains blocked",
+      "title": "Fail-closed software gate with separately scoped unattested operator evidence inspection",
       "controlIds": [
         "m76-pilot-panel",
         "m76-pilot-run",
-        "m76-pilot-evidence"
+        "m76-pilot-evidence",
+        "m76-evidence-file"
       ],
       "actions": [
         "m76Pilot"

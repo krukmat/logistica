@@ -321,7 +321,14 @@ function bind(){
   $("m73-mtls-run").addEventListener("click",()=>labAction("m73Mtls"));
   $("m74-operations-run").addEventListener("click",()=>labAction("m74Operations"));
   $("m75-stress-run").addEventListener("click",()=>labAction("m75Stress"));
-  $("m76-pilot-run").addEventListener("click",()=>labAction("m76Pilot"));
+  $("m76-pilot-run").addEventListener("click",async()=>{
+     try{
+       const file=$("m76-evidence-file").files?.[0];
+       if(!file)return labAction("m76Pilot");
+       if(file.size>48000)throw Error("M7.6: archivo JSON supera 48KB");
+       return await labAction("m76Pilot",{operatorEvidence:JSON.parse(await file.text())});
+     }catch(err){message("M7.6: evidencia rechazada: "+String(err.message||err),true);}
+   });
   $("predevice-conformance").addEventListener("click",()=>labAction("predeviceConformance"));
   $("golden-traces").addEventListener("click",()=>labAction("goldenTraces"));
   $("device-preflight").addEventListener("click",()=>labAction("devicePreflight"));
