@@ -130,6 +130,39 @@
       "long15To30MinutesRun": false,
       "continuousTwoHoursValidated": false,
       "physicalValidated": false
+    },
+    "workerResourceAttribution": {
+      "task": "M7.5.D2",
+      "state": "IMPLEMENTED_CI_PENDING",
+      "metricsSource": "AUTHENTICATED_NODE_CHILD_IPC",
+      "workerProfiles": [
+        "property",
+        "host"
+      ],
+      "pidStableRequired": true,
+      "observations": [
+        "rssBytes",
+        "heapUsedBytes",
+        "heapTotalBytes",
+        "externalBytes",
+        "arrayBuffersBytes",
+        "cpuUserMicros",
+        "cpuSystemMicros",
+        "activeResources"
+      ],
+      "childIsolatedByOS": false,
+      "linuxCgroupEnforced": false,
+      "sharedParentHosts": [
+        "harness",
+        "autonomousEdgeProperty",
+        "autonomousEdgeHost",
+        "cloudLite"
+      ],
+      "edgeCloudRssSeparatelyValidated": false,
+      "workerRssValidatedAtRuntime": true,
+      "operatorSixSecondRunNotYetRecorded": true,
+      "longDurationMemoryStable": false,
+      "pilotPhysicalAuthorized": false
     }
   },
   "m76": {

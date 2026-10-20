@@ -123,3 +123,15 @@ Longer runs are explicitly opt-in. The CLI requires `PEF_M75_LONGRUN_ACK=EXPLICI
 ### CI verified follow-up (2026-10-20)
 
 [Run #39451324645](https://github.com/krukmat/logistica/actions/runs/39451324645) SUCCESS: ARM64 234/234 PASS; x64 233 PASS + 1 skip; zero failures, dashboard, Linux namespace, systemd and prehardware checks SUCCESS. M7.5.D1 (parent memory/resource series), M7.5.E1/E2 (six-second persistent local mTLS Property/Host fault journey) and M7.6.A1-A3 (unattested operator JSON inspection) are CLOSED for **bounded software-lab scope only**. M7.5.D2/D3 worker memory attribution and stability, M7.5.E3 15–30min characterization, physical M5.3 and W1.10.G remain OPEN/NOT_RUN. Field pilot NO-GO.
+
+### M7.5.D2 — worker process resource attribution (2026-10-20)
+
+**Task / requirement:** M7.5.D2, REQ-OBS-01; `MODULE/RESOURCE`. Dependency: M7.5.D1 and persistent M7.5.E. **State: IMPLEMENTED, CI acceptance pending**.
+
+- **D2.a**: extend existing allowlisted Property/Host Node `METRICS` IPC to include PID, RSS, heap used/total, external and arrayBuffer bytes, cumulative CPU, active Node resource counts and uptime; verify stable child PID through the Core supervisor process-driver port.
+- **D2.b**: provide a token-gated, read-only virtual-lab `GET /lab/workload/metrics` on autonomous Edge. No arbitrary PID lookup, shell execution, unguarded Linux port or Mac privileged operations. Unauthenticated calls return HTTP 403.
+- **D2.c**: sample both child processes in every M7.5.E iteration; record `resourceSamples[].workers.{property,host}`, `workerProcessMetrics` (PID, first/last/max RSS, delta, sample count), and a dedicated summary in the dashboard. Negative tests reject missing credentials; x64/native ARM64 CI required.
+
+**Truth boundary:** Edge Property, Edge Host, HTTPS Cloud Lite and the M7.5 harness remain **in one parent Node PID**; the separate subprocesses are the two unsandboxed site-operation workers. `workerRssValidated` only certifies child-PID sampling. `edgeCloudRssSeparatelyValidated=false` by design. Parent RSS is a shared Edge+Cloud+harness measurement; it cannot be allocated among components, and naive RSS sums may double-count shared memory. Node child resource counts are diagnostic handles, not kernel FD totals; no GC/steady-state leak conclusion. **M7.5.D3 and 15–30min E3 remain OPEN.** The six-second CI/demo never licenses physical pilot.
+
+Command: `npm run m7:sustained -- --seconds 6`, then `npm run dashboard` → Laboratorio integrado → M7.5.E → «RSS/heap por proceso». [Runtime](../../src/runtime/m75-sustained.js), [worker](../../src/workloads/site-operations-worker.js), [supervisor](../../src/core/workload-supervisor.js), [tests](../../test/m75-endurance.test.js).

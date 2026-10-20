@@ -284,3 +284,7 @@ Dentro de Laboratorio integrado, **M7.1** (`m71Identity`) crea una identidad sof
 ## M7.3–M7.6 — Canal seguro, diagnóstico, estrés y readiness
 
 Laboratorio integrado → `m73Mtls`: Cloud Lite/Edge **HTTPS TLS1.3 mTLS real** con CA local, rechazo de identidad ajena y fallo de trust sin downgradear HTTP. `m74Operations`: M3 SAFE_MODE/recovery autenticado con journal hash-chain fsynced. `m75Stress`: dos ciclos cortos de escenarios Cloud Lite con métricas CPU/RSS, **NO 2h certificadas**. `m76Pilot`: decision estricta `GO_SOFTWARE_LAB_ONLY`, `fieldPilotAuthorized=false`, bloqueo físico explícito. No se escriben certificados en llaveros del Mac ni se instalan servicios. [Auditoría](audit/m7-3-6-security-pilot-lab-2026-10-19.md).
+
+## M7.5.D2 worker resource evidence (2026-10-20)
+
+Dashboard local lab's M7.5.E six-second action measures actual Property/Host child Node PIDs via Core Supervisor → Node Process Driver → allowlisted METRICS IPC, and displays a separate `m75-worker-resource-evidence` summary. No filesystem `/proc` assumptions on macOS, shell/proc scanners, anonymous metrics endpoint or Linux privileges. Edge GET `/lab/workload/metrics` is operator-token protected and only available in `virtual-lab`. The parent PID embeds both autonomous Edge instances, local Cloud Lite and harness; do not claim Edge/Cloud individual memory. No claims of physical isolation, steady-state memory stability or 72h retention. [M7.5 task](tasks/m7-security-pilot.md).

@@ -24,3 +24,11 @@ No hardware purchase, production rollout, privileged Mac operations or hosted Cl
 - The separately invoked dashboard started on `http://127.0.0.1:8787/`. This is a **new laboratory session**, not a viewer of the prior CLI test's disposed temporary state.
 
 **Decision:** `M7.5.E` six-second Mac ARM64 software-lab functional smoke **OPERATOR_LAB_PASS**, in addition to CI #39451324645. Leave M7.5.D2 (per-process RSS attribution), M7.5.D3 (steady-state), M7.5.E3 (15–30m characterized run), and exact remote ledger count reconciliation OPEN. M8.1 remains PROPOSED. Field pilot remains NO-GO.
+
+## M7.5.D2 implementation — worker PID attribution (2026-10-20)
+
+The Node-only worker driver already exposes a METRICS IPC request. M7.5.D2 extends this supported process-port with heap, external, arrays and active-resource kinds, verifies child PID consistency and makes it available only via Edge's authenticated read-only **virtual-lab** endpoint. The sustained M7.5.E runner now records separately sampled Property and Host child RSS/heap/CPU in every cycle, alongside unchanged parent metrics; UI displays a worker summary plus source JSON.
+
+Key semantic distinction: **there are three Node OS processes** in the existing M7.5.E harness, not four. One Node parent contains both in-process autonomous Edge hosts, the Cloud Lite HTTP/TLS server and harness; the other two are forked site-operation workers. Child-PID metrics come from actual child process IPC, not parent `process.memoryUsage()`. Do not interpret parent RSS as individual Cloud Lite/Edge RSS. `workerRssValidated` tests independent child measurements and does not certify steady-state or kernel memory isolation. `edgeCloudRssSeparatelyValidated=false`, no physical verification.
+
+Acceptance pending final CI and subsequent Mac operator smoke. Next: D3 characterize per-PID drift over a short reproducible run, only afterward consider longer opt-in.
