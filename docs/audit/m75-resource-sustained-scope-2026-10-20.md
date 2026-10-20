@@ -9,3 +9,18 @@
 - **Next gate**: confirm GitHub Actions test jobs at the latest commit; then use targeted test results for worker-memory attribution and plan M8.1, not repeat uninstrumented 2h/24h runs.
 
 No hardware purchase, production rollout, privileged Mac operations or hosted Cloud deployment occurred. This note is implementation scope documentation, not a claim of CI success until tests are green.
+
+
+## Mac ARM64 operator result — 2026-10-20 (6-second M7.5.E)
+
+**Evidence source:** operator-pasted CLI JSON in conversation, not separately captured Mac telemetry. Command: `npm run m7:sustained -- --seconds 6`, with `intervalMs=800`. Result: `PEF_M75_SUSTAINED_MTLS_LAB_V1`, `LAB_PASS`, `ok=true`, eight checks true, `elapsedMs=6213`.
+
+- Durable local operations: Property 8, Host 8 (16 combined). Local failures 0; no pending journal entries after reconciliation. Property/Host workers are included in the integrated scenario.
+- Cloud Lite reported `remoteStoredEvents=20`, versus 16 counted operations; the current `CLOUD_LEDGER_REOPEN_MATCHES` check only requires `remoteStoredEvents >= generatedDurableOperations` and persistence of the count across Cloud restart. **Exact per-event attribution and set equality are not established**. Follow-up should distinguish accepted user events from control/transition events and verify identifiers with no missing/extra business events.
+- Median incident+ACK pair latency: 37ms in localhost laboratory, **not throughput certification**.
+- Three fault labels observed: `WAN_SYNTHETIC_RESTORED`, `REAL_CLOUD_LITE_HTTP_DOWN`, `REAL_CLOUD_LITE_HTTP_RESTARTED`. Real TLS was exercised, physical WAN was not.
+- Harness parent RSS samples: 70,483,968 → 89,948,160 bytes (+19,464,192 bytes, ~18.6 MiB). Heap used: 9,671,408 → 12,064,416 bytes (+2,393,008 bytes, ~2.3 MiB). `ProcessWrap=2` throughout captured samples. **Not a worker RSS measurement or proof of a memory leak/plateau**.
+- `workerRssValidated=false`, `physicalValidated=false`, `powerCutValidated=false`, `seventyTwoHourRetentionValidated=false`. No 15–30 minute test was executed.
+- The separately invoked dashboard started on `http://127.0.0.1:8787/`. This is a **new laboratory session**, not a viewer of the prior CLI test's disposed temporary state.
+
+**Decision:** `M7.5.E` six-second Mac ARM64 software-lab functional smoke **OPERATOR_LAB_PASS**, in addition to CI #39451324645. Leave M7.5.D2 (per-process RSS attribution), M7.5.D3 (steady-state), M7.5.E3 (15–30m characterized run), and exact remote ledger count reconciliation OPEN. M8.1 remains PROPOSED. Field pilot remains NO-GO.
