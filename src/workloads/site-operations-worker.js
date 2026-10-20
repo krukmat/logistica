@@ -21,7 +21,10 @@ process.on("message",m=>{
   else if(m.type==="METRICS"){
     const cpu=process.cpuUsage(),mem=process.memoryUsage();
     reply(m,{ok:true,observations:{
-      rssBytes:mem.rss,cpuUserMicros:cpu.user,cpuSystemMicros:cpu.system,
+      pid:process.pid,rssBytes:mem.rss,heapUsedBytes:mem.heapUsed,
+      heapTotalBytes:mem.heapTotal,externalBytes:mem.external,
+      arrayBuffersBytes:mem.arrayBuffers,
+      cpuUserMicros:cpu.user,cpuSystemMicros:cpu.system,
       uptimeSeconds:process.uptime(),kind:"WORKER_NODE_PROCESS_OBSERVED",
       kernelLimitsEnforced:false}});
   }

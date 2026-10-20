@@ -97,6 +97,16 @@ function createAutonomousEdgeHost({config,token,workloadDriver,cloudTransport}={
         hardwareValidated:false});return;
     }
     if(req.method==="GET"&&pathname==="/state"){send(res,200,state());return;}
+    // Scoped, read-only software-lab metrics. The parent PID also hosts Cloud Lite in M7.5;
+    // worker metrics are obtained from the actual allowlisted Node child via IPC.
+    if(req.method==="GET"&&pathname==="/lab/workload/metrics"&&
+       cfg.backend==="virtual-lab"){
+      const result=supervisor?await supervisor.resourceMetrics(workloadId):
+        {ok:false,error:"WORKER_RESOURCE_METRICS_UNAVAILABLE"};
+      send(res,result.ok?200:503,{kind:"PEF_M75_WORKER_RESOURCE_OBSERVATION_V1",
+        ...result,softwareLabOnly:true,physicalValidated:false});
+      return;
+    }
     if(req.method==="GET"&&pathname==="/receipts"){send(res,200,{receipts:engine.listReceipts()});return;}
     if(req.method==="GET"&&["/property/incidents","/host/incidents"].includes(pathname)){
       send(res,200,{incidents:pathname==="/property/incidents"?engine.listPropertyIncidents():

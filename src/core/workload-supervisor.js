@@ -112,6 +112,28 @@ function createWorkloadSupervisor({manager,driver,clock=()=>Date.now(),autoRecon
     try{return await x.handle.fault(type);}
     catch{return {ok:false,error:"WORKLOAD_IPC_FAILURE"};}
   }
+  async function resourceMetrics(id){
+    ensure();
+    const x=entries.get(id);
+    if(!x||x.state!=="RUNNING"||!x.handle||typeof x.handle.metrics!=="function")
+      return {ok:false,error:"WORKER_RESOURCE_METRICS_UNAVAILABLE"};
+    try{
+      const measured=await x.handle.metrics(),observations=measured?.observations;
+      if(measured?.ok!==true||observations?.kind!=="WORKER_NODE_PROCESS_OBSERVED"||
+        !Number.isSafeInteger(observations.pid)||observations.pid<=0||
+        observations.pid!==x.handle.pid||
+        !["rssBytes","heapUsedBytes","heapTotalBytes","externalBytes",
+          "arrayBuffersBytes","cpuUserMicros","cpuSystemMicros"].every(k=>
+            Number.isSafeInteger(observations[k])&&observations[k]>=0)||
+        observations.rssBytes===0)
+        return {ok:false,error:"WORKER_RESOURCE_METRICS_INVALID"};
+      return {ok:true,workloadId:id,state:x.state,isolation:x.isolation,
+        actualLimitsEnforced:x.actualLimitsEnforced===true,
+        ...observations};
+    }catch{
+      return {ok:false,error:"WORKER_RESOURCE_METRICS_UNAVAILABLE"};
+    }
+  }
   function list(){return [...entries.values()].map(show);}
   const interval=autoReconcileMs?setInterval(()=>{
     if(!closed)void reconcile().catch(()=>{});
@@ -124,6 +146,6 @@ function createWorkloadSupervisor({manager,driver,clock=()=>Date.now(),autoRecon
     for(const id of ids)await stop(id);
     closed=true;
   }
-  return {start,reconcile,stop,list,close,processReceipt,processOperation,crash,injectFault,limits:manager.limits,usage:manager.usage};
+  return {start,reconcile,stop,list,close,processReceipt,processOperation,resourceMetrics,crash,injectFault,limits:manager.limits,usage:manager.usage};
 }
 module.exports={createWorkloadSupervisor};
