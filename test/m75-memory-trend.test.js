@@ -107,6 +107,18 @@ test("M7.5.D3 offline CLI consumes bounded JSON and never reports leak/stability
   ],{encoding:"utf8",timeout:4000});
   assert.equal(rejected.status,1);
   assert.equal(JSON.parse(rejected.stdout).status,"INVALID_EVIDENCE");
+  const banner="> pef-virtual-edge@0.1.0 m7:sustained\\n"+
+   "> node bin/pef-m75-sustained.js --seconds 90\\n\\n"+
+   JSON.stringify(synthetic({seconds:90,parentGrowth:2}));
+  fs.writeFileSync(input,banner);
+  const contaminated=spawnSync(process.execPath,[
+   path.resolve(__dirname,"../bin/pef-m75-memory.js"),"--report",input
+  ],{encoding:"utf8",timeout:4000});
+  assert.equal(contaminated.status,1);
+  assert.match(contaminated.stderr,/M75_MEMORY_REPORT_CONTAINS_NPM_BANNER/);
+  // File unchanged: the operator can recover the evidence without re-running.
+  assert.equal(fs.readFileSync(input,"utf8"),banner);
+
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
 

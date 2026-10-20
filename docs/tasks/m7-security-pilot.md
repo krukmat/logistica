@@ -154,7 +154,7 @@ Command: `npm run m7:sustained -- --seconds 6`, then `npm run dashboard` → Lab
 
 ```bash
 git switch main && git pull
-PEF_M75_LONGRUN_ACK=EXPLICIT_OPERATOR_LONG_SOAK_LOCAL npm run m7:sustained -- --seconds 90 > m75-memory-90s.json
+PEF_M75_LONGRUN_ACK=EXPLICIT_OPERATOR_LONG_SOAK_LOCAL npm run --silent m7:sustained -- --seconds 90 > m75-memory-90s.json
 npm run m7:memory -- --report m75-memory-90s.json
 ```
 
@@ -163,7 +163,7 @@ The 90s command is **not run automatically** in CI or by the dashboard. It modif
 **D3 fault-phase refinement:** the latest runner labels every RSS/heap observation with `OFFLINE`, `WAN_RESTORED`, `CLOUD_OUTAGE` or `RECOVERED`. The analysis reports a **whole post-warmup trend mixing fault transitions** separately from `postRecovery`, whose own slope requires at least 30 s and 12 samples entirely in `RECOVERED`. Phase labels must not regress; missing or inconsistent labels are rejected (older completely unlabeled reports are admitted for limited whole-run trend analysis). A 90s operator test generally has only ~22.5 s after Cloud recovery, so `postRecoveryTrendEligible=false` is expected. An **optional** 180s operator run provides ~45 s after recovery in normal scheduling, without guaranteeing stability or forcing GC:
 
 ```bash
-PEF_M75_LONGRUN_ACK=EXPLICIT_OPERATOR_LONG_SOAK_LOCAL npm run m7:sustained -- --seconds 180 > m75-memory-180s.json
+PEF_M75_LONGRUN_ACK=EXPLICIT_OPERATOR_LONG_SOAK_LOCAL npm run --silent m7:sustained -- --seconds 180 > m75-memory-180s.json
 npm run m7:memory -- --report m75-memory-180s.json
 ```
 

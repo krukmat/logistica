@@ -46,3 +46,16 @@ Provenance: synthetic unit fixtures and actual short CI lab checks test the code
 Latest `resourceSamples[].phase` encodes monotonic OFFLINE → WAN_RESTORED → CLOUD_OUTAGE → RECOVERED. An unconditional whole post-warmup slope may include Cloud restart and WAN transitions; **not a steady-state slope**. The analyzer additionally calculates `processes[].postRecovery` only when the recovered phase lasts >=30s with >=12 readings. A 90s run will ordinarily **not** satisfy this because Cloud recovery occurs at ~75% of the duration; 180s is an optional next diagnostic if useful. Neither phase annotation nor deterministic synthetic fixtures are measurements of an actual leak, plateau or hardware resources.
 
 **D3 CI gate:** [CI #39459546240](https://github.com/krukmat/logistica/actions/runs/39459546240) overall SUCCESS (ARM64 245/245, x64 244 PASS +1 skip, no failures). Positive and negative synthetic slope fixtures, PID/phase validation, read-only CLI, dashboard HTTP path all passed. This validates the **diagnostic implementation**, not a measured macOS memory trend; empirical 90/180s operator profile remains NOT_RUN.
+
+### M7.5.D3 capture erratum — npm lifecycle banner (2026-10-20)
+
+The originally documented `npm run m7:sustained -- --seconds 90 > m75-memory-90s.json` **does not produce pure JSON**: `npm run` writes the package/script invocation banner to stdout. This is a CLI/documentation defect, **not evidence of a failed 90-second stress run**. Correct future capture: `PEF_M75_LONGRUN_ACK=EXPLICIT_OPERATOR_LONG_SOAK_LOCAL npm run --silent m7:sustained -- --seconds 90 > m75-memory-90s.json`.
+
+Recover an already captured complete JSON result without another timed run:
+
+```bash
+sed -n '/^{/,$p' m75-memory-90s.json > m75-memory-90s.clean.json
+npm run m7:memory -- --report m75-memory-90s.clean.json
+```
+
+The importer explicitly rejects banners with a recovery hint; it does not automatically strip arbitrary lines from operator evidence. Preserve the original and verify `kind`, `requestedSeconds`, `ok`, `memoryTrend` and the post-recovery window from the recovered JSON. This does **not** convert raw external evidence into attestation or hardware certification.
