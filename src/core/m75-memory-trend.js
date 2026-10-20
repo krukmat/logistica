@@ -28,6 +28,11 @@ function analyzeM75MemoryTrend(report){
     report.resourceSamples.length<2||report.resourceSamples.length>4096)
   return invalid("INVALID_KIND_OR_SERIES");
  const series=report.resourceSamples,points={parent:[],property:[],host:[]};
+ const PHASES=new Set(["OFFLINE","WAN_RESTORED","CLOUD_OUTAGE","RECOVERED"]);
+ const hasPhases=series.every(s=>PHASES.has(s?.phase));
+ const anyPhases=series.some(s=>s?.phase!==undefined);
+ if(anyPhases&&!hasPhases)return invalid("INCONSISTENT_OR_UNKNOWN_PHASE");
+ const phaseCounts={OFFLINE:0,WAN_RESTORED:0,CLOUD_OUTAGE:0,RECOVERED:0};
  let previousTime=-1,parentPid=null,workerPids={property:null,host:null};
  for(const sample of series){
   if(!sample||!Number.isSafeInteger(sample.elapsedMs)||sample.elapsedMs<=previousTime||
@@ -36,8 +41,9 @@ function analyzeM75MemoryTrend(report){
    return invalid("INVALID_PARENT_SAMPLE_OR_TIME");
   if(parentPid!==null&&sample.pid!==parentPid)return invalid("PARENT_PID_CHANGED");
   parentPid=sample.pid;previousTime=sample.elapsedMs;
+  if(hasPhases)phaseCounts[sample.phase]++;
   points.parent.push({t:sample.elapsedMs,rssBytes:sample.rssBytes,
-   heapUsedBytes:sample.heapUsedBytes});
+   heapUsedBytes:sample.heapUsedBytes,phase:sample.phase||null});
   for(const profile of PROFILES){
    const child=sample.workers?.[profile];
    if(!child||!positive(child.rssBytes)||child.rssBytes===0||
@@ -48,7 +54,7 @@ function analyzeM75MemoryTrend(report){
     return invalid("WORKER_PID_CHANGED_"+profile.toUpperCase());
    workerPids[profile]=child.pid;
    points[profile].push({t:sample.elapsedMs,
-    rssBytes:child.rssBytes,heapUsedBytes:child.heapUsedBytes});
+    rssBytes:child.rssBytes,heapUsedBytes:child.heapUsedBytes,phase:sample.phase||null});
   }
  }
  if(workerPids.property===workerPids.host)return invalid("WORKER_PID_COLLISION");
@@ -68,6 +74,19 @@ function analyzeM75MemoryTrend(report){
   const firstMedian=eligible?median(tail.slice(0,sliceSize).map(p=>p.rssBytes)):null;
   const lastMedian=eligible?median(tail.slice(-sliceSize).map(p=>p.rssBytes)):null;
   const robustRssShiftMiB=eligible?Math.round((lastMedian-firstMedian)/MIB*1000)/1000:null;
+  const recovered=hasPhases?all.filter(p=>p.phase==="RECOVERED"):[];
+  const recoverySpanMs=recovered.length>1?recovered.at(-1).t-recovered[0].t:0;
+  const recoveryEligible=recovered.length>=12&&recoverySpanMs>=30000;
+  const postRecovery=recoveryEligible?{
+   status:"DESCRIPTIVE_POST_RECOVERY_TREND_ONLY",samples:recovered.length,
+   sampleSpanMs:recoverySpanMs,
+   rssSlopeMiBPerMin:regressionSlope(recovered,"rssBytes"),
+   heapSlopeMiBPerMin:regressionSlope(recovered,"heapUsedBytes"),
+   rssDeltaBytes:recovered.at(-1).rssBytes-recovered[0].rssBytes,
+   leakConfirmed:false,plateauValidated:false
+  }:{status:hasPhases?"INSUFFICIENT_POST_RECOVERY_WINDOW":"PHASES_NOT_LABELED",
+   samples:recovered.length,sampleSpanMs:recoverySpanMs,leakConfirmed:false,
+   plateauValidated:false};
   let classification="INSUFFICIENT_OBSERVATION_WINDOW";
   // Descriptive heuristic only. Do not interpret an increasing RSS slope as a leak.
   if(eligible){
@@ -84,7 +103,7 @@ function analyzeM75MemoryTrend(report){
    heapUsedDeltaBytes:last.heapUsedBytes-first.heapUsedBytes,
    tailRssSlopeMiBPerMin:rssSlope,tailHeapSlopeMiBPerMin:heapSlope,
    robustTailRssShiftMiB:robustRssShiftMiB,classification,
-   trendEligible:eligible,leakConfirmed:false,plateauValidated:false};
+   trendEligible:eligible,postRecovery,leakConfirmed:false,plateauValidated:false};
  };
  const processes=[
   summarize("parent",parentPid),summarize("property",workerPids.property),
@@ -96,7 +115,13 @@ function analyzeM75MemoryTrend(report){
    "REQUIRES_60_SECOND_RUN_45_SECOND_SPAN_16_SAMPLES_AND_30_SECOND_TAIL",
   trendEligible:eligible,requestedSeconds:report.requestedSeconds,
   sampleCount:series.length,sampleSpanMs:spanMs,
-  processes,heuristicThresholds:{upwardSlopeMiBPerMin:1,
+  processes,phaseCoverage:hasPhases?phaseCounts:null,
+  includesFaultTransitions:hasPhases?(phaseCounts.CLOUD_OUTAGE>0&&
+    phaseCounts.RECOVERED>0):null,
+  trendIncludesFaultTransitions:true,
+  postRecoveryTrendEligible:hasPhases&&processes.every(p=>
+   p.postRecovery.status==="DESCRIPTIVE_POST_RECOVERY_TREND_ONLY"),
+  heuristicThresholds:{upwardSlopeMiBPerMin:1,
    upwardRobustShiftMiB:0.75,warmupFraction:0.2,
    minRequestedSeconds:60,minSampleSpanMs:45000,minTailSpanMs:30000,
    minSamples:16},

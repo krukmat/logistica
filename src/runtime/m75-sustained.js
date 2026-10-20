@@ -174,6 +174,7 @@ async function runM75Sustained({durationSeconds=6,intervalMs=800}={}){
    latencyMs.push(Math.round(performance.now()-begin));
    const resource=resources();
    resource.elapsedMs=Math.round(performance.now()-start);
+   resource.phase=recovery?"RECOVERED":down?"CLOUD_OUTAGE":up?"WAN_RESTORED":"OFFLINE";
    resource.workers={};
    // Two real child Node processes observed via the existing driver IPC, not ps/proc guesses.
    for(const profile of profiles){
