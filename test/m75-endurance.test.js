@@ -42,4 +42,30 @@ test("M7.5.E sustained local TLS cloud and both Edge hosts survive outage and re
  assert.equal(result.sameLongLivedEdgeAndCloud,true);
  assert.equal(result.physicalValidated,false);
  assert.ok(result.resourceSamples.length>=4);
+ assert.equal(result.checks.WORKER_PROCESS_RSS_ATTRIBUTED,true);
+ assert.equal(result.workerRssValidated,true);
+ assert.equal(result.edgeCloudRssSeparatelyValidated,false);
+ assert.equal(result.parentHostsEdgeAndCloud,true);
+ assert.equal(result.workerProcessMetrics.distinctWorkerPids,true);
+ assert.equal(result.workerProcessMetrics.workers.length,2);
+ const pids=new Set();
+ for(const worker of result.workerProcessMetrics.workers){
+  assert.ok(worker.pid>0&&worker.pid!==process.pid);
+  assert.ok(worker.samples>=4);
+  assert.ok(worker.firstRssBytes>0&&worker.lastRssBytes>0);
+  pids.add(worker.pid);
+ }
+ assert.equal(pids.size,2);
+ for(const sample of result.resourceSamples){
+  assert.ok(sample.workers.property.pid>0&&sample.workers.host.pid>0);
+  assert.ok(sample.workers.property.pid!==sample.workers.host.pid);
+  for(const profile of ["property","host"]){
+   const worker=sample.workers[profile];
+   assert.equal(worker.isolation,"NODE_PROCESS_ONLY");
+   assert.equal(worker.actualLimitsEnforced,false);
+   for(const k of ["rssBytes","heapUsedBytes","heapTotalBytes","externalBytes",
+     "arrayBuffersBytes","cpuUserMicros","cpuSystemMicros"])
+    assert.ok(Number.isSafeInteger(worker[k])&&worker[k]>=0,k);
+  }
+ }
 });

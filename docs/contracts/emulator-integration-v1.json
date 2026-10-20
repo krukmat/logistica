@@ -696,7 +696,7 @@
     {
       "task": "M7.5.E",
       "mode": "lab",
-      "title": "Persistent local TLS1.3 mTLS Cloud Lite and Property/Host Edge paced fault and resource characterization",
+      "title": "Persistent local Edge plus TLS Cloud with measured distinct child worker RSS/heap/CPU and synthetic faults",
       "controlIds": [
         "m75-stress-panel",
         "m75-sustained-run",

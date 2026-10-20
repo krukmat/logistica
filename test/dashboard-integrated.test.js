@@ -774,3 +774,20 @@ test("M7.6 operator file is wired to fail-closed gate, with invalid JSON evidenc
  assert.equal(result.result.fieldPilotAuthorized,false);
  assert.equal(result.result.decision,"GO_SOFTWARE_LAB_ONLY");
 }));
+
+test("M7.5.D2 API reports two separate actual child processes from an authenticated dashboard action",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text();
+ assert.ok(html.includes('id="m75-sustained-run"'));
+ await call({command:"mode",mode:"lab"});
+ const r=await call({command:"lab",action:"m75Sustained"});
+ assert.equal(r.result.status,"LAB_PASS",JSON.stringify(r.result));
+ assert.equal(r.result.workerRssValidated,true);
+ assert.equal(r.result.parentHostsEdgeAndCloud,true);
+ assert.equal(r.result.edgeCloudRssSeparatelyValidated,false);
+ assert.equal(r.lab.m75Sustained.lastEvidence.checks.WORKER_PROCESS_RSS_ATTRIBUTED,true);
+ const children=r.result.workerProcessMetrics.workers;
+ assert.equal(children.length,2);
+ assert.notEqual(children[0].pid,children[1].pid);
+ assert.equal(children[0].samples,r.result.resourceSamples.length);
+ assert.equal(children[1].samples,r.result.resourceSamples.length);
+}));
