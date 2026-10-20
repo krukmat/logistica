@@ -34,6 +34,8 @@ function analyzeM75MemoryTrend(report){
  if(anyPhases&&!hasPhases)return invalid("INCONSISTENT_OR_UNKNOWN_PHASE");
  const phaseCounts={OFFLINE:0,WAN_RESTORED:0,CLOUD_OUTAGE:0,RECOVERED:0};
  let previousTime=-1,parentPid=null,workerPids={property:null,host:null};
+ let previousPhaseIndex=-1;
+ const phaseOrder=["OFFLINE","WAN_RESTORED","CLOUD_OUTAGE","RECOVERED"];
  for(const sample of series){
   if(!sample||!Number.isSafeInteger(sample.elapsedMs)||sample.elapsedMs<=previousTime||
      !positive(sample.rssBytes)||sample.rssBytes===0||
@@ -41,7 +43,11 @@ function analyzeM75MemoryTrend(report){
    return invalid("INVALID_PARENT_SAMPLE_OR_TIME");
   if(parentPid!==null&&sample.pid!==parentPid)return invalid("PARENT_PID_CHANGED");
   parentPid=sample.pid;previousTime=sample.elapsedMs;
-  if(hasPhases)phaseCounts[sample.phase]++;
+  if(hasPhases){
+   const phaseIndex=phaseOrder.indexOf(sample.phase);
+   if(phaseIndex<previousPhaseIndex)return invalid("PHASE_ORDER_REGRESSION");
+   previousPhaseIndex=phaseIndex;phaseCounts[sample.phase]++;
+  }
   points.parent.push({t:sample.elapsedMs,rssBytes:sample.rssBytes,
    heapUsedBytes:sample.heapUsedBytes,phase:sample.phase||null});
   for(const profile of PROFILES){
@@ -118,7 +124,8 @@ function analyzeM75MemoryTrend(report){
   processes,phaseCoverage:hasPhases?phaseCounts:null,
   includesFaultTransitions:hasPhases?(phaseCounts.CLOUD_OUTAGE>0&&
     phaseCounts.RECOVERED>0):null,
-  trendIncludesFaultTransitions:true,
+  trendIncludesFaultTransitions:hasPhases?(phaseCounts.CLOUD_OUTAGE>0&&
+    phaseCounts.RECOVERED>0):null,
   postRecoveryTrendEligible:hasPhases&&processes.every(p=>
    p.postRecovery.status==="DESCRIPTIVE_POST_RECOVERY_TREND_ONLY"),
   heuristicThresholds:{upwardSlopeMiBPerMin:1,
