@@ -171,6 +171,7 @@ async function runM75Sustained({durationSeconds=6,intervalMs=800}={}){
      externalBytes:measure.externalBytes,arrayBuffersBytes:measure.arrayBuffersBytes,
      cpuUserMicros:measure.cpuUserMicros,cpuSystemMicros:measure.cpuSystemMicros,
      uptimeSeconds:measure.uptimeSeconds,
+     activeResources:measure.activeResources||{},
      isolation:measure.isolation,actualLimitsEnforced:measure.actualLimitsEnforced};
     workerRssSeries[profile].push(measure.rssBytes);
    }

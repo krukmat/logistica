@@ -20,12 +20,15 @@ process.on("message",m=>{
   if(m.type==="HEALTH")reply(m,{ok:true});
   else if(m.type==="METRICS"){
     const cpu=process.cpuUsage(),mem=process.memoryUsage();
+    const activeResources={};
+    for(const type of (process.getActiveResourcesInfo?.()||[]))
+      activeResources[type]=(activeResources[type]||0)+1;
     reply(m,{ok:true,observations:{
       pid:process.pid,rssBytes:mem.rss,heapUsedBytes:mem.heapUsed,
       heapTotalBytes:mem.heapTotal,externalBytes:mem.external,
       arrayBuffersBytes:mem.arrayBuffers,
       cpuUserMicros:cpu.user,cpuSystemMicros:cpu.system,
-      uptimeSeconds:process.uptime(),kind:"WORKER_NODE_PROCESS_OBSERVED",
+      activeResources,uptimeSeconds:process.uptime(),kind:"WORKER_NODE_PROCESS_OBSERVED",
       kernelLimitsEnforced:false}});
   }
   else if(m.type==="SITE_OPERATION")reply(m,validateSiteCommand(profile,m.input));
