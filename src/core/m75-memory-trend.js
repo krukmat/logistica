@@ -82,7 +82,8 @@ function analyzeM75MemoryTrend(report){
   const robustRssShiftMiB=eligible?Math.round((lastMedian-firstMedian)/MIB*1000)/1000:null;
   const recovered=hasPhases?all.filter(p=>p.phase==="RECOVERED"):[];
   const recoverySpanMs=recovered.length>1?recovered.at(-1).t-recovered[0].t:0;
-  const recoveryEligible=recovered.length>=12&&recoverySpanMs>=30000;
+  const recoveryEligible=longEnough&&hasPhases&&phaseCounts.CLOUD_OUTAGE>0&&
+   recovered.length>=12&&recoverySpanMs>=30000;
   const postRecovery=recoveryEligible?{
    status:"DESCRIPTIVE_POST_RECOVERY_TREND_ONLY",samples:recovered.length,
    sampleSpanMs:recoverySpanMs,
