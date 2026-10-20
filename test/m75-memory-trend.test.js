@@ -145,3 +145,13 @@ test("M7.5.D3 90-second faulted test does not falsely certify post-recovery tren
  order.resourceSamples[60].phase="WAN_RESTORED";
  assert.equal(analyzeM75MemoryTrend(order).reason,"PHASE_ORDER_REGRESSION");
 });
+
+test("M7.5.D3 post-recovery label requires a witnessed Cloud-outage phase",()=>{
+ const report=synthetic({seconds:120,parentGrowth:2});
+ for(const sample of report.resourceSamples)sample.phase="RECOVERED";
+ const result=analyzeM75MemoryTrend(report);
+ assert.equal(result.trendEligible,true);
+ assert.equal(result.postRecoveryTrendEligible,false);
+ assert.equal(result.includesFaultTransitions,false);
+ assert.equal(result.processes[0].postRecovery.status,"INSUFFICIENT_POST_RECOVERY_WINDOW");
+});
