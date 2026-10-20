@@ -109,3 +109,35 @@ test("M7.5.D3 offline CLI consumes bounded JSON and never reports leak/stability
   assert.equal(JSON.parse(rejected.stdout).status,"INVALID_EVIDENCE");
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+test("M7.5.D3 distinguishes Cloud outage and a sufficiently long post-recovery trend",()=>{
+ const report=synthetic({seconds:180,parentGrowth:3,propertyGrowth:0.15});
+ for(const sample of report.resourceSamples){
+  const fraction=sample.elapsedMs/(180*1000);
+  sample.phase=fraction<.2?"OFFLINE":fraction<.43?"WAN_RESTORED":
+   fraction<.75?"CLOUD_OUTAGE":"RECOVERED";
+ }
+ const result=analyzeM75MemoryTrend(report);
+ assert.equal(result.trendEligible,true);
+ assert.equal(result.includesFaultTransitions,true);
+ assert.equal(result.postRecoveryTrendEligible,true);
+ assert.equal(result.phaseCoverage.RECOVERED,46);
+ assert.equal(result.processes[0].postRecovery.status,"DESCRIPTIVE_POST_RECOVERY_TREND_ONLY");
+ assert.equal(result.processes[0].postRecovery.rssSlopeMiBPerMin,3);
+ assert.equal(result.processes[1].postRecovery.rssSlopeMiBPerMin,0.15);
+ assert.equal(result.memoryLeakConfirmed,false);
+ assert.equal(result.gcControlled,false);
+});
+test("M7.5.D3 90-second faulted test does not falsely certify post-recovery trend",()=>{
+ const report=synthetic({seconds:90,parentGrowth:3});
+ for(const sample of report.resourceSamples)
+  sample.phase=sample.elapsedMs>=67500?"RECOVERED":"CLOUD_OUTAGE";
+ const result=analyzeM75MemoryTrend(report);
+ assert.equal(result.trendEligible,true);
+ assert.equal(result.postRecoveryTrendEligible,false);
+ assert.equal(result.processes[0].postRecovery.status,"INSUFFICIENT_POST_RECOVERY_WINDOW");
+ const broken=synthetic({seconds:90});
+ broken.resourceSamples.forEach(x=>{x.phase="RECOVERED";});
+ delete broken.resourceSamples[30].phase;
+ assert.equal(analyzeM75MemoryTrend(broken).reason,"INCONSISTENT_OR_UNKNOWN_PHASE");
+});
