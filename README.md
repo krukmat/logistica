@@ -315,3 +315,5 @@ npm run m7:memory -- --report m75-memory-90s.json
 This is an opt-in **90-second** local software experiment: parent RSS includes Edge Property/Host + Cloud Lite + harness, while the two workers each have independent PID/RSS/heap trends. Trend classes are heuristic; no proven leak, GC-controlled plateau, 2h endurance, 72h retention, physical WAN or powercut. [Task](docs/tasks/m7-security-pilot.md).
 
 **D3 post-recovery interpretation:** the M7.5.E runner emits per-sample fault phases and the analyzer separates whole-run slope from `postRecovery` RSS/heap slope. A 90s run typically has an insufficient recovered window, so an **optional** opt-in 180s run is needed before interpreting a post-recovery trend. Even then, slope is descriptive, never a memory-leak verdict.
+
+**D3 software CI:** [CI #39459546240](https://github.com/krukmat/logistica/actions/runs/39459546240) SUCCESS: native ARM64 245/245 PASS, Linux x64 244 PASS +1 skip (0 failed); memory stability on the Mac and long continuous endurance are still not empirically established.

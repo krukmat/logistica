@@ -167,7 +167,7 @@
     },
     "memoryTrend": {
       "task": "M7.5.D3",
-      "state": "IMPLEMENTED_CI_PENDING_EMPIRICAL_MAC_NOT_RUN",
+      "state": "CLOSED_SOFTWARE_LAB_CODE_CI_EMPIRICAL_MAC_NOT_RUN",
       "kind": "PEF_M75_MEMORY_TREND_V1",
       "analysisCore": "src/core/m75-memory-trend.js",
       "runner": "npm run m7:sustained -- --seconds 6",
@@ -200,7 +200,17 @@
       "postRecoveryMinimumSpanMs": 30000,
       "postRecoveryMinSamples": 12,
       "optionalPostRecoveryOperatorSeconds": 180,
-      "regimeStabilityValidated": false
+      "regimeStabilityValidated": false,
+      "ciRunId": 39459546240,
+      "ciLinuxArm64": {
+        "pass": 245,
+        "fail": 0
+      },
+      "ciLinuxX64": {
+        "pass": 244,
+        "skip": 1,
+        "fail": 0
+      }
     }
   },
   "m76": {

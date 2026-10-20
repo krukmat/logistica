@@ -44,3 +44,5 @@ Provenance: synthetic unit fixtures and actual short CI lab checks test the code
 ### D3 phase-dependent interpretation
 
 Latest `resourceSamples[].phase` encodes monotonic OFFLINE → WAN_RESTORED → CLOUD_OUTAGE → RECOVERED. An unconditional whole post-warmup slope may include Cloud restart and WAN transitions; **not a steady-state slope**. The analyzer additionally calculates `processes[].postRecovery` only when the recovered phase lasts >=30s with >=12 readings. A 90s run will ordinarily **not** satisfy this because Cloud recovery occurs at ~75% of the duration; 180s is an optional next diagnostic if useful. Neither phase annotation nor deterministic synthetic fixtures are measurements of an actual leak, plateau or hardware resources.
+
+**D3 CI gate:** [CI #39459546240](https://github.com/krukmat/logistica/actions/runs/39459546240) overall SUCCESS (ARM64 245/245, x64 244 PASS +1 skip, no failures). Positive and negative synthetic slope fixtures, PID/phase validation, read-only CLI, dashboard HTTP path all passed. This validates the **diagnostic implementation**, not a measured macOS memory trend; empirical 90/180s operator profile remains NOT_RUN.

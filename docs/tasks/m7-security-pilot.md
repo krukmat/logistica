@@ -168,3 +168,5 @@ npm run m7:memory -- --report m75-memory-180s.json
 ```
 
 Neither command is run by CI or the Mac dashboard. **Acceptance nuance:** D3 source/CLI/dashboard/automated tests may close as software-lab implementation once green; actual Mac memory-trend characterization requires new operator evidence and remains pending.
+
+**D3 software CI acceptance (2026-10-20):** [CI #39459546240](https://github.com/krukmat/logistica/actions/runs/39459546240) `SUCCESS` at code commit `0175b0f`, ARM64 **245/245 PASS**, x64 **244 PASS + 1 skip**, zero failures; dashboard HTTP, systemd, netns and prehardware-gate passed. **D3.1–D3.3 CLOSED for software analyzer/CLI/dashboard scope.** Full Mac M5 **90–180s descriptive resource characterization remains NOT_RUN**, and memory stability / leak diagnosis remain **UNVALIDATED**; do not mark the empirical D3 conclusion as closed. Next operator evidence should preserve the complete M7.5.E raw JSON, observe `memoryTrend`, and avoid conclusions from a 6s sample.

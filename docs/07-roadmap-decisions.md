@@ -258,3 +258,7 @@ Se añadió Ed25519 software create-once por identidad y firma de desafío con f
 ## M7.5.D/E → M7.6.A engineering follow-up (2026-10-20)
 
 Parent Node RSS/resource-series sampling and genuine M6.4 replay assertions are implemented; worker/process memory attribution and RSS stabilization remain OPEN. A persistent Edge Property/Host + local mTLS Cloud Lite paced harness is implemented for **6-second bounded CI/dashboard smoke**, exercising a real HTTP Cloud Lite shutdown/restart; 15–30 minute characterization has not been executed. Operator JSON can be inspected through CLI/dashboard (timing/scope/shape, not authenticated attestation). This does not satisfy 2h *continuous* endurance, 72h journal, physical NIC, powercut or energy gates. Pilot field status remains **NO-GO**; M8.1 VM integration is proposed only after CI acceptance. [Tasks](tasks/m7-security-pilot.md).
+
+## M7.5.D3 instrumentation accepted — not a leak certification (2026-10-20)
+
+The portable per-PID RSS/heap descriptive trend analyzer, fault-phase annotations, CLI import and dashboard E2E are software-lab CI PASS: [CI #39459546240](https://github.com/krukmat/logistica/actions/runs/39459546240), ARM64 245/245, x64 244 PASS+1 skip. Six-second observations remain insufficient for stability. A 90s operator opt-in can describe a mixed-fault trend; a second 180s opt-in may provide a post-recovery window but does not establish a leak/plateau or production budget. M7.5.E3 longer soak, 72h journal and physical M5.3 stay NOT_RUN/NO-GO. [M7 tasks](tasks/m7-security-pilot.md).
