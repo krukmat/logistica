@@ -334,6 +334,9 @@
           <pre id="m75-sustained-evidence">M7.5.E NOT_RUN · carga continua real larga NO probada</pre>
           <h5>M7.5.D2 — RSS/heap por proceso (worker Node sin sandbox)</h5>
           <pre id="m75-worker-resource-evidence">D2 NOT_RUN · Edge y Cloud comparten el PID principal</pre>
+          <h5>M7.5.D3 — Tendencia de memoria por PID (diagnóstico, no leak gate)</h5>
+          <p class="micro">El smoke de 6 s sólo verifica que las métricas se pueden observar. Para evaluar una tendencia se requiere una ejecución local opt-in de al menos 60 s y una ventana temporal suficiente. La salida no certifica una meseta, una fuga ni 72 h de retención.</p>
+          <pre id="m75-memory-trend-evidence">D3 NOT_RUN · mínimo 60 s para análisis descriptivo</pre>
         </div>
         <div class="lab-detail" id="m76-pilot-panel">
           <h4>M7.6 — Decisión GO/NO-GO de piloto</h4>

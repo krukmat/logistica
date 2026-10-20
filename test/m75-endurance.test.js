@@ -46,6 +46,9 @@ test("M7.5.E sustained local TLS cloud and both Edge hosts survive outage and re
  assert.equal(result.workerRssValidated,true);
  assert.equal(result.edgeCloudRssSeparatelyValidated,false);
  assert.equal(result.parentHostsEdgeAndCloud,true);
+ assert.equal(result.memoryTrend.kind,"PEF_M75_MEMORY_TREND_V1");
+ assert.equal(result.memoryTrend.status,"INSUFFICIENT_OBSERVATION_WINDOW");
+ assert.equal(result.memoryTrend.memoryLeakConfirmed,false);
  assert.equal(result.workerProcessMetrics.distinctWorkerPids,true);
  assert.equal(result.workerProcessMetrics.workers.length,2);
  const pids=new Set();

@@ -785,6 +785,11 @@ test("M7.5.D2 API reports two separate actual child processes from an authentica
  assert.equal(r.result.workerRssValidated,true);
  assert.equal(r.result.checks.WORKER_METRICS_UNAUTHENTICATED_DENIED,true);
  assert.equal(r.result.parentHostsEdgeAndCloud,true);
+ assert.ok(html.includes('id="m75-memory-trend-evidence"'));
+ assert.equal(r.result.memoryTrend.status,"INSUFFICIENT_OBSERVATION_WINDOW");
+ assert.equal(r.result.memoryTrend.trendEligible,false);
+ assert.equal(r.result.memoryTrend.processes.length,3);
+ assert.equal(r.result.memoryTrend.memoryLeakConfirmed,false);
  assert.equal(r.result.edgeCloudRssSeparatelyValidated,false);
  assert.equal(r.lab.m75Sustained.lastEvidence.checks.WORKER_PROCESS_RSS_ATTRIBUTED,true);
  const children=r.result.workerProcessMetrics.workers;

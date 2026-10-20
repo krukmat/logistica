@@ -130,6 +130,7 @@ function renderIntegrated(lab){
      workerProcessMetrics:m75.workerProcessMetrics,
      physicalValidated:m75.physicalValidated
    }:{status:"NOT_RUN",edgeCloudRssSeparatelyValidated:false},null,2);
+  $("m75-memory-trend-evidence").textContent=JSON.stringify(m75?.memoryTrend||{status:"NOT_RUN",trendEligible:false},null,2);
   $("m76-pilot-evidence").textContent=JSON.stringify(lab.m76Pilot,null,2);
   $("predevice-evidence").textContent=JSON.stringify(lab.predevice,null,2);
   $("golden-traces-evidence").textContent=JSON.stringify(lab.goldenTraces,null,2);

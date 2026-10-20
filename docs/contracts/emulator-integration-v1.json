@@ -711,6 +711,22 @@
       "hardwareValidated": false
     },
     {
+      "task": "M7.5.D3",
+      "mode": "lab",
+      "title": "Portable descriptive post-warmup RSS/heap trend analysis on the existing bounded Edge/Cloud mTLS run",
+      "controlIds": [
+        "m75-stress-panel",
+        "m75-sustained-run",
+        "m75-memory-trend-evidence"
+      ],
+      "actions": [
+        "m75Sustained"
+      ],
+      "implementation": "src/core/m75-memory-trend.js",
+      "test": "test/m75-memory-trend.test.js",
+      "hardwareValidated": false
+    },
+    {
       "task": "M7.6",
       "mode": "lab",
       "title": "Fail-closed software gate with separately scoped unattested operator evidence inspection",
