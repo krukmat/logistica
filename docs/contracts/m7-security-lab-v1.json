@@ -133,7 +133,7 @@
     },
     "workerResourceAttribution": {
       "task": "M7.5.D2",
-      "state": "IMPLEMENTED_CI_PENDING",
+      "state": "CLOSED_SOFTWARE_LAB_CI",
       "metricsSource": "AUTHENTICATED_NODE_CHILD_IPC",
       "workerProfiles": [
         "property",
@@ -162,7 +162,8 @@
       "workerRssValidatedAtRuntime": true,
       "operatorSixSecondRunNotYetRecorded": true,
       "longDurationMemoryStable": false,
-      "pilotPhysicalAuthorized": false
+      "pilotPhysicalAuthorized": false,
+      "ciRunId": 39455644514
     }
   },
   "m76": {

@@ -300,3 +300,5 @@ M6.1 **no reemplaza todavía el Cloud mock**: no hay ingestión/ACK de eventos (
 ## M7.5.D2 — real per-worker process resources
 
 `npm run m7:sustained -- --seconds 6` now includes authenticated IPC metrics from two **distinct Node worker PIDs**, Property and Host, for RSS, heap, external, CPU and active Node resources at each sample. In `npm run dashboard`, select **Laboratorio integrado → M7.5.E** and inspect the **M7.5.D2 RSS/heap por proceso** view. The shared parent PID runs both Edge hosts, Cloud Lite and harness; `edgeCloudRssSeparatelyValidated=false`. This is a **six-second software lab** only, without hardware or steady-state memory validation. [Task details](docs/tasks/m7-security-pilot.md).
+
+**D2 CI acceptance:** [#39455644514](https://github.com/krukmat/logistica/actions/runs/39455644514) green at `95ca431`, 236/236 ARM64 and 235 PASS + 1 skip x64. Still requires a new Mac operator measurement to classify memory growth; D3 pending.

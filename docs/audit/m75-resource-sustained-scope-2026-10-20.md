@@ -31,4 +31,6 @@ The Node-only worker driver already exposes a METRICS IPC request. M7.5.D2 exten
 
 Key semantic distinction: **there are three Node OS processes** in the existing M7.5.E harness, not four. One Node parent contains both in-process autonomous Edge hosts, the Cloud Lite HTTP/TLS server and harness; the other two are forked site-operation workers. Child-PID metrics come from actual child process IPC, not parent `process.memoryUsage()`. Do not interpret parent RSS as individual Cloud Lite/Edge RSS. `workerRssValidated` tests independent child measurements and does not certify steady-state or kernel memory isolation. `edgeCloudRssSeparatelyValidated=false`, no physical verification.
 
-Acceptance pending final CI and subsequent Mac operator smoke. Next: D3 characterize per-PID drift over a short reproducible run, only afterward consider longer opt-in.
+CI accepted in #39455644514; Mac operator rerun of new per-worker series is pending. Next: D3 characterize per-PID drift over a short reproducible run, only afterward consider longer opt-in.
+
+**D2 CI gate**: [#39455644514](https://github.com/krukmat/logistica/actions/runs/39455644514) Linux x64 235 PASS + 1 skip and native ARM64 236 PASS, zero failures. The report distinguishes worker PID-specific memory metrics from the shared harness/Edge/Cloud process. No Mac M5 child metrics result has yet been reported.

@@ -99,7 +99,7 @@ No physical pilot or hosted infrastructure is authorized. All tests use loopback
 | ID | Dependencies | Executed delivery / remaining gate | State |
 | --- | --- | --- | --- |
 | **M7.5.D1** | M7.5 periodic run | Samples `rss/heapUsed/heapTotal/external/arrayBuffers`, PID and active resource kinds before/after each real M6.4 cycle; replaces duration-based replay assertion with verified Property/Host scenario results | IMPLEMENTED, CI evidence to be checked |
-| **M7.5.D2** | D1 | Attribute worker subprocess RSS, sockets and potentially retained heap separately; compare GC-controlled baselines without asserting a leak from parent RSS | OPEN |
+| **M7.5.D2** | D1 | Observe worker child RSS/heap/CPU and active Node resources per PID, preserving Edge/Cloud shared-PID boundary; GC-controlled trend still D3 | CLOSED SOFTWARE LAB, CI #39455644514 |
 | **M7.5.D3** | D1–D2 | Run comparable sampling series, characterize plateau/trend and publish thresholds grounded in measured workload | OPEN |
 | **M7.5.E1** | M6 + M7.3 + D1 | Persistent local TLS1.3/mTLS Cloud Lite with Property and Host Edge processes, paced incident/ACK writes, synthetic WAN restore, actual HTTP server outage/restart, replay, fsync and Edge reopen | IMPLEMENTED, CI integration gate pending |
 | **M7.5.E2** | E1 | Six-second bounded test accessible from dashboard and `npm run m7:sustained -- --seconds 6`; automated regression x64/ARM64 | IMPLEMENTED, CI acceptance pending |
@@ -126,7 +126,7 @@ Longer runs are explicitly opt-in. The CLI requires `PEF_M75_LONGRUN_ACK=EXPLICI
 
 ### M7.5.D2 — worker process resource attribution (2026-10-20)
 
-**Task / requirement:** M7.5.D2, REQ-OBS-01; `MODULE/RESOURCE`. Dependency: M7.5.D1 and persistent M7.5.E. **State: IMPLEMENTED, CI acceptance pending**.
+**Task / requirement:** M7.5.D2, REQ-OBS-01; `MODULE/RESOURCE`. Dependency: M7.5.D1 and persistent M7.5.E. **State: CLOSED — SOFTWARE LAB ONLY, CI #39455644514**.
 
 - **D2.a**: extend existing allowlisted Property/Host Node `METRICS` IPC to include PID, RSS, heap used/total, external and arrayBuffer bytes, cumulative CPU, active Node resource counts and uptime; verify stable child PID through the Core supervisor process-driver port.
 - **D2.b**: provide a token-gated, read-only virtual-lab `GET /lab/workload/metrics` on autonomous Edge. No arbitrary PID lookup, shell execution, unguarded Linux port or Mac privileged operations. Unauthenticated calls return HTTP 403.
@@ -135,3 +135,5 @@ Longer runs are explicitly opt-in. The CLI requires `PEF_M75_LONGRUN_ACK=EXPLICI
 **Truth boundary:** Edge Property, Edge Host, HTTPS Cloud Lite and the M7.5 harness remain **in one parent Node PID**; the separate subprocesses are the two unsandboxed site-operation workers. `workerRssValidated` only certifies child-PID sampling. `edgeCloudRssSeparatelyValidated=false` by design. Parent RSS is a shared Edge+Cloud+harness measurement; it cannot be allocated among components, and naive RSS sums may double-count shared memory. Node child resource counts are diagnostic handles, not kernel FD totals; no GC/steady-state leak conclusion. **M7.5.D3 and 15–30min E3 remain OPEN.** The six-second CI/demo never licenses physical pilot.
 
 Command: `npm run m7:sustained -- --seconds 6`, then `npm run dashboard` → Laboratorio integrado → M7.5.E → «RSS/heap por proceso». [Runtime](../../src/runtime/m75-sustained.js), [worker](../../src/workloads/site-operations-worker.js), [supervisor](../../src/core/workload-supervisor.js), [tests](../../test/m75-endurance.test.js).
+
+**D2 acceptance:** CI [#39455644514](https://github.com/krukmat/logistica/actions/runs/39455644514) passed on code commit `95ca431`: ARM64 236/236 and x64 235 PASS + 1 skip, zero failures. Covers actual two-worker PID/RSS read-only metrics through Edge/dashboard, anonymous denial, PID substitution rejection and deterministic Cloud-outage evidence. Mac M5 operator rerun with updated per-worker metrics remains NOT_RUN; does not block laboratory CI acceptance. D3 worker/parent trend classification OPEN.
