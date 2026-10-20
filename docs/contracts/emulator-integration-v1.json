@@ -694,6 +694,22 @@
       "hardwareValidated": false
     },
     {
+      "task": "M7.5.E",
+      "mode": "lab",
+      "title": "Persistent local TLS1.3 mTLS Cloud Lite and Property/Host Edge paced fault and resource characterization",
+      "controlIds": [
+        "m75-stress-panel",
+        "m75-sustained-run",
+        "m75-sustained-evidence"
+      ],
+      "actions": [
+        "m75Sustained"
+      ],
+      "implementation": "src/runtime/m75-sustained.js",
+      "test": "test/m75-endurance.test.js",
+      "hardwareValidated": false
+    },
+    {
       "task": "M7.6",
       "mode": "lab",
       "title": "Fail-closed software gate with separately scoped unattested operator evidence inspection",
