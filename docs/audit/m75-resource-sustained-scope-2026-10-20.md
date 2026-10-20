@@ -34,3 +34,9 @@ Key semantic distinction: **there are three Node OS processes** in the existing 
 CI accepted in #39455644514; Mac operator rerun of new per-worker series is pending. Next: D3 characterize per-PID drift over a short reproducible run, only afterward consider longer opt-in.
 
 **D2 CI gate**: [#39455644514](https://github.com/krukmat/logistica/actions/runs/39455644514) Linux x64 235 PASS + 1 skip and native ARM64 236 PASS, zero failures. The report distinguishes worker PID-specific memory metrics from the shared harness/Edge/Cloud process. No Mac M5 child metrics result has yet been reported.
+
+## M7.5.D3 descriptive trend analyzer implementation (2026-10-20)
+
+The M7.5.E runner now sends real per-PID RSS and heap series to pure Core `analyzeM75MemoryTrend`. Each result includes sample coverage, whole-run RSS/heap deltas, post-warmup least-squares slope in MiB/min and robust difference between early and late tail thirds; strict parent/property/host PID and chronological consistency. Negative cases fail closed; no magic leak or stability gate. A 6s run reports `INSUFFICIENT_OBSERVATION_WINDOW`, not a fictitious measurement of 60s+ steady state. The exposed 60-second threshold and +1 MiB/min/+0.75 MiB heuristic are provisional **screening diagnostics**, not validated budget limits or a measured outcome.
+
+Provenance: synthetic unit fixtures and actual short CI lab checks test the code, **not** the host Mac 60–90s RSS trend. Edge + Cloud share one Node PID. Forced GC disabled; calibration and 15–30m operator soak remain pending. Strict field NO-GO unchanged.

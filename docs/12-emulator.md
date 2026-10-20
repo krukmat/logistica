@@ -288,3 +288,7 @@ Laboratorio integrado → `m73Mtls`: Cloud Lite/Edge **HTTPS TLS1.3 mTLS real** 
 ## M7.5.D2 worker resource evidence (2026-10-20)
 
 Dashboard local lab's M7.5.E six-second action measures actual Property/Host child Node PIDs via Core Supervisor → Node Process Driver → allowlisted METRICS IPC, and displays a separate `m75-worker-resource-evidence` summary. No filesystem `/proc` assumptions on macOS, shell/proc scanners, anonymous metrics endpoint or Linux privileges. Edge GET `/lab/workload/metrics` is operator-token protected and only available in `virtual-lab`. The parent PID embeds both autonomous Edge instances, local Cloud Lite and harness; do not claim Edge/Cloud individual memory. No claims of physical isolation, steady-state memory stability or 72h retention. [M7.5 task](tasks/m7-security-pilot.md).
+
+## M7.5.D3 trend / readiness boundary
+
+`m75Sustained` now returns `memoryTrend` from the portable pure Core analyzer (`src/core/m75-memory-trend.js`), displayed in `m75-memory-trend-evidence`. The integrated dashboard runs **only 6s** and reports `INSUFFICIENT_OBSERVATION_WINDOW`, not a green stability verdict. The local operator-only CLI can analyze a saved >=60s test using `npm run m7:memory -- --report /absolute/file.json`, no dashboard privilege or new hosted service. The heuristic +1 MiB/min and median shift 0.75 MiB do not prove a leak; D3 empirical Mac series still pending.

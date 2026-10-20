@@ -302,3 +302,14 @@ M6.1 **no reemplaza todavía el Cloud mock**: no hay ingestión/ACK de eventos (
 `npm run m7:sustained -- --seconds 6` now includes authenticated IPC metrics from two **distinct Node worker PIDs**, Property and Host, for RSS, heap, external, CPU and active Node resources at each sample. In `npm run dashboard`, select **Laboratorio integrado → M7.5.E** and inspect the **M7.5.D2 RSS/heap por proceso** view. The shared parent PID runs both Edge hosts, Cloud Lite and harness; `edgeCloudRssSeparatelyValidated=false`. This is a **six-second software lab** only, without hardware or steady-state memory validation. [Task details](docs/tasks/m7-security-pilot.md).
 
 **D2 CI acceptance:** [#39455644514](https://github.com/krukmat/logistica/actions/runs/39455644514) green at `95ca431`, 236/236 ARM64 and 235 PASS + 1 skip x64. Still requires a new Mac operator measurement to classify memory growth; D3 pending.
+
+## M7.5.D3 — memory trend classification (2026-10-20)
+
+`npm run m7:sustained -- --seconds 6` now includes a `memoryTrend` object, but **6 seconds is insufficient for a trend**. In the dashboard, choose **Laboratorio integrado → M7.5.E → Tendencia de memoria por PID**; it honestly shows `INSUFFICIENT_OBSERVATION_WINDOW`. To gather a **descriptive** result for the existing Mac (not mandatory for using the dashboard):
+
+```bash
+PEF_M75_LONGRUN_ACK=EXPLICIT_OPERATOR_LONG_SOAK_LOCAL npm run m7:sustained -- --seconds 90 > m75-memory-90s.json
+npm run m7:memory -- --report m75-memory-90s.json
+```
+
+This is an opt-in **90-second** local software experiment: parent RSS includes Edge Property/Host + Cloud Lite + harness, while the two workers each have independent PID/RSS/heap trends. Trend classes are heuristic; no proven leak, GC-controlled plateau, 2h endurance, 72h retention, physical WAN or powercut. [Task](docs/tasks/m7-security-pilot.md).

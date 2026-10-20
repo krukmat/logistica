@@ -164,6 +164,32 @@
       "longDurationMemoryStable": false,
       "pilotPhysicalAuthorized": false,
       "ciRunId": 39455644514
+    },
+    "memoryTrend": {
+      "task": "M7.5.D3",
+      "state": "IMPLEMENTED_CI_PENDING_EMPIRICAL_MAC_NOT_RUN",
+      "kind": "PEF_M75_MEMORY_TREND_V1",
+      "analysisCore": "src/core/m75-memory-trend.js",
+      "runner": "npm run m7:sustained -- --seconds 6",
+      "operatorOptInRequiredSecondsBeyond": 30,
+      "operatorRecommendedSeconds": 90,
+      "cli": "npm run m7:memory -- --report /absolute/report.json",
+      "dashboardEvidenceId": "m75-memory-trend-evidence",
+      "minRequestedSeconds": 60,
+      "minSampleSpanMs": 45000,
+      "minSamples": 16,
+      "minTailSpanMs": 30000,
+      "warmupFraction": 0.2,
+      "screeningSlopeMiBPerMin": 1,
+      "robustTailShiftMiB": 0.75,
+      "thresholdsEmpiricallyCalibrated": false,
+      "forcedGcControlled": false,
+      "parentEdgeCloudSeparatelyMeasured": false,
+      "memoryLeakConfirmed": false,
+      "plateauValidated": false,
+      "mac90SecondsOperatorRunValidated": false,
+      "longRunContinuousTwoHoursValidated": false,
+      "physicalValidated": false
     }
   },
   "m76": {

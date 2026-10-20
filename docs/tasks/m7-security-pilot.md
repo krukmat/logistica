@@ -137,3 +137,25 @@ Longer runs are explicitly opt-in. The CLI requires `PEF_M75_LONGRUN_ACK=EXPLICI
 Command: `npm run m7:sustained -- --seconds 6`, then `npm run dashboard` → Laboratorio integrado → M7.5.E → «RSS/heap por proceso». [Runtime](../../src/runtime/m75-sustained.js), [worker](../../src/workloads/site-operations-worker.js), [supervisor](../../src/core/workload-supervisor.js), [tests](../../test/m75-endurance.test.js).
 
 **D2 acceptance:** CI [#39455644514](https://github.com/krukmat/logistica/actions/runs/39455644514) passed on code commit `95ca431`: ARM64 236/236 and x64 235 PASS + 1 skip, zero failures. Covers actual two-worker PID/RSS read-only metrics through Edge/dashboard, anonymous denial, PID substitution rejection and deterministic Cloud-outage evidence. Mac M5 operator rerun with updated per-worker metrics remains NOT_RUN; does not block laboratory CI acceptance. D3 worker/parent trend classification OPEN.
+
+### M7.5.D3 — descriptive memory-trend instrumentation (2026-10-20)
+
+**Task:** M7.5.D3 · **Requirement:** REQ-OBS-01 · **Change:** added · **Classification:** CORE (pure memory statistics) + MODULE/RESOURCE (runner, CLI, dashboard). **Dependencies:** D1/D2 and E1/E2.
+
+| Subtask | Implementation / DoD | State |
+| --- | --- | --- |
+| D3.1 | Portable per-PID RSS+heap first/last/max, linear trend (MiB/min) on a post-warmup window, median-of-thirds shift; reject invalid timestamps, PID swaps, missing worker metrics and colliding PIDs | IMPLEMENTED; synthetic positive/negative tests |
+| D3.2 | Make **INSUFFICIENT_OBSERVATION_WINDOW** explicit for 6s smoke; require requested >=60s, sampled span >=45s, >=16 samples, tail >=30s and >=12 samples; label upward/no-clear/downward trend only, no automatic leak/plateau claims | IMPLEMENTED; synthetic tests |
+| D3.3 | `memoryTrend` included in M7.5.E JSON and existing HTTP/dashboard action; read-only `npm run m7:memory -- --report /absolute/m75.json`; x64/ARM64 CI required, operator Mac trend still NOT_RUN | IMPLEMENTED / CI_PENDING |
+
+**Diagnostic thresholds are provisional heuristics, not empirically calibrated guarantees:** upward: linear tail RSS >=+1 MiB/min **and** tail robust median shift >=+0.75 MiB; downward equivalent negative. Warmup = max(5s, first 20% of observed span). No forced GC, remote attestation, physical RAM equivalence or per-component Edge/Cloud memory accounting. Stable/no-clear classification does **not** mean a proved plateau. Neither the 6s smoke nor synthetic trend fixtures provide evidence of production memory stability. Test 60–90s locally with explicit operator opt-in; classify that outcome separately, then decide whether E3 15–30min makes sense. The older operator's 2h periodic matrix must not be used as continuous M7.5.E trend evidence.
+
+**Operator procedure (90 seconds, explicitly opted in):**
+
+```bash
+git switch main && git pull
+PEF_M75_LONGRUN_ACK=EXPLICIT_OPERATOR_LONG_SOAK_LOCAL npm run m7:sustained -- --seconds 90 > m75-memory-90s.json
+npm run m7:memory -- --report m75-memory-90s.json
+```
+
+The 90s command is **not run automatically** in CI or by the dashboard. It modifies only temporary localhost software-lab resources. No Linux root, VM modifications, cloud charges or new hardware. [Analyzer](../../src/core/m75-memory-trend.js) · [tests](../../test/m75-memory-trend.test.js). **D3 status:** implementation and CI gates pending; **Mac empirical characterization NOT_RUN**.
