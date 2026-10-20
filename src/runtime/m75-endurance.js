@@ -3,11 +3,21 @@
 const {performance}=require("node:perf_hooks");
 const {runM64CloudLiteMatrix}=require("./m64-cloud-lite-matrix.js");
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function resourceSample(){
+ const m=process.memoryUsage();
+ const resources=typeof process.getActiveResourcesInfo==="function"?process.getActiveResourcesInfo():[];
+ const activeResources={};
+ for(const type of resources)activeResources[type]=(activeResources[type]||0)+1;
+ return {at:Date.now(),pid:process.pid,rssBytes:m.rss,heapUsedBytes:m.heapUsed,
+  heapTotalBytes:m.heapTotal,externalBytes:m.external,arrayBuffersBytes:m.arrayBuffers,
+  activeResources};
+}
 async function runM75ShortSoak({cycles=2}={}){
  if(!Number.isSafeInteger(cycles)||cycles<1||cycles>6)throw Error("M75_CYCLES_INVALID");
  const start=performance.now(),cpuBefore=process.cpuUsage(),initialRss=process.memoryUsage().rss;
  let peakRss=initialRss,passed=0,events=0;
- const durations=[],checks={};
+ const durations=[],checks={},resourceSamples=[resourceSample()];
+ let replayVerified=true;
  for(let i=0;i<cycles;i++){
   const t=performance.now(),r=await runM64CloudLiteMatrix();
   if(!r.ok||r.status!=="LAB_PASS"||r.assertions!==15||
@@ -16,18 +26,24 @@ async function runM75ShortSoak({cycles=2}={}){
     throw Error("M75_CLOUD_LITE_FAULT_CYCLE_FAILED:"+i);
   durations.push(Math.round(performance.now()-t));passed++;
   events+=r.observed.at(-1)?.remoteEvents||0;
-  peakRss=Math.max(peakRss,process.memoryUsage().rss);
+  replayVerified=replayVerified&&["property","host"].every(p=>
+   r.profiles[p]?.OFFLINE_LOCAL_FSYNC===true&&
+   r.profiles[p]?.AUTHENTICATED_REPLAY_DEDUP===true&&
+   r.profiles[p]?.EDGE_REOPEN_PRESERVES_ACK===true);
+  const resource=resourceSample();resourceSamples.push(resource);
+  peakRss=Math.max(peakRss,resource.rssBytes);
  }
  const elapsed=performance.now()-start,cpu=process.cpuUsage(cpuBefore);
  checks.ALL_REAL_HTTP_CYCLES_PASS=passed===cycles;
  checks.PER_PROFILE_DURABILITY=events>=8*cycles;
- checks.REPLAY_NO_DATA_LOSS=durations.every(x=>x>0);
+ checks.REPLAY_NO_DATA_LOSS=replayVerified;
  checks.BOUNDED_RSS_SOFT_GATE=peakRss<512*1048576;
  checks.BOUNDED_DURATION_SOFT_GATE=elapsed<120000;
  const ok=Object.values(checks).every(Boolean);
  return {kind:"PEF_M75_SHORT_STRESS_V1",status:ok?"LAB_PASS":"LAB_FAIL",ok,
   checks,cycles,completedCycles:passed,elapsedMs:Math.round(elapsed),
   cycleDurationsMs:durations,initialRssBytes:initialRss,peakRssBytes:peakRss,
+  resourceSamples,resourceAttribution:"HARNESS_PARENT_ONLY",workerRssValidated:false,
   cpuUserMs:Math.round(cpu.user/1000),cpuSystemMs:Math.round(cpu.system/1000),
   observedEventsCumulativePerCycle:events,
   scope:"SHORT_CI_LOOPBACK_RECONCILIATION_ONLY",
@@ -43,6 +59,8 @@ async function runM75LongSoak({hours,approval}={}){
  while(Date.now()<ends){
   const probe=await runM75ShortSoak({cycles:1}).catch(e=>({ok:false,error:e.message}));
   sample.push({at:Date.now(),ok:probe.ok,peakRssBytes:probe.peakRssBytes||0,
+   resource:probe.resourceSamples?.at(-1)||null,
+   activeResources:probe.resourceSamples?.at(-1)?.activeResources||{},
    elapsedMs:probe.elapsedMs||0,error:probe.error||null});
   if(!probe.ok){failures++;break;}
   const left=ends-Date.now();
@@ -52,7 +70,8 @@ async function runM75LongSoak({hours,approval}={}){
  return {kind:"PEF_M75_OPERATOR_LONG_SOAK_V1",status:completed?"LAB_PASS":"LAB_FAIL",
   ok:completed,requestedHours:hours,elapsedMs,sampleCount:sample.length,
   failures,samples:sample,
-  workload:"REAL_HTTP_CLOUD_LITE_FAILURE_MATRIX",
+  workload:"REAL_HTTP_CLOUD_LITE_FAILURE_MATRIX",resourceAttribution:"HARNESS_PARENT_ONLY",
+  continuousLoadValidated:false,workerRssValidated:false,
   p0p1SeventyTwoHourRetentionValidated:false,hardwareValidated:false,
   note:"Wall clock duration only; not a physical device or retention/energy certification"};
 }

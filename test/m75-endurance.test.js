@@ -13,3 +13,16 @@ test("M7.5 long-soak requires explicit opt-in and accepted duration",async()=>{
  await assert.rejects(runM75LongSoak({hours:1,approval:"EXPLICIT_OPERATOR_LONG_SOAK_LOCAL"}),
   /M75_LONG_SOAK_OPERATOR_ACK_REQUIRED/);
 });
+
+test("M7.5 captures parent process resource vector per cycle and checks replay, not elapsed time",async()=>{
+ const r=await runM75ShortSoak({cycles:1});
+ assert.equal(r.checks.REPLAY_NO_DATA_LOSS,true);
+ assert.equal(r.resourceSamples.length,2);
+ assert.equal(r.resourceAttribution,"HARNESS_PARENT_ONLY");
+ assert.equal(r.workerRssValidated,false);
+ for(const m of r.resourceSamples){
+  for(const k of ["at","pid","rssBytes","heapUsedBytes","heapTotalBytes",
+   "externalBytes","arrayBuffersBytes"])assert.equal(Number.isSafeInteger(m[k]),true,k);
+  assert.equal(typeof m.activeResources,"object");
+ }
+});
