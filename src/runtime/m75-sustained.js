@@ -62,7 +62,7 @@ async function runM75Sustained({durationSeconds=6,intervalMs=800}={}){
    if(!tokens[profile])continue;
    const client=profile==="property"?pki.device:pki.host;
    transports[profile]=createM73MtlsTransport({baseUrl:cloudUrl,ca:pki.ca,
-    ...client,deviceToken:tokens[profile]});
+    ...client,deviceToken:tokens[profile+"Device"]||tokens[profile]});
   }
  };
  try{

@@ -26,3 +26,20 @@ test("M7.5 captures parent process resource vector per cycle and checks replay, 
   assert.equal(typeof m.activeResources,"object");
  }
 });
+
+test("M7.5.E rejects oversized/unbounded continuous run in a local process",async()=>{
+ const {runM75Sustained}=require("../src/runtime/m75-sustained.js");
+ await assert.rejects(runM75Sustained({durationSeconds:1801}),/M75_SUSTAINED_LIMITS_INVALID/);
+ await assert.rejects(runM75Sustained({durationSeconds:3}),/M75_SUSTAINED_LIMITS_INVALID/);
+});
+test("M7.5.E sustained local TLS cloud and both Edge hosts survive outage and reopen",async()=>{
+ const {runM75Sustained}=require("../src/runtime/m75-sustained.js");
+ const result=await runM75Sustained({durationSeconds:6,intervalMs:650});
+ assert.equal(result.status,"LAB_PASS",JSON.stringify(result));
+ assert.equal(result.checks.REAL_HTTP_CLOUD_OUTAGE_OBSERVED,true);
+ assert.equal(result.checks.CLOUD_LEDGER_REOPEN_MATCHES,true);
+ assert.equal(result.checks.EDGE_REOPEN_RETAINS_ACK,true);
+ assert.equal(result.sameLongLivedEdgeAndCloud,true);
+ assert.equal(result.physicalValidated,false);
+ assert.ok(result.resourceSamples.length>=4);
+});

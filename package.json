@@ -56,7 +56,8 @@
     "m7:mtls": "node bin/pef-m73-mtls.js",
     "m7:ops": "node bin/pef-m74-ops.js",
     "m7:stress": "node bin/pef-m75-endurance.js",
-    "m7:pilot": "node bin/pef-m76-pilot.js"
+    "m7:pilot": "node bin/pef-m76-pilot.js",
+    "m7:sustained": "node bin/pef-m75-sustained.js"
   },
   "license": "UNLICENSED",
   "devDependencies": {
