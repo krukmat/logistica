@@ -751,3 +751,26 @@ test("M7.6 dashboard emits software-lab-only and blocks field pilot without hard
  assert.equal(response.result.fieldPilotAuthorized,false);
  assert.equal(response.lab.m76Pilot.lastEvidence.status,"LAB_PASS_GATE_ONLY");
 }));
+
+test("M7.5.E bounded real local mTLS two-Edge continuous probe is available through dashboard",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text(),js=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["m75-sustained-run","m75-sustained-evidence"])
+  assert.ok(html.includes('id="'+id+'"'));
+ assert.ok(js.includes('labAction("m75Sustained")'));
+ await call({command:"mode",mode:"lab"});
+ const result=await call({command:"lab",action:"m75Sustained"});
+ assert.equal(result.result.status,"LAB_PASS",JSON.stringify(result.result));
+ assert.equal(result.result.checks.REAL_HTTP_CLOUD_OUTAGE_OBSERVED,true);
+ assert.equal(result.lab.m75Sustained.lastEvidence.physicalValidated,false);
+}));
+test("M7.6 operator file is wired to fail-closed gate, with invalid JSON evidence rejected",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text(),js=await(await fetch(url+"dashboard.js")).text();
+ assert.ok(html.includes('id="m76-evidence-file"'));
+ assert.ok(js.includes('operatorEvidence:JSON.parse(await file.text())'));
+ await call({command:"mode",mode:"lab"});
+ const result=await call({command:"lab",action:"m76Pilot",operatorEvidence:{
+  kind:"PEF_M75_OPERATOR_LONG_SOAK_V1",ok:true}});
+ assert.equal(result.result.operatorEvidenceInspection.accepted,false);
+ assert.equal(result.result.fieldPilotAuthorized,false);
+ assert.equal(result.result.decision,"GO_SOFTWARE_LAB_ONLY");
+}));
