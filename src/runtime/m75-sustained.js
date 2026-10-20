@@ -173,8 +173,14 @@ async function runM75Sustained({durationSeconds=6,intervalMs=800}={}){
     token:tokens[p],cloudTransport:bridge});
    edgeUrls[p]=await edges[p].listen();
    const after=await edgeCall(p,"state",null);
-   retained=retained&&after.identity.sessionId!==session&&
-    after.storage.pending===0&&before.storage.pending===0;
+   const beforeIncidents=before[p+"Incidents"]||[];
+   const afterIncidents=after[p+"Incidents"]||[];
+   retained=retained&&after.identity.sessionId!==session&&before.storage.pending===0&&
+    beforeIncidents.length>0&&beforeIncidents.every(incident=>{
+     const same=afterIncidents.find(item=>item.incidentId===incident.incidentId);
+     return same?.status==="ACKNOWLEDGED"&&same.cloudAcked===true&&
+      same.ackCloudAcked===true;
+    });
   }
   const actualMs=Math.round(performance.now()-start);
   const checks={PERSISTENT_EDGE_PROPERTY_HOST:counts.property>0&&counts.host>0,
