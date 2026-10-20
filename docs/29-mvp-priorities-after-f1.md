@@ -106,3 +106,5 @@ M7.1/M7.2 IMPLEMENTED / CI_PENDING: keypair persistente local Ed25519 y signed u
 ## M7 full software branch, 2026-10-19
 
 M7.1/M7.2 signed identity/release CLOSED LAB. M7.3 mTLS 1.3 local Cloud Lite CLOSED LAB x64/ARM64, M7.4 fsync operational recovery audit CLOSED LAB, M7.5 short real HTTP stress PASS (2–24h NOT_RUN), M7.6 evidence-backed software lab gate PASS **field pilot NO-GO**. No physical storage powercut, WAN NIC, energy/thermal benchmark or signed boot hardware, nor 72h backlog validation. Hosting additional 0 EUR. [CI #39295301813](https://github.com/krukmat/logistica/actions/runs/39295301813), [audit](audit/m7-3-6-security-pilot-lab-2026-10-19.md).
+
+**M7.5 operator 2-hour update (2026-10-20):** macOS ARM64 periodic Cloud Lite test 119 cycles, 0 failures, `LAB_PASS`, 7200025ms. Memory sampled 92→149MB, gradual upward trend unresolved; does not prove continuous load or P0/P1 72h capacity. The M7.6 machine field gate remains NO-GO (no external evidence import, and physical blockers). [Audit](audit/m75-operator-2hour-soak-2026-10-20.md).

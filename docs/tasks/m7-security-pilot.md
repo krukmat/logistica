@@ -1,6 +1,6 @@
 # M7 — Seguridad y preparación del piloto
 
-**Inicio: 2026-10-19, branch `main`.** M7.1/M7.2 **CLOSED — SOFTWARE LAB ONLY**, with current-HEAD CI success; x64/ARM64 and dashboard gates passed. M7.3/M7.4 closed local CI software lab; M7.5 short stress closed, 2–24h pending; M7.6 lab gate implemented, field pilot NO-GO. No purchased hardware, hosted cloud, external services or operator system changes.
+**Inicio: 2026-10-19, branch `main`.** M7.1/M7.2 **CLOSED — SOFTWARE LAB ONLY**, with current-HEAD CI success; x64/ARM64 and dashboard gates passed. M7.3/M7.4 closed local CI software lab; M7.5 short stress closed, 2h periodic operator run PASS, 4–24h pending; M7.6 lab gate implemented, field pilot NO-GO. No purchased hardware, hosted cloud, external services or operator system changes.
 
 ## M7.1 — Identidad criptográfica de Edge (P0)
 
@@ -32,7 +32,7 @@ The M5 **legacy unsigned ephemeral lab** remains available for regression *only 
 | --- | --- | --- | --- |
 | M7.3 — TLS/mTLS trust | M7.1 + M6 Cloud Lite | A: ephemeral Ed25519 CA and TLS1.3; B: SAN scope and foreign/expired policy, no plaintext fallback; C: second cert accepted, Cloud failure offline; no revocation/identity-key unification | CLOSED LOCAL LAB CI #39293654717; production identity pending |
 | M7.4 — Operational recovery | M7.2 + M3/M5 | A: reuse M3 health and recovery; B: fsync hash-chain correlated audit; C: authenticated operator evidence, no new production recovery endpoint | CLOSED LOCAL LAB CI #39294591697; production interface pending |
-| M7.5 — Endurance and resource economics | M7.3/4 + M6 | A: short repeated real HTTP stress; B: explicit opt-in 2–24h runner available; C: CPU/RSS/latency measured, 72h retention not validated | SHORT LAB PASS CI #39295301813; LONG-RUN NOT_RUN |
+| M7.5 — Endurance and resource economics | M7.3/4 + M6 | A: short repeated real HTTP stress; B: operator 2h periodic local run passed; C: memory drift analysis and continuous workload still pending, 72h retention not validated | SHORT LAB PASS CI #39295301813; 2H PERIODIC OPERATOR LAB_PASS; MEMORY TREND OPEN |
 | M7.6 — Software pilot readiness | M7.1–5 | A: real software gates Property/Host; B: BOM placeholders without invented prices; C: conservative GO_SOFTWARE_LAB_ONLY / fieldPilotAuthorized=false | LAB GATE PASS CI #39295301813; physical pilot NO-GO |
 
 **72h journal / W1.10.G remains DEFERRED** until realistic product payload rate, capacity and local failure policy are fixed; 100MiB alone does not satisfy 72h at modeled load. M5.3 physical device (NICs, storage powercut, energy, thermals) remains BLOCKED.
@@ -82,8 +82,12 @@ npm run m7:stress -- --hours 2 > m75-long-soak.json
 unset PEF_M75_LONGRUN_ACK
 ```
 
-**The 2h/4h/8h/24h option has NOT been run**; never claim that smoke CI measured multi-hour lifetime. It generates repeated real localhost fault tests, not realistic P0/P1 load over 72h. No commercial pilot GO until physical M5.3 and other blockers close. The mTLS certificate key is independent of M7.1 Ed25519 identity; renewable certificate does not imply revocation, TPM or production PKI. Certificate/authority scope is loopback only. [Audit M7.3–M7.6](../audit/m7-3-6-security-pilot-lab-2026-10-19.md).
+**The 2h option was executed on Mac ARM64 (operator evidence, 2026-10-20), LAB_PASS 119/119 periodic cycles, 0 failures.** 4h/8h/24h remain NOT_RUN. Do not claim continuous 2h load or 72h retention. It generates repeated real localhost fault tests, not realistic P0/P1 load over 72h. No commercial pilot GO until physical M5.3 and other blockers close. The mTLS certificate key is independent of M7.1 Ed25519 identity; renewable certificate does not imply revocation, TPM or production PKI. Certificate/authority scope is loopback only. [Audit M7.3–M7.6](../audit/m7-3-6-security-pilot-lab-2026-10-19.md).
 
 ### Integrated M7.3–M7.6 HTTP/UI CI acceptance
 
 [CI #39295644533](https://github.com/krukmat/logistica/actions/runs/39295644533) SUCCESS: native ARM64 **227/227**, x64 **226 PASS +1 skip**, no failures; M7.3, M7.4, M7.5, M7.6 dashboard action tests all PASS; short stress + local lab readiness gate emitted evidence on both architectures. **M7.3 and M7.4 CLOSED SOFTWARE LAB**, M7.5 SHORT STRESS LAB PASS / 2–24h NOT_RUN, M7.6 SOFTWARE LAB GATE PASS / PHYSICAL FIELD NO-GO. The test did not authorize a commercial/site device deployment.
+
+### M7.5 operator result — 2026-10-20
+
+The operator ran `npm run m7:stress -- --hours 2` on macOS ARM64 with explicit opt-in. `PEF_M75_OPERATOR_LONG_SOAK_V1` returned `LAB_PASS`, `elapsedMs=7200025`, `sampleCount=119`, `failures=0`. This meets **two-hour periodic functional soak lab gate**, not a sustained-load or memory-stability gate. RSS observations grew from 92,078,080 to 148,602,880 bytes; **M7.5.D memory attribution OPEN**. **M7.5.E sustained load characterization OPEN**, 24h and 72h NOT_RUN. The M7.6 executable gate still hardcodes `TWO_HOUR_ENDURANCE=false` until validated external evidence ingestion, therefore it must not be misinterpreted as a failed operator soak. Field pilot remains NO-GO. [Operator audit](../audit/m75-operator-2hour-soak-2026-10-20.md).

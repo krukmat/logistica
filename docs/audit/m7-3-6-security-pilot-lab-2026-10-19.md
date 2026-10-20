@@ -24,3 +24,7 @@
 4. Physical M5.3 (NIC, storage power loss, energy/thermal), 72h journal and production pilot remain blocked.
 
 **Classification:** CORE authorization/scoped certificate policy, ADAPTER HTTPS/local CA/fsync ledger, MODULE authenticated Edge test, CONFIG lab-only trust, RESOURCE bounded Cloud and endurance cycles. Requirements REQ-SEC-01/02, REQ-STA-01/02/03, REQ-REC-01, REQ-OBS-01, REQ-API-01, REQ-LOC-01, REQ-CLO-01.
+
+## M7.5 operator update — 2026-10-20
+
+**Operator-reported macOS ARM64** two-hour periodic real Cloud Lite matrix `LAB_PASS`, 119 probes/0 failures, `elapsedMs=7200025`. Source audit [m75-operator-2hour-soak-2026-10-20.md](m75-operator-2hour-soak-2026-10-20.md) captures memory-growth caveat: RSS sampled 92,078,080 → 148,602,880 bytes across the run (~53.9 MiB increase), still below 512MiB short-run threshold but without evidence of stabilization. Earlier statements above that 2h is NOT_RUN are superseded **for periodic operator soak only**. M7.6 machine gate has not imported the external evidence; field pilot NO-GO, 24h/72h and physical validation unproven.

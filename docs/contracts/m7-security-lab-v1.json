@@ -84,10 +84,28 @@
       8,
       24
     ],
-    "twoHourValidated": false,
+    "twoHourValidated": true,
     "seventyTwoHourRetentionValidated": false,
     "action": "m75Stress",
-    "ciRunId": 39295301813
+    "ciRunId": 39295301813,
+    "twoHourValidationScope": "OPERATOR_MAC_ARM64_PERIODIC_FUNCTIONAL_SOAK_ONLY",
+    "twoHourOperatorEvidence": {
+      "kind": "PEF_M75_OPERATOR_LONG_SOAK_V1",
+      "status": "LAB_PASS",
+      "elapsedMs": 7200025,
+      "cycles": 119,
+      "failures": 0,
+      "platform": "darwin",
+      "arch": "arm64",
+      "firstSamplePeakRssBytes": 92078080,
+      "lastSamplePeakRssBytes": 148602880,
+      "externalOperatorProvided": true,
+      "continuousLoadValidated": false,
+      "memoryStabilityValidated": false,
+      "physicalValidated": false
+    },
+    "memoryGrowthUnderInvestigation": true,
+    "longRun24HoursValidated": false
   },
   "m76": {
     "state": "LAB_GATE_PASS_FIELD_NO_GO",
@@ -103,7 +121,10 @@
     "physicalBOMCostEuro": null,
     "hostingAdditionalEuro": 0,
     "action": "m76Pilot",
-    "ciRunId": 39295301813
+    "ciRunId": 39295301813,
+    "twoHourOperatorResultRecorded": true,
+    "automatedGateUsesOperatorEvidence": false,
+    "fieldPilotBlockedByPhysicalTests": true
   },
   "hardwareValidated": false,
   "productionAuthorized": false,
