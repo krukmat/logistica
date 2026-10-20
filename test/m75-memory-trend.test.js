@@ -85,3 +85,27 @@ test("M7.5.D3 requires a sufficient requested and observed window",()=>{
  misreported.requestedSeconds=6;
  assert.equal(analyzeM75MemoryTrend(misreported).trendEligible,false);
 });
+
+test("M7.5.D3 offline CLI consumes bounded JSON and never reports leak/stability PASS",()=>{
+ const fs=require("node:fs"),os=require("node:os"),path=require("node:path");
+ const {spawnSync}=require("node:child_process");
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),"m75-memory-test-"));
+ try{
+  const input=path.join(dir,"valid.json");
+  fs.writeFileSync(input,JSON.stringify(synthetic({seconds:90,parentGrowth:2})));
+  const result=spawnSync(process.execPath,[
+   path.resolve(__dirname,"../bin/pef-m75-memory.js"),"--report",input
+  ],{encoding:"utf8",timeout:4000});
+  assert.equal(result.status,0,result.stderr);
+  const parsed=JSON.parse(result.stdout);
+  assert.equal(parsed.status,"DESCRIPTIVE_TREND_ONLY");
+  assert.equal(parsed.memoryLeakConfirmed,false);
+  assert.equal(parsed.plateauValidated,false);
+  fs.writeFileSync(input,"{}");
+  const rejected=spawnSync(process.execPath,[
+   path.resolve(__dirname,"../bin/pef-m75-memory.js"),"--report",input
+  ],{encoding:"utf8",timeout:4000});
+  assert.equal(rejected.status,1);
+  assert.equal(JSON.parse(rejected.stdout).status,"INVALID_EVIDENCE");
+ }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
