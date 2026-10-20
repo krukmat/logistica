@@ -46,6 +46,7 @@ async function runM75Sustained({durationSeconds=6,intervalMs=800}={}){
  const profiles=["property","host"],counts={property:0,host:0};
  let offlineFsync=true,wanRecovered=false,outageObserved=false,cloudRecovered=false;
  let localFailures=0,cloudOutageFailures=0,cloudEvents=0,reopened=false;
+ let metricsUnauthenticatedDenied=true;
  const latencyMs=[],series=[],faults=[];
  const workerPids={property:null,host:null};let workerMetricsComplete=true;
  const workerRssSeries={property:[],host:[]};
@@ -92,6 +93,9 @@ async function runM75Sustained({durationSeconds=6,intervalMs=800}={}){
    edges[profile]=createAutonomousEdgeHost({config:configs[profile],
     token:tokens[profile+"Operator"],cloudTransport:bridge});
    edgeUrls[profile]=await edges[profile].listen();
+   // Metrics never bypass the existing Edge operator token boundary.
+   const anonymous=await fetch(edgeUrls[profile]+"lab/workload/metrics");
+   metricsUnauthenticatedDenied=metricsUnauthenticatedDenied&&anonymous.status===403;
    // Edge HTTP operator credential differs from Cloud mTLS device bearer.
    tokens[profile]=tokens[profile+"Operator"];
    // Preserve Cloud device credential separately when transport is recreated.
@@ -215,6 +219,7 @@ async function runM75Sustained({durationSeconds=6,intervalMs=800}={}){
    CLOUD_LEDGER_REOPEN_MATCHES:reopened&&cloudEvents>=counts.property+counts.host,
    EDGE_REOPEN_RETAINS_ACK:retained,
    ALL_ACCEPTED_LOCAL_ACTIONS_FSYNC:localFailures===0,
+   WORKER_METRICS_UNAUTHENTICATED_DENIED:metricsUnauthenticatedDenied,
    WORKER_PROCESS_RSS_ATTRIBUTED:workerMetricsComplete&&
     workerPids.property!==null&&workerPids.host!==null&&
     workerPids.property!==workerPids.host&&

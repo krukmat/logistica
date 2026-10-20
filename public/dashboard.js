@@ -122,6 +122,14 @@ function renderIntegrated(lab){
   $("m74-operations-evidence").textContent=JSON.stringify(lab.m74Operations,null,2);
   $("m75-stress-evidence").textContent=JSON.stringify(lab.m75Stress,null,2);
    $("m75-sustained-evidence").textContent=JSON.stringify(lab.m75Sustained,null,2);
+   const m75=lab.m75Sustained?.lastEvidence;
+   $("m75-worker-resource-evidence").textContent=JSON.stringify(m75?{
+     workerRssValidated:m75.workerRssValidated,
+     resourceAttribution:m75.resourceAttribution,
+     edgeCloudRssSeparatelyValidated:m75.edgeCloudRssSeparatelyValidated,
+     workerProcessMetrics:m75.workerProcessMetrics,
+     physicalValidated:m75.physicalValidated
+   }:{status:"NOT_RUN",edgeCloudRssSeparatelyValidated:false},null,2);
   $("m76-pilot-evidence").textContent=JSON.stringify(lab.m76Pilot,null,2);
   $("predevice-evidence").textContent=JSON.stringify(lab.predevice,null,2);
   $("golden-traces-evidence").textContent=JSON.stringify(lab.goldenTraces,null,2);

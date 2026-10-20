@@ -700,7 +700,8 @@
       "controlIds": [
         "m75-stress-panel",
         "m75-sustained-run",
-        "m75-sustained-evidence"
+        "m75-sustained-evidence",
+        "m75-worker-resource-evidence"
       ],
       "actions": [
         "m75Sustained"
