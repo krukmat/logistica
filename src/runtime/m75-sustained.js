@@ -5,6 +5,7 @@ const fs=require("node:fs"),os=require("node:os"),path=require("node:path");
 const https=require("node:https");
 const {randomBytes}=require("node:crypto");
 const {performance}=require("node:perf_hooks");
+const {analyzeM75MemoryTrend}=require("../core/m75-memory-trend.js");
 const {createCloudLiteRegistryServer}=require("./cloud-lite-registry-server.js");
 const {createAutonomousEdgeHost}=require("./autonomous-edge.js");
 const {createM73MtlsTransport}=require("../adapters/m73-mtls-transport.js");
@@ -247,7 +248,10 @@ async function runM75Sustained({durationSeconds=6,intervalMs=800}={}){
     workerPids.property!==workerPids.host&&
     profiles.every(p=>workerRssSeries[p].length===series.length)};
   const ok=Object.values(checks).every(Boolean);
+  const memoryTrend=analyzeM75MemoryTrend({kind:"PEF_M75_SUSTAINED_MTLS_LAB_V1",
+   requestedSeconds:durationSeconds,resourceSamples:series});
   return {kind:"PEF_M75_SUSTAINED_MTLS_LAB_V1",status:ok?"LAB_PASS":"LAB_FAIL",ok,
+   memoryTrend,
    checks,requestedSeconds:durationSeconds,elapsedMs:actualMs,intervalMs,
    generatedDurableOperations:counts,remoteStoredEvents:cloudEvents,localFailures,
    medianOperationPairLatencyMs:latencyMs.length?latencyMs.sort((a,b)=>a-b)[Math.floor(latencyMs.length/2)]:null,
