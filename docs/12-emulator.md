@@ -292,3 +292,5 @@ Dashboard local lab's M7.5.E six-second action measures actual Property/Host chi
 ## M7.5.D3 trend / readiness boundary
 
 `m75Sustained` now returns `memoryTrend` from the portable pure Core analyzer (`src/core/m75-memory-trend.js`), displayed in `m75-memory-trend-evidence`. The integrated dashboard runs **only 6s** and reports `INSUFFICIENT_OBSERVATION_WINDOW`, not a green stability verdict. The local operator-only CLI can analyze a saved >=60s test using `npm run m7:memory -- --report /absolute/file.json`, no dashboard privilege or new hosted service. The heuristic +1 MiB/min and median shift 0.75 MiB do not prove a leak; D3 empirical Mac series still pending.
+
+**Phases:** `m75-memory-trend-evidence` distinguishes full-run descriptive diagnostics (which include faults) from `postRecovery`, available only after >=30s and >=12 readings entirely in the recovered Cloud phase. Dashboard's six-second action remains insufficient. There is no background or privileged guest test.

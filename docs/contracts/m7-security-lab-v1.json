@@ -189,7 +189,18 @@
       "plateauValidated": false,
       "mac90SecondsOperatorRunValidated": false,
       "longRunContinuousTwoHoursValidated": false,
-      "physicalValidated": false
+      "physicalValidated": false,
+      "phaseLabels": [
+        "OFFLINE",
+        "WAN_RESTORED",
+        "CLOUD_OUTAGE",
+        "RECOVERED"
+      ],
+      "phaseLabelsMonotonicRequired": true,
+      "postRecoveryMinimumSpanMs": 30000,
+      "postRecoveryMinSamples": 12,
+      "optionalPostRecoveryOperatorSeconds": 180,
+      "regimeStabilityValidated": false
     }
   },
   "m76": {
