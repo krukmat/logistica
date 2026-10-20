@@ -70,10 +70,15 @@
     "ciRunId": 39294591697
   },
   "m75": {
-    "state": "SHORT_LAB_PASS_LONG_RUN_NOT_RUN",
+    "state": "SHORT_LAB_PASS_2H_PERIODIC_OPERATOR_PASS_SUSTAINED_LONG_OPEN",
     "shortCycles": 2,
     "metrics": [
       "rss",
+      "heapUsed",
+      "heapTotal",
+      "external",
+      "arrayBuffers",
+      "activeResources",
       "cpu",
       "cycleLatency",
       "faultRecovery"
@@ -105,7 +110,27 @@
       "physicalValidated": false
     },
     "memoryGrowthUnderInvestigation": true,
-    "longRun24HoursValidated": false
+    "longRun24HoursValidated": false,
+    "resourceSeriesScope": "HARNESS_PARENT_PID_ONLY_NO_WORKER_MEMORY_ATTRIBUTION",
+    "replayAssertion": "M64_PROPERTY_HOST_DURABLE_REPLAY_PREDICATES_NOT_LATENCY",
+    "sustainedLab": {
+      "kind": "PEF_M75_SUSTAINED_MTLS_LAB_V1",
+      "entrypoint": "m75Sustained",
+      "shortDurationSeconds": 6,
+      "realLoopbackTls13Mtls": true,
+      "edgeProfiles": [
+        "property",
+        "host"
+      ],
+      "persistentCloudAndEdges": true,
+      "faults": [
+        "syntheticWanRecovery",
+        "realLocalCloudShutdownRestart"
+      ],
+      "long15To30MinutesRun": false,
+      "continuousTwoHoursValidated": false,
+      "physicalValidated": false
+    }
   },
   "m76": {
     "state": "LAB_GATE_PASS_FIELD_NO_GO",
@@ -124,7 +149,24 @@
     "ciRunId": 39295301813,
     "twoHourOperatorResultRecorded": true,
     "automatedGateUsesOperatorEvidence": false,
-    "fieldPilotBlockedByPhysicalTests": true
+    "fieldPilotBlockedByPhysicalTests": true,
+    "operatorEvidenceInspector": {
+      "kind": "PEF_M75_OPERATOR_EVIDENCE_INSPECTION_V1",
+      "cli": "npm run m7:pilot -- --evidence /absolute/report.json",
+      "dashboardFileInput": true,
+      "maxJsonBytes": 48000,
+      "validates": [
+        "kind",
+        "scope",
+        "elapsedMs",
+        "sampleCount",
+        "probeTimeSpan",
+        "failureCount"
+      ],
+      "provenanceAuthenticated": false,
+      "validExternalRawEvidenceCommitted": false,
+      "fieldGoAllowedFromImport": false
+    }
   },
   "hardwareValidated": false,
   "productionAuthorized": false,
