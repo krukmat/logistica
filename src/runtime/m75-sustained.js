@@ -69,7 +69,7 @@ async function runM75Sustained({durationSeconds=6,intervalMs=800}={}){
   pki=generateM73LabPki(root);
   await openCloud();
   for(const profile of profiles){
-   const identity={siteId:"m75-site",deviceId:"m75-"+profile,configRevision:"r1"};
+   const identity={siteId:"m73-site",deviceId:"m73-"+profile,configRevision:"r1"};
    const enrol=await secureJson(cloudUrl,"/v1/admin/enroll",pki.admin,pki.ca,identity,admin);
    if(enrol.http!==201||enrol.fsyncCompleted!==true||!enrol.deviceToken)
     throw Error("M75_ENROLL_FAILED:"+profile);
