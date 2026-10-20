@@ -47,6 +47,8 @@ async function runM75Sustained({durationSeconds=6,intervalMs=800}={}){
  let offlineFsync=true,wanRecovered=false,outageObserved=false,cloudRecovered=false;
  let localFailures=0,cloudOutageFailures=0,cloudEvents=0,reopened=false;
  const latencyMs=[],series=[],faults=[];
+ const workerPids={property:null,host:null};let workerMetricsComplete=true;
+ const workerRssSeries={property:[],host:[]};
  const status=async()=>secureJson(cloudUrl,"/v1/admin/status",pki.admin,pki.ca,null,admin);
  const edgeCall=async(profile,route,body)=>{
   const response=await fetch(edgeUrls[profile]+route,{method:body?"POST":"GET",
@@ -144,7 +146,30 @@ async function runM75Sustained({durationSeconds=6,intervalMs=800}={}){
     }
    }
    latencyMs.push(Math.round(performance.now()-begin));
-   const resource=resources();resource.elapsedMs=Math.round(performance.now()-start);
+   const resource=resources();
+   resource.elapsedMs=Math.round(performance.now()-start);
+   resource.workers={};
+   // Two real child Node processes observed via the existing driver IPC, not ps/proc guesses.
+   for(const profile of profiles){
+    const measure=await edgeCall(profile,"lab/workload/metrics",null)
+      .catch(()=>({ok:false,http:503}));
+    if(measure.http!==200||measure.ok!==true||
+       measure.workloadId!=="pef-"+profile||measure.isolation!=="NODE_PROCESS_ONLY"||
+       !Number.isSafeInteger(measure.pid)||measure.pid===process.pid||
+       !Number.isSafeInteger(measure.rssBytes)||measure.rssBytes<=0||
+       (workerPids[profile]!==null&&workerPids[profile]!==measure.pid)){
+      workerMetricsComplete=false;continue;
+    }
+    workerPids[profile]=measure.pid;
+    resource.workers[profile]={
+     pid:measure.pid,rssBytes:measure.rssBytes,
+     heapUsedBytes:measure.heapUsedBytes,heapTotalBytes:measure.heapTotalBytes,
+     externalBytes:measure.externalBytes,arrayBuffersBytes:measure.arrayBuffersBytes,
+     cpuUserMicros:measure.cpuUserMicros,cpuSystemMicros:measure.cpuSystemMicros,
+     uptimeSeconds:measure.uptimeSeconds,
+     isolation:measure.isolation,actualLimitsEnforced:measure.actualLimitsEnforced};
+    workerRssSeries[profile].push(measure.rssBytes);
+   }
    series.push(resource);
    index++;
    const remaining=deadline-performance.now();
@@ -189,14 +214,34 @@ async function runM75Sustained({durationSeconds=6,intervalMs=800}={}){
    DURABLE_RECONCILIATION_NO_PENDING:pending===0,
    CLOUD_LEDGER_REOPEN_MATCHES:reopened&&cloudEvents>=counts.property+counts.host,
    EDGE_REOPEN_RETAINS_ACK:retained,
-   ALL_ACCEPTED_LOCAL_ACTIONS_FSYNC:localFailures===0};
+   ALL_ACCEPTED_LOCAL_ACTIONS_FSYNC:localFailures===0,
+   WORKER_PROCESS_RSS_ATTRIBUTED:workerMetricsComplete&&
+    workerPids.property!==null&&workerPids.host!==null&&
+    workerPids.property!==workerPids.host&&
+    profiles.every(p=>workerRssSeries[p].length===series.length)};
   const ok=Object.values(checks).every(Boolean);
   return {kind:"PEF_M75_SUSTAINED_MTLS_LAB_V1",status:ok?"LAB_PASS":"LAB_FAIL",ok,
    checks,requestedSeconds:durationSeconds,elapsedMs:actualMs,intervalMs,
    generatedDurableOperations:counts,remoteStoredEvents:cloudEvents,localFailures,
    medianOperationPairLatencyMs:latencyMs.length?latencyMs.sort((a,b)=>a-b)[Math.floor(latencyMs.length/2)]:null,
-   resourceSamples:series,faults,resourceAttribution:"HARNESS_PARENT_ONLY",
-   workerRssValidated:false,sameLongLivedEdgeAndCloud:true,realTls:true,
+   resourceSamples:series,faults,
+   workerProcessMetrics:{
+    kind:"PEF_M75_CHILD_WORKER_RESOURCE_SERIES_V1",
+    workers:profiles.map(profile=>{
+     const values=workerRssSeries[profile];
+     return {profile,pid:workerPids[profile],samples:values.length,
+      firstRssBytes:values[0]??null,lastRssBytes:values.at(-1)??null,
+      maxObservedRssBytes:values.length?Math.max(...values):null,
+      deltaRssBytes:values.length?values.at(-1)-values[0]:null};
+    }),
+    distinctWorkerPids:workerPids.property!==null&&workerPids.host!==null&&
+     workerPids.property!==workerPids.host,
+    workerLimitsEnforced:false
+   },
+   resourceAttribution:"HARNESS_EDGE_CLOUD_SHARED_PID_PLUS_TWO_CHILD_WORKERS",
+   workerRssValidated:checks.WORKER_PROCESS_RSS_ATTRIBUTED,
+   edgeCloudRssSeparatelyValidated:false,
+   parentHostsEdgeAndCloud:true,sameLongLivedEdgeAndCloud:true,realTls:true,
    syntheticWan:true,physicalValidated:false,powerCutValidated:false,
    seventyTwoHourRetentionValidated:false,soak24hValidated:false,
    scope:"PACED_LOCALHOST_MTLS_TEST_NOT_FULL_LOAD_OR_PHYSICAL_PILOT"};
