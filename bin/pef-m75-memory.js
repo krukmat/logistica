@@ -14,7 +14,7 @@ function main(){
  // npm run without --silent prepends a lifecycle banner, so shell redirection
  // captures non-JSON text. Reject with a recoverable diagnostic, never guess
  // at a JSON substring and silently treat an altered report as evidence.
- if(/^\\s*>\\s*pef-virtual-edge@[^\\r\\n]+\\s+m7:sustained(?:\\r?\\n|$)/.test(raw))
+ if(/^\s*>\s*pef-virtual-edge@[^\r\n]+\s+m7:sustained(?:\r?\n|$)/.test(raw))
   throw Error("M75_MEMORY_REPORT_CONTAINS_NPM_BANNER: preserve the original, then run: sed -n '/^{/,$p' input.json > clean.json ; npm run m7:memory -- --report clean.json. For future capture use npm run --silent m7:sustained.");
  let report;
  try{report=JSON.parse(raw);}
