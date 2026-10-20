@@ -140,4 +140,8 @@ test("M7.5.D3 90-second faulted test does not falsely certify post-recovery tren
  broken.resourceSamples.forEach(x=>{x.phase="RECOVERED";});
  delete broken.resourceSamples[30].phase;
  assert.equal(analyzeM75MemoryTrend(broken).reason,"INCONSISTENT_OR_UNKNOWN_PHASE");
+ const order=synthetic({seconds:90});
+ order.resourceSamples.forEach(x=>{x.phase="CLOUD_OUTAGE";});
+ order.resourceSamples[60].phase="WAN_RESTORED";
+ assert.equal(analyzeM75MemoryTrend(order).reason,"PHASE_ORDER_REGRESSION");
 });
