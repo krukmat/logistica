@@ -63,9 +63,32 @@ test("M7.5.E sustained local TLS cloud and both Edge hosts survive outage and re
    const worker=sample.workers[profile];
    assert.equal(worker.isolation,"NODE_PROCESS_ONLY");
    assert.equal(worker.actualLimitsEnforced,false);
+   assert.equal(typeof worker.activeResources,"object");
    for(const k of ["rssBytes","heapUsedBytes","heapTotalBytes","externalBytes",
      "arrayBuffersBytes","cpuUserMicros","cpuSystemMicros"])
     assert.ok(Number.isSafeInteger(worker[k])&&worker[k]>=0,k);
   }
  }
+});
+
+test("M7.5.D2 supervisor rejects worker process metrics with mismatched PID",async()=>{
+ const {createWorkloadSupervisor}=require("../src/core/workload-supervisor.js");
+ const manifest={workload_id:"pef-property",manifest_version:"1",
+  health:{restart_policy:{window_seconds:60,max_attempts:2,backoff_seconds:1}}};
+ const manager={admit:()=>({ok:true}),get:()=>manifest,release:()=>({ok:true})};
+ const driver={start:async()=>({pid:4321,stop:async()=>{},health:async()=>({ok:true}),
+  metrics:async()=>({ok:true,observations:{
+   kind:"WORKER_NODE_PROCESS_OBSERVED",pid:4322,rssBytes:1048576,
+   heapUsedBytes:1,heapTotalBytes:2,externalBytes:0,arrayBuffersBytes:0,
+   cpuUserMicros:0,cpuSystemMicros:0}})})};
+ const supervisor=createWorkloadSupervisor({manager,driver});
+ try{
+  const started=await supervisor.start(manifest);
+  assert.equal(started.ok,true);
+  const observed=await supervisor.resourceMetrics("pef-property");
+  assert.equal(observed.ok,false);
+  assert.equal(observed.error,"WORKER_RESOURCE_METRICS_INVALID");
+  const unknown=await supervisor.resourceMetrics("missing");
+  assert.equal(unknown.error,"WORKER_RESOURCE_METRICS_UNAVAILABLE");
+ }finally{await supervisor.close();}
 });
