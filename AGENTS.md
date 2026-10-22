@@ -1,5 +1,11 @@
 # AGENTS.md — Contrato de trabajo para agentes PEF
 
+## Directiva del responsable (2026-10-22): sin GitHub Actions
+
+**Mandato explícito y prioritario:** no añadir, restaurar, proponer, configurar ni ejecutar workflows de GitHub Actions en este proyecto. La validación automática local (`npm test`, comandos smoke, linters y scripts de laboratorio permitidos) se conserva; ejecución a cargo del operador o del agente en un entorno local autorizado, con evidencia y estado veraz (`NOT_RUN` cuando corresponda). Esta instrucción sustituye cualquier requisito anterior de mantener GitHub Actions/CI verde, de publicar artefactos por workflows o de exigir jobs GitHub-hosted como DoD. No modificar infraestructura ni habilitar ejecución privilegiada solo para suplir esa ausencia.
+
+**Retirada pendiente del repositorio:** el archivo `.github/workflows/pef-emulator.yml` debe eliminarlo el operador mediante Git local porque la conexión de GitHub bloqueó su borrado en esta sesión. Hasta que ese archivo desaparezca de `main`, no afirmar que GitHub Actions está desactivado ni eliminado. Las menciones a ejecuciones pasadas en auditorías son referencias históricas, no un requisito para futuro.
+
 ## Lectura mínima y fuente de verdad
 
 1. `README.md` → estado y navegación.
