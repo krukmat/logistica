@@ -63,3 +63,7 @@ Next decision: read the operator F1/F2 JSON and determine whether to redesign on
 ## Operator 1GiB F1/F2 results — 2026-10-18
 
 The user-submitted F1 report confirms `F1_STAGED_100K_VIRTUAL_PASS`: **100,000 persisted events**, peak Node RSS **277.77MiB**, minimum stage guest available **417.44MiB**, reopen **474.97ms**, no OOM, dedup and conflict gates PASS. F2 report confirms four checks PASS but `F2_CAPACITY_MODEL_AVAILABLE_72H_BLOCKED`: journal forecast 0.612/2.095GiB for 1/4KiB with capacity recommendation 0.765/2.619GiB, versus current standalone 100MiB cap. **This closes F1 100k virtual testing and F2 projection only**; indexed recovery at 518,400 and physical microSD remain unverified. [Full operator audit](audit/w1.10-f1-f2-mac-1g-2026-10-18.md). Next: bounded-memory journal redesign proposal G1–G4, not merely increasing capacity.
+
+## M8.1.A read-only contract groundwork (2026-10-22)
+
+The next integrated ARM64 guest project reached A1–A4 *implementation* status with strict source/observation separation. Guest invocation remains opt-in and NOT_RUN, and Linux-isolated driver is presently CI-hosted-root-only, therefore **M8.1.B BLOCKED** pending safe Lima-specific isolation authorization. Dashboard/CLI show `BLOCKED`, never misleading test green. [M8 plan](tasks/m8-virtual-appliance-integrated.md).

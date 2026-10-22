@@ -319,3 +319,14 @@ This is an opt-in **90-second** local software experiment: parent RSS includes E
 **D3 software CI:** [CI #39459546240](https://github.com/krukmat/logistica/actions/runs/39459546240) SUCCESS: native ARM64 245/245 PASS, Linux x64 244 PASS +1 skip (0 failed); memory stability on the Mac and long continuous endurance are still not empirically established.
 
 **M7.5.D3 npm redirection correction:** use `npm run --silent m7:sustained` when redirecting stdout to `.json`. Old files containing the npm banner can be salvaged without rerunning: `sed -n '/^{/,$p' m75-memory-90s.json > m75-memory-90s.clean.json`, then analyze the `.clean.json` file. Do not delete the original or treat a partial JSON as proof.
+
+## M8.1.A — ARM64 1GiB guest preparation (2026-10-22)
+
+The first M8 block is implemented as a **read-only VM eligibility contract and opt-in guest inspector**, not as a VM rollout. Run `npm run m8:preflight -- --contract` or use the dashboard **ARM64 Virtual Lab → M8.1.A**. Optional pre-existing *running* `pef-r28s-1g` inspection:
+
+```bash
+PEF_M81_VM_ACK=EXPLICIT_READ_ONLY_LIMA_M81 bash scripts/arm64-vm/m81-lima-observe.sh r28s-1g > /tmp/m81-guest-observation.json
+npm run m8:preflight -- --report /tmp/m81-guest-observation.json
+```
+
+An imported guest report is **unattested** and never authorizes M8.1.B: the production Linux worker driver is currently **GitHub-hosted-root-only**, so `readyForM81B=false`. No VM creation/start, guest install/route mutation, systemd service, additional hardware or cloud spend is performed. Use `npm test` locally; no GitHub Actions for future verification. [Scope, dependencies and rollback](docs/tasks/m8-virtual-appliance-integrated.md).

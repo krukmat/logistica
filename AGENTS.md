@@ -118,3 +118,9 @@ Hardware transition requires the third GitHub job `prehardware-gate` PASS with a
 
 ## C2 hardware sourcing constraint (2026-10-15)
 Only recommend **new hardware from Seeed Studio** for a physical PEF prototype; never reintroduce HP/Dell refurbished or outside-Seeed shortlists. Reject MOQ>1 as a one-unit prototype, kit carriers without compute as complete devices, and USD list prices as completed EUR landed cost. The authoritative current shortlist is [docs/25-hardware-screening.md](docs/25-hardware-screening.md), superseding historical mentions in roadmap. No automatic purchasing.
+
+## M8.1.A/B guest safety boundary (2026-10-22)
+
+`M8.1.A` is **read-only**. The command `m8:preflight`, Core contract and Mac dashboard must never start/stop/create Lima guests, write system services, make network/route changes, or bypass Linux isolation preflight. Optional Lima wrapper only for explicit running `pef-r28s-1g` and `PEF_M81_VM_ACK=EXPLICIT_READ_ONLY_LIMA_M81`, with separate read-only guest acknowledgment. Imported guest reports remain UNATTESTED, with `readyForM81B=false`.
+
+Do not reuse `GITHUB_ACTIONS` / `GITHUB_HOSTED_EPHEMERAL_ONLY` flags in the VM to trick the existing CI-only Linux driver. M8.1.B requires new reviewed Lima-specific driver authorization, isolated disposable cgroup/netns ownership/cleanup, manifest-derived quotas and real combined systemd+Cloud Lite guest evidence. No full guest integration test or actual VM observation has been performed as part of A.

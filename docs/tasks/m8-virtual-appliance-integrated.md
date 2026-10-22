@@ -1,6 +1,6 @@
-# M8.1 — ARM64 1 GiB integrated virtual appliance (PROPOSED)
+# M8.1 — ARM64 1 GiB integrated virtual appliance (SOFTWARE PLAN)
 
-**Repo:** krukmat/logistica, main. **Status:** DOCUMENTED / NOT_IMPLEMENTED. No hardware purchase, hosted cloud, or guest changes authorized.
+**Repo:** krukmat/logistica, main. **Status:** A1–A4 implemented as read-only preparation, operator Lima observation NOT_RUN; B–D NOT_IMPLEMENTED. No hardware purchase, hosted cloud, or guest changes authorized.
 
 ## Objective
 
@@ -10,7 +10,7 @@ Prove the **same** PEF Core, Linux driver and Cloud Lite working together on the
 
 | Task | Dependency | Subtasks and acceptance | State |
 | --- | --- | --- | --- |
-| **M8.1.A — Guest contract** | M5.4, M5.6, M7.5.E | A1 inspect existing VM capabilities, service and kernel guards; A2 document explicit operator opt-in, cleanup and rollback without changing Mac services | PROPOSED |
+| **M8.1.A — Guest contract** | M5.4, M5.6, M7.5.E | A1 inspect existing source constraints and collect opt-in guest facts; A2 define guest-only authorization/rollback; A3 read-only CLI/dashboard; A4 local negative/HTTP tests | IMPLEMENTED (source + static contract); operator guest inspection NOT_RUN; npm tests NOT_RUN |
 | **M8.1.B — Integrated stack** | A, M6, M7.3/4 | B1 compose existing Edge release and real localhost mTLS Cloud Lite on one guest; B2 run existing Property/Host driver with actual Linux quotas and no insecure fallback | PROPOSED |
 | **M8.1.C — Recovery journey** | B | C1 offline durable Property/Host operations, Cloud down/up and deduplicated ACK; C2 guest reboot, changed boot_id and session, journal/incident retention | PROPOSED |
 | **M8.1.D — Evidence** | C, M7.5.D | D1 measure Edge, Cloud and worker process RSS, CPU, disk use, cgroup pressure and replay counts; D2 reproducible JSON/NDJSON + independent checks and read-only dashboard evidence | PROPOSED |
@@ -25,3 +25,39 @@ Prove the **same** PEF Core, Linux driver and Cloud Lite working together on the
 - Physical M5.3 and 72h journal W1.10.G remain blocked; hosted Cloud remains deferred.
 
 **Order:** A → B → C → D. Stop and report on resource starvation, ownership conflict, failed cleanup or durable-state inconsistency. No actual M8.1 test has run yet.
+
+## M8.1.A — scoped implementation (2026-10-22)
+
+**Requirement:** reuses Core/CONFIG/RESOURCE contracts from M5.4, M5.6 and W1.10.D/E. **Change:** added `PEF_M81_GUEST_PREFLIGHT_V1` read-only verification, no service install or driver activation. **Dependency:** M7.5.E bounded real local mTLS laboratory. **Owner action:** none requested until guest observation.
+
+| Task | Deliverable / dependency | Acceptance | State |
+| --- | --- | --- | --- |
+| **A1** Guest contract | Pure Core `src/core/m81-guest-contract.js` assesses selected `r28s-1g` profile and imported, unauthenticated observation | Linux arm64, nominal 1024MiB within existing 0.88–1.06 profile band (901–1086MiB), <=4 CPUs, Node >=20, systemd PID1, cgroup v2 cpu/memory/pids, guest VM indicator; rejects invalid timestamps/types/scope; never treats imported claims as trusted | IMPLEMENTED; physical guest NOT_RUN |
+| **A2** Safety / rollback | `scripts/arm64-vm/m81-lima-observe.sh`: Mac ARM64 only, `PEF_M81_VM_ACK=EXPLICIT_READ_ONLY_LIMA_M81`, exactly existing *running* `pef-r28s-1g`, fail closed if missing/stopped. Guest probe `--guest-readonly` separately requires `PEF_M81_OBSERVE_ACK` | Absolutely no `limactl create/start/stop`, `sudo`, `systemctl`, network mutation, guest writable state, installed service, new VM or hardware. Any failure returns BLOCKED (wrapper exit 78). A-stage rollback: delete optional operator-produced host JSON; no guest mutations to undo | IMPLEMENTED; operator invocation NOT_RUN |
+| **A3** CLI + dashboard | `npm run m8:preflight -- --contract`, `npm run m8:preflight -- --report /absolute/guest.json`, dashboard Lab → ARM64 Virtual Lab → `m81Preflight` and local file import | Displays actual static plan, imported guest details and definitive `LINUX_DRIVER_HOSTED_CI_ONLY_VM_PORT_NOT_IMPLEMENTED`; imported data always marked `UNATTESTED_OPERATOR_REPORT`; no VM control available from dashboard | IMPLEMENTED |
+| **A4** Verification | `test/m81-guest-preflight.test.js` + dashboard HTTP regression in `test/dashboard-integrated.test.js` + contract registry | Good/invalid/malformed/scope-changed input, missing ACK, real Core manifest quotas, UI action and `readyForM81B=false` even on plausible Linux guest; `npm test` on operator Mac | TESTS ADDED / OPERATOR RUN NOT_RUN |
+
+### Actual blocking dependency for M8.1.B
+
+Current `src/adapters/linux-workload-isolation.js` hard-requires `CI=true`, `GITHUB_ACTIONS=true`, `RUNNER_ENVIRONMENT=github-hosted`, `PEF_S3_ACK=GITHUB_HOSTED_EPHEMERAL_ONLY` and Linux uid 0. Corresponding `src/adapters/linux-isolated-process-driver.js` uses that preflight. **It cannot be used from Lima unchanged.** It would be unsafe to spoof GitHub environment variables or silently fall back to the unsandboxed Node Process Driver. M8.1.B must first design a *distinct, scoped Lima root-only driver authorization* with independently verified Linux guest identity, disposable cgroup/netns ownership, journaling and teardown. That implementation is **NOT_DONE**; the A assessment always returns `BLOCKED` and `readyForM81B=false`. Neither an imported JSON nor a `systemd-detect-virt` indicator can override the guard.
+
+### Operator procedure (read-only, optional)
+
+```bash
+git switch main && git pull
+npm run m8:preflight -- --contract
+npm test    # Local automated tests, no GitHub Actions
+
+# ONLY if pef-r28s-1g is already running and guest inspection is approved:
+PEF_M81_VM_ACK=EXPLICIT_READ_ONLY_LIMA_M81 \
+bash scripts/arm64-vm/m81-lima-observe.sh r28s-1g > /tmp/m81-guest-observation.json
+
+# Locally inspect unauthenticated guest observations; always BLOCKED for M8.1.B:
+npm run m8:preflight -- --report /tmp/m81-guest-observation.json
+npm run dashboard
+# ARM64 Virtual Lab -> M8.1.A -> inspect contract or select JSON
+```
+
+The Lima wrapper never starts a stopped VM. It only runs `limactl list --json` and `limactl shell` for the exact existing running name, with an additional guest observation acknowledgment; no background task. Evidence origin is **operator reported, non-attested**. Delete optional `/tmp/m81-guest-observation.json` to clean up locally; no guest rollback required because M8.1.A performs no writes.
+
+**M8.1.B release gate remains BLOCKED:** design/approve Linux VM-isolated driver authorization; execute full systemd+both workers+Cloud Lite simultaneously; prove fsync/replay/restart and resource budget in the *same 1GiB guest run*. Hardware physical M5.3, W1.10.G 72h and field pilot still NO-GO. Historical CI evidence is retained only for audits; **GitHub Actions are no longer an accepted prerequisite or execution path**.
