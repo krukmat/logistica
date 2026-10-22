@@ -64,6 +64,10 @@
       <section class="panel lab-panel" id="lab-panel" hidden>
         <div class="panel-heading"><div><h3>Laboratorio integrado: WAN + journal + Cloud mock</h3><p>Ejecuta el Core de integración con fsync real del SO en un directorio temporal seguro.</p></div><span class="chip">LAB • NO NIC / NO ROOT</span></div>
         <div class="lab-detail" id="arm64-lab-panel">
+          <h4>M8.1.B1 — Adaptador Linux aislado para Lima (código)</h4>
+          <p class="micro">La ruta M81_LIMA_VM ya no depende de GitHub Actions; conserva verificación real de Linux/ARM64, root, systemd, cgroup y memoria de la VM. Este botón inspecciona código/contratos: NO crea namespaces, NO activa servicios y NO demuestra aislamiento de kernel.</p>
+          <button id="m81-isolation-run" class="secondary" type="button">Inspeccionar contrato B1</button>
+          <pre id="m81-isolation-evidence" role="status" aria-live="polite">M8.1.B1 NOT_RUN · ejecución real de guest pendiente</pre>
           <h4>M8.1.A — Preflight ARM64 1 GiB (sin tocar VM)</h4>
           <p class="micro">Inspección estática y, opcionalmente, análisis de un JSON de observación de la VM aportado por el operador. No inicia Lima ni instala servicios. El driver Linux sigue bloqueado para el guest; ningún informe importado lo habilita.</p>
           <button id="m81-preflight-run" class="secondary" type="button">Inspeccionar contrato M8.1.A</button>

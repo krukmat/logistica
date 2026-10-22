@@ -759,6 +759,22 @@
       "implementation": "src/runtime/m81-guest-preflight.js",
       "test": "test/m81-guest-preflight.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "M8.1.B1",
+      "mode": "lab",
+      "title": "Fail-closed Linux isolated driver scope for existing Lima VM, no guest activation",
+      "controlIds": [
+        "arm64-lab-panel",
+        "m81-isolation-run",
+        "m81-isolation-evidence"
+      ],
+      "actions": [
+        "m81Isolation"
+      ],
+      "implementation": "src/runtime/m81-b1-isolation-contract.js",
+      "test": "test/m81-lima-isolation.test.js",
+      "hardwareValidated": false
     }
   ]
 }

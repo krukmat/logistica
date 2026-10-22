@@ -829,3 +829,22 @@ test("M8.1.A dashboard HTTP invokes real fail-closed guest inspection without st
  assert.equal(tampered.result.guestObservationStatus,"REJECTED");
  assert.equal(tampered.result.status,"BLOCKED");
 }));
+
+test("M8.1.B1 dashboard HTTP displays code-only isolation status and never authorizes VM activation",()=>withPanel(async({url,call})=>{
+ const html=await (await fetch(url)).text();
+ const js=await (await fetch(url+"dashboard.js")).text();
+ for(const id of ["m81-isolation-run","m81-isolation-evidence"])
+  assert.ok(html.includes('id="'+id+'"'),id);
+ assert.ok(js.includes('labAction("m81Isolation")'));
+ await call({command:"mode",mode:"lab"});
+ const run=await call({command:"lab",action:"m81Isolation"});
+ assert.equal(run.httpStatus,200);
+ assert.equal(run.result.kind,"PEF_M81_B1_ISOLATION_CONTRACT_V1");
+ assert.equal(run.result.status,"CODE_READY_GUEST_NOT_RUN");
+ assert.equal(run.result.staticContractOk,true);
+ assert.equal(run.result.actualGuestIsolationValidated,false);
+ assert.equal(run.result.readyForM81B2,false);
+ assert.equal(run.result.checks.UNSANDBOXED_FALLBACK_ALLOWED,false);
+ assert.equal(run.lab.m81Isolation.lastEvidence.readyForM81B2,false);
+ assert.ok(run.lab.history.some(x=>x.action==="m81-b1-isolation-contract"));
+}));
