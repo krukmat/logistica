@@ -58,7 +58,8 @@
     "m7:stress": "node bin/pef-m75-endurance.js",
     "m7:pilot": "node bin/pef-m76-pilot.js",
     "m7:sustained": "node bin/pef-m75-sustained.js",
-    "m7:memory": "node bin/pef-m75-memory.js"
+    "m7:memory": "node bin/pef-m75-memory.js",
+    "m8:preflight": "node bin/pef-m81-preflight.js"
   },
   "license": "UNLICENSED",
   "devDependencies": {
