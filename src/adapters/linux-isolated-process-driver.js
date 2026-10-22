@@ -24,18 +24,24 @@ function createLinuxIsolatedProcessDriver({namespace,cgroup,rootfs,nodeInside,ho
   const real=fs.realpathSync(rootfs);
   if(inGuest){
     const base="/tmp/"+namespace,expectedRoot=base+"/root";
+    const netns="/var/run/netns/"+namespace;
     if(rootfs!==expectedRoot||real!==expectedRoot||hostCanary!==base+"/host-canary"||
        !["/usr/bin/node","/usr/local/bin/node"].includes(nodeInside)||
        fs.lstatSync(base).isSymbolicLink()||fs.lstatSync(rootfs).isSymbolicLink()||
        fs.statSync(base).uid!==0||fs.statSync(real).uid!==0||
        (fs.statSync(base).mode&0o077)!==0||
        (fs.statSync(real).mode&0o022)!==0||
-       fs.statSync(cgroup).uid!==0||!fs.statSync(hostCanary).isFile())
+       fs.realpathSync(cgroup)!==cgroup||fs.statSync(cgroup).uid!==0||
+       fs.lstatSync(netns).isSymbolicLink()||fs.statSync(netns).uid!==0||
+       fs.lstatSync(hostCanary).isSymbolicLink()||
+       fs.statSync(hostCanary).uid!==0||!fs.statSync(hostCanary).isFile()||
+       (fs.statSync(hostCanary).mode&0o077)!==0)
       throw Error("M81_LIMA_SCOPE_OWNERSHIP_OR_PATH_BLOCKED");
   }
   if(!real.startsWith("/tmp/")||!fs.statSync(real).isDirectory()||
      !fs.statSync(cgroup).isDirectory()||!fs.statSync(path.join(real,nodeInside)).isFile()||
-     !fs.statSync(path.join(real,"app/receiver-worker.js")).isFile())
+     !fs.statSync(path.join(real,inGuest?"app/workloads/site-operations-worker.js":
+       "app/receiver-worker.js")).isFile())
     throw Error("LAB_BLOCKED:invalid-sandbox-root");
   const verifyLimit=(file,expected)=>{
     if(fs.readFileSync(path.join(cgroup,file),"utf8").trim()!==expected)
