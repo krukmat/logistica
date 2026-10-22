@@ -27,7 +27,7 @@ function runM81B1IsolationContract(){
   hostname:"MacBook",pid1:"launchd",memoryMiB:32768,
   cpuCount:18,cgroupV2:false,controllers:[],vmDetected:false,nodeMajor:22});
  return {kind:"PEF_M81_B1_ISOLATION_CONTRACT_V1",
-  task:"M8.1.B1",status:"CODE_READY_GUEST_NOT_RUN",
+  task:"M8.1.B1",status:"CODE_READY_GUEST_NOT_RUN",ok:false,
   readyForM81B2:false,actualGuestIsolationValidated:false,
   staticContractOk:checks.PROPERTY_QUOTAS_PINN&&checks.HOST_QUOTAS_PINN&&
    !checks.UNSANDBOXED_FALLBACK_ALLOWED&&!policyProbe.ok,

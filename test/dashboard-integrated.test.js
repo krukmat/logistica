@@ -841,10 +841,11 @@ test("M8.1.B1 dashboard HTTP displays code-only isolation status and never autho
  assert.equal(run.httpStatus,200);
  assert.equal(run.result.kind,"PEF_M81_B1_ISOLATION_CONTRACT_V1");
  assert.equal(run.result.status,"CODE_READY_GUEST_NOT_RUN");
+ assert.equal(run.result.ok,false);
  assert.equal(run.result.staticContractOk,true);
  assert.equal(run.result.actualGuestIsolationValidated,false);
  assert.equal(run.result.readyForM81B2,false);
  assert.equal(run.result.checks.UNSANDBOXED_FALLBACK_ALLOWED,false);
  assert.equal(run.lab.m81Isolation.lastEvidence.readyForM81B2,false);
- assert.ok(run.lab.history.some(x=>x.action==="m81-b1-isolation-contract"));
+ assert.ok(run.lab.history.some(x=>x.action==="m81-b1-isolation-contract"&&x.ok===false));
 }));

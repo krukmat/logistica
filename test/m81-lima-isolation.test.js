@@ -70,6 +70,7 @@ test("M8.1.B1 contract is always code-ready guest-NOT-RUN, not physical validati
  assert.equal(r.kind,"PEF_M81_B1_ISOLATION_CONTRACT_V1");
  assert.equal(r.staticContractOk,true);
  assert.equal(r.status,"CODE_READY_GUEST_NOT_RUN");
+ assert.equal(r.ok,false);
  assert.equal(r.actualGuestIsolationValidated,false);
  assert.equal(r.readyForM81B2,false);
  assert.equal(r.checks.PROPERTY_QUOTAS_PINNED,true);
