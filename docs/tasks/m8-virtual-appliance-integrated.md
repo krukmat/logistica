@@ -61,3 +61,5 @@ npm run dashboard
 The Lima wrapper never starts a stopped VM. It only runs `limactl list --json` and `limactl shell` for the exact existing running name, with an additional guest observation acknowledgment; no background task. Evidence origin is **operator reported, non-attested**. Delete optional `/tmp/m81-guest-observation.json` to clean up locally; no guest rollback required because M8.1.A performs no writes.
 
 **M8.1.B release gate remains BLOCKED:** design/approve Linux VM-isolated driver authorization; execute full systemd+both workers+Cloud Lite simultaneously; prove fsync/replay/restart and resource budget in the *same 1GiB guest run*. Hardware physical M5.3, W1.10.G 72h and field pilot still NO-GO. Historical CI evidence is retained only for audits; **GitHub Actions are no longer an accepted prerequisite or execution path**.
+
+[A-stage static preflight audit](../audit/m81-a-guest-preflight-2026-10-22.md).
