@@ -298,3 +298,7 @@ Dashboard local lab's M7.5.E six-second action measures actual Property/Host chi
 ## M8.1.A — Read-only Lima preflight and dashboard status
 
 The **ARM64 Virtual Lab** panel includes M8.1.A: `m81Preflight` invokes the *same* pure Core guest contract via `src/runtime/m81-guest-preflight.js`. Clicking the button performs static assessment only; `guestObservationStatus=NOT_RUN`, `status=BLOCKED` and `readyForM81B=false`. A local JSON import is inspected as `UNATTESTED_OPERATOR_REPORT`; no user report may activate a VM, Linux driver or systemd service. The UI never launches `limactl` or requests privileged operations. `npm run m8:preflight -- --contract` and `npm run m8:preflight -- --report ...` are the equivalent CLI paths. See [M8.1.A contract/commands](tasks/m8-virtual-appliance-integrated.md). No GitHub Actions are required; execute `npm test` locally.
+
+## M8.1.B1 — Guest kernel driver source contract
+
+ARM64 Virtual Lab → **M8.1.B1** invokes the pure `m81Isolation` inspector via authenticated localhost dashboard HTTP. It reads only static code/manifests; no VM, `sudo`, kernel namespace, cgroup, systemd or Cloud Lite activation. Correct output is `CODE_READY_GUEST_NOT_RUN`, `readyForM81B2=false`. See `docs/contracts/m81-lima-isolation-v1.json` and the corresponding task plan. `npm run m8:isolation -- --contract` is the equivalent local CLI. Unit/HTTP tests are operator-invoked, no GitHub Actions needed.

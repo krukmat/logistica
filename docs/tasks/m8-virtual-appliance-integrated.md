@@ -1,6 +1,6 @@
 # M8.1 — ARM64 1 GiB integrated virtual appliance (SOFTWARE PLAN)
 
-**Repo:** krukmat/logistica, main. **Status:** A1–A4 implemented as read-only preparation, operator Lima observation NOT_RUN; B–D NOT_IMPLEMENTED. No hardware purchase, hosted cloud, or guest changes authorized.
+**Repo:** krukmat/logistica, main. **Status:** A1–A4 implemented (operator observation NOT_RUN); B1 Linux guest driver scope implemented in code (kernel runtime NOT_RUN); B2–D NOT_IMPLEMENTED. No hardware purchase, hosted cloud, or guest changes authorized.
 
 ## Objective
 
@@ -11,7 +11,7 @@ Prove the **same** PEF Core, Linux driver and Cloud Lite working together on the
 | Task | Dependency | Subtasks and acceptance | State |
 | --- | --- | --- | --- |
 | **M8.1.A — Guest contract** | M5.4, M5.6, M7.5.E | A1 inspect existing source constraints and collect opt-in guest facts; A2 define guest-only authorization/rollback; A3 read-only CLI/dashboard; A4 local negative/HTTP tests | IMPLEMENTED (source + static contract); operator guest inspection NOT_RUN; npm tests NOT_RUN |
-| **M8.1.B — Integrated stack** | A, M6, M7.3/4 | B1 compose existing Edge release and real localhost mTLS Cloud Lite on one guest; B2 run existing Property/Host driver with actual Linux quotas and no insecure fallback | PROPOSED |
+| **M8.1.B — Integrated stack** | A, M6, M7.3/4 | B1 adapt the isolated Linux process driver to separately authorized Lima VM with manifest quotas and no CI spoofing; B2 disposable guest namespace/cgroup setup, shared guest systemd + Property/Host + mTLS Cloud Lite and reproducible teardown | B1 IMPLEMENTED_CODE_GUEST_NOT_RUN; B2 PROPOSED |
 | **M8.1.C — Recovery journey** | B | C1 offline durable Property/Host operations, Cloud down/up and deduplicated ACK; C2 guest reboot, changed boot_id and session, journal/incident retention | PROPOSED |
 | **M8.1.D — Evidence** | C, M7.5.D | D1 measure Edge, Cloud and worker process RSS, CPU, disk use, cgroup pressure and replay counts; D2 reproducible JSON/NDJSON + independent checks and read-only dashboard evidence | PROPOSED |
 
@@ -60,6 +60,30 @@ npm run dashboard
 
 The Lima wrapper never starts a stopped VM. It only runs `limactl list --json` and `limactl shell` for the exact existing running name, with an additional guest observation acknowledgment; no background task. Evidence origin is **operator reported, non-attested**. Delete optional `/tmp/m81-guest-observation.json` to clean up locally; no guest rollback required because M8.1.A performs no writes.
 
-**M8.1.B release gate remains BLOCKED:** design/approve Linux VM-isolated driver authorization; execute full systemd+both workers+Cloud Lite simultaneously; prove fsync/replay/restart and resource budget in the *same 1GiB guest run*. Hardware physical M5.3, W1.10.G 72h and field pilot still NO-GO. Historical CI evidence is retained only for audits; **GitHub Actions are no longer an accepted prerequisite or execution path**.
+**M8.1.B release gate remains BLOCKED:** B1 Lima-scoped driver authorization now exists in code but is untested on a real guest; B2 must prepare/own/cleanup guest-only cgroups/netns, execute full systemd+both workers+Cloud Lite simultaneously and prove fsync/replay/restart and resource budget in the *same 1GiB guest run*. Hardware physical M5.3, W1.10.G 72h and field pilot still NO-GO. Historical CI evidence is retained only for audits; **GitHub Actions are no longer an accepted prerequisite or execution path**.
 
 [A-stage static preflight audit](../audit/m81-a-guest-preflight-2026-10-22.md).
+
+## M8.1.B1 — safely scoped isolated driver for Lima (2026-10-22)
+
+**Status:** `IMPLEMENTED_CODE_GUEST_NOT_RUN`. Requirement: retain the same PEF Core and manifest-verified cgroup CPU/RSS/swap/PID isolation while replacing the **GitHub-only activation scope**, not spoofing GitHub Actions. Dependencies: A read-only guest contract, M5.5 Linux driver, M5.6 systemd lab design. No physical hardware, cloud expense or privileged guest mutation performed.
+
+| Subtask | Implementation | Acceptance / status |
+| --- | --- | --- |
+| **B1.1** Authorization scope | New `src/adapters/m81-lima-isolation-scope.js` with pure policy and actual guest read-only checker; accepts *only* Linux ARM64 guest root, systemd PID1, confirmed VM indicator and name, 901–1086MiB memory, <=4 CPUs, Node >=20, cgroup v2 cpu/memory/pids, explicit `PEF_M81_ISOLATION_ACK`, `PEF_M81_VM_ID` and scope | IMPLEMENTED (source); actual guest check NOT_RUN |
+| **B1.2** Process Driver | `src/adapters/linux-isolated-process-driver.js` now selects `GITHUB_HOSTED_CI` (unchanged) or `M81_LIMA_VM` (new). Guest namespace strictly `pef-m81-[0-9]+-[0-9]+`; exact matching guest-only cgroup and `/tmp/<namespace>/root` path; root-owned private staging/canary and netns, pinned Node interpreter, only Property/Host allowlist, readback cgroup limits and child UID/network/canary assertions; never fall back to unisolated Node driver | IMPLEMENTED (source), no real root guest subprocess launched |
+| **B1.3** Observability | `src/runtime/m81-b1-isolation-contract.js`, `npm run m8:isolation -- --contract`, dashboard ARM64 Virtual Lab → M8.1.B1 `m81Isolation`; static contract explicitly `CODE_READY_GUEST_NOT_RUN`, `readyForM81B2=false`; pure policy never authorizes a guest from imported JSON | IMPLEMENTED in dashboard/CLI; guest NOT_RUN |
+| **B1.4** Verification | `test/m81-lima-isolation.test.js` and dashboard HTTP integration cover explicit authorization, bad guest/host/CI spoofing, quota plan, CLI rejection and status separation. `docs/contracts/m81-lima-isolation-v1.json` pins scope and ownership. | TESTS CREATED; operator `npm test` still NOT_RUN |
+
+**Guest authorization is deliberately not attestation.** A root process in a guest can alter its own hostname and environment; the guard is a *safety boundary for operator-controlled software lab*, not a hostile-root security boundary. The private disposable sandbox must be provisioned, verified and later dismantled by the **B2 caller**. B1 owns the worker process termination only, and does **not** create/delete cgroups, namespaces or VM services itself. Do not label `GUEST_KERNEL_ENFORCEMENT_OBSERVED` true without an actual same-guest run and post-run `cpu.max`, `memory.max`, `memory.swap.max`, `pids.max`, UID and `/proc/<pid>/cgroup` evidence.
+
+**Read-only local smoke:**
+
+```bash
+git switch main && git pull
+npm run m8:isolation -- --contract
+node --test test/m81-lima-isolation.test.js test/dashboard-integrated.test.js
+# Dashboard: npm run dashboard → ARM64 Virtual Lab → M8.1.B1
+```
+
+**Not approved or executed in this task:** `sudo`, root-only `--guest-check`, VM start/reboot, cgroup/netns creation, systemd install, Cloud Lite deployment, fault injection, kernel stress. Any later root execution requires a distinct explicit guest operator approval and a reviewed B2 isolation harness with cleanup, not only setting environment variables. **No GitHub Actions run is a gate.**
