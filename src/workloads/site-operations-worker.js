@@ -32,7 +32,7 @@ process.on("message",m=>{
       kernelLimitsEnforced:false}});
   }
   else if(m.type==="SITE_OPERATION")reply(m,validateSiteCommand(profile,m.input));
-  else if(m.type==="ISOLATION"&&process.env.PEF_ALLOW_FAULT_INJECTION==="CI_ISOLATED_WORKER"){
+  else if(m.type==="ISOLATION"&&["CI_ISOLATED_WORKER","M81_ISOLATED_WORKER"].includes(process.env.PEF_ALLOW_FAULT_INJECTION)){
     void awaitNetworkDenied().then(networkDenied=>reply(m,{ok:true,uid:process.getuid?.(),
       hostCanaryInaccessible:!fs.existsSync(process.env.PEF_HOST_SENTINEL||"/__host__"),
       networkDenied}));

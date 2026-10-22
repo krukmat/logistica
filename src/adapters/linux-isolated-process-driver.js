@@ -1,20 +1,38 @@
 "use strict";
-// S3.4 CI-only Linux driver: supervisor -> allowlisted process -> cgroup v2/netns/chroot.
-// Does not run on local macOS or production hosts; fail closed before any privileged action.
+// S3.4 / M8.1.B1: two explicit, disjoint OS-lab authorization scopes.
+// CI legacy scope unchanged; Lima guest scope requires real root/systemd/VM/kernel checks.
+// Never permit unisolated fallback, unattended production or macOS privileged execution.
 const fs=require("node:fs");
 const path=require("node:path");
 const {spawn}=require("node:child_process");
 const {makeLinuxIsolationPlan,assertHostedLinuxIsolationPreflight}=require("./linux-workload-isolation.js");
-const NAME=/^pef-s3-[0-9]+-[0-9]+$/;
-function createLinuxIsolatedProcessDriver({namespace,cgroup,rootfs,nodeInside,hostCanary}={}){
-  assertHostedLinuxIsolationPreflight();
-  if(typeof namespace!=="string"||!NAME.test(namespace)||
+const {assertM81LimaIsolationPreflight}=require("./m81-lima-isolation-scope.js");
+const CI_NAME=/^pef-s3-[0-9]+-[0-9]+$/,M81_NAME=/^pef-m81-[0-9]+-[0-9]+$/;
+function createLinuxIsolatedProcessDriver({namespace,cgroup,rootfs,nodeInside,hostCanary,
+  runtimeScope="GITHUB_HOSTED_CI"}={}){
+  if(!["GITHUB_HOSTED_CI","M81_LIMA_VM"].includes(runtimeScope))
+    throw Error("LAB_BLOCKED:unknown-driver-scope");
+  const inGuest=runtimeScope==="M81_LIMA_VM";
+  const assertScope=inGuest?assertM81LimaIsolationPreflight:assertHostedLinuxIsolationPreflight;
+  assertScope();
+  if(typeof namespace!=="string"||!(inGuest?M81_NAME:CI_NAME).test(namespace)||
      cgroup!=="/sys/fs/cgroup/"+namespace||typeof rootfs!=="string"||
      !path.isAbsolute(rootfs)||!rootfs.startsWith("/tmp/")||
      typeof nodeInside!=="string"||!path.isAbsolute(nodeInside)||
      !fs.existsSync("/var/run/netns/"+namespace))
     throw Error("LAB_BLOCKED:invalid-isolation-scope");
   const real=fs.realpathSync(rootfs);
+  if(inGuest){
+    const base="/tmp/"+namespace,expectedRoot=base+"/root";
+    if(rootfs!==expectedRoot||real!==expectedRoot||hostCanary!==base+"/host-canary"||
+       !["/usr/bin/node","/usr/local/bin/node"].includes(nodeInside)||
+       fs.lstatSync(base).isSymbolicLink()||fs.lstatSync(rootfs).isSymbolicLink()||
+       fs.statSync(base).uid!==0||fs.statSync(real).uid!==0||
+       (fs.statSync(base).mode&0o077)!==0||
+       (fs.statSync(real).mode&0o022)!==0||
+       fs.statSync(cgroup).uid!==0||!fs.statSync(hostCanary).isFile())
+      throw Error("M81_LIMA_SCOPE_OWNERSHIP_OR_PATH_BLOCKED");
+  }
   if(!real.startsWith("/tmp/")||!fs.statSync(real).isDirectory()||
      !fs.statSync(cgroup).isDirectory()||!fs.statSync(path.join(real,nodeInside)).isFile()||
      !fs.statSync(path.join(real,"app/receiver-worker.js")).isFile())
@@ -40,12 +58,13 @@ function createLinuxIsolatedProcessDriver({namespace,cgroup,rootfs,nodeInside,ho
   }
   return {
     async start(manifest,{onExit}={}){
-      assertHostedLinuxIsolationPreflight();
+      assertScope();
       if(active)throw Error("LAB_WORKLOAD_ALREADY_ACTIVE");
       if(typeof onExit!=="function")throw Error("INVALID_ONEXIT_PORT");
       const plan=makeLinuxIsolationPlan(manifest);
       const workerId=manifest.workload_id;
       const isSite=workerId==="pef-property"||workerId==="pef-host";
+      if(inGuest&&!isSite)throw Error("M81_LIMA_SITE_WORKER_ONLY");
       const profile=workerId==="pef-property"?"property":workerId==="pef-host"?"host":null;
       const workerFile=isSite?"/app/workloads/site-operations-worker.js":"/app/receiver-worker.js";
       if(!fs.existsSync(path.join(real,workerFile))||
@@ -60,7 +79,7 @@ function createLinuxIsolatedProcessDriver({namespace,cgroup,rootfs,nodeInside,ho
         real,nodeInside,workerFile];
       const child=spawn("/bin/sh",argv,{detached:true,stdio:["ignore","pipe","pipe","ipc"],
         env:{PATH:"/usr/sbin:/usr/bin:/bin",LANG:"C",
-          PEF_ALLOW_FAULT_INJECTION:"CI_ISOLATED_WORKER",
+          PEF_ALLOW_FAULT_INJECTION:inGuest?"M81_ISOLATED_WORKER":"CI_ISOLATED_WORKER",
           PEF_HOST_SENTINEL:hostCanary||"/host-cannot-be-reached",
           ...(isSite?{PEF_SITE_PROFILE:profile,PEF_WORKLOAD_ID:workerId}:{})}});
       active=child;
@@ -111,7 +130,8 @@ function createLinuxIsolatedProcessDriver({namespace,cgroup,rootfs,nodeInside,ho
         if(active===child)active=null;
         throw e;
       }
-      return {isolation:"LINUX_CGROUP_NETNS_CHROOT_CI",actualLimitsEnforced:true,
+      return {isolation:inGuest?"LINUX_CGROUP_NETNS_CHROOT_M81_LIMA_VM":
+         "LINUX_CGROUP_NETNS_CHROOT_CI",actualLimitsEnforced:true,
         kernelLimits:{cpuMax:plan.cpuMax,memoryMax:plan.memoryMax,pidsMax:plan.pidsMax,
           storageQuotaEnforced:false},pid:child.pid,
         async health(){
@@ -145,7 +165,9 @@ function createLinuxIsolatedProcessDriver({namespace,cgroup,rootfs,nodeInside,ho
         }
       };
     },
-    inspection:()=>({kind:"CI_LINUX_ISOLATED_PROCESS_DRIVER",
+    inspection:()=>({kind:inGuest?"M81_LIMA_ISOLATED_PROCESS_DRIVER":
+      "CI_LINUX_ISOLATED_PROCESS_DRIVER",
+      authorizedScope:runtimeScope,driverPrepared:true,guestExecutionValidated:false,
       enforcedBy:"cgroup v2 + netns + chroot + uid 65534",hardwareValidated:false})
   };
 }
