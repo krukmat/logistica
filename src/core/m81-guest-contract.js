@@ -52,10 +52,10 @@ function assessM81GuestContract({guestReport=null,releaseContractOk=true,
   blockers.push("STATIC_CONTRACT_FAILED");
  if(imported&&!imported.accepted)blockers.push("INVALID_OPERATOR_GUEST_REPORT");
  if(!guestObservationComplete)blockers.push("GUEST_PREFLIGHT_NOT_VERIFIED");
- // The existing Linux-isolated driver is GitHub-hosted CI root-only. Never
- // claim 1GiB VM execution or bypass its guard to make a green status.
+ // A Linux guest driver scope has code, but no real guest kernel trial yet.
+ // An imported operator report cannot certify execution or make a ready gate.
  if(!staticChecks.GUARDED_GUEST_ISOLATION_DRIVER_AVAILABLE)
-  blockers.push("LINUX_DRIVER_HOSTED_CI_ONLY_VM_PORT_NOT_IMPLEMENTED");
+  blockers.push("LIMA_DRIVER_CODE_EXISTS_KERNEL_ACTIVATION_NOT_VERIFIED");
  blockers.push("SINGLE_GUEST_SYSTEMD_CGROUP_CLOUD_MTLS_E2E_NOT_RUN");
  return {kind:"PEF_M81_GUEST_PREFLIGHT_V1",task:"M8.1.A",profile:VALID_PROFILE,
   status:"BLOCKED",ok:false,contractStatus:Object.values(staticChecks).slice(0,3).every(Boolean)?

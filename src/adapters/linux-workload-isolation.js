@@ -1,6 +1,6 @@
 "use strict";
 // Kernel isolation plan derived from a validated PEF Workload Manifest.
-// Applying a plan requires explicit, GitHub-hosted Linux root lab preflight.
+// Planning is portable, but activation requires a separately authorized Linux lab scope.
 const {validateWorkloadManifest}=require("../core/workload-manager.js");
 function makeLinuxIsolationPlan(manifest){
   const valid=validateWorkloadManifest(manifest);
@@ -14,7 +14,7 @@ function makeLinuxIsolationPlan(manifest){
     cpuMax:cpuQuota+" 100000",memoryMax:String(mib*1048576),
     pidsMax:"16",memorySwapMax:"0",storageQuotaEnforced:false,
     networkNamespaceRequired:true,chrootRequired:true,dropUid:65534,
-    hardwareValidated:false,scope:"GitHub-hosted ephemeral Linux lab only"});
+    hardwareValidated:false,scope:"PORTABLE_LINUX_LAB_PLAN_NO_ACTIVATION"});
 }
 function assertHostedLinuxIsolationPreflight(env=process.env){
   if(process.platform!=="linux"||process.getuid?.()!==0||env.CI!=="true"||

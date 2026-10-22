@@ -21,7 +21,7 @@ test("M8.1.A static contract reuses real Linux quota plans and never certifies V
  assert.equal(report.staticChecks.HOST_QUOTA_PLAN,true);
  assert.equal(report.staticChecks.SYSTEMD_UNIT_RENDERABLE,true);
  assert.equal(report.staticChecks.GUARDED_GUEST_ISOLATION_DRIVER_AVAILABLE,false);
- assert.ok(report.blockers.includes("LINUX_DRIVER_HOSTED_CI_ONLY_VM_PORT_NOT_IMPLEMENTED"));
+ assert.ok(report.blockers.includes("LIMA_DRIVER_CODE_EXISTS_KERNEL_ACTIVATION_NOT_VERIFIED"));
  assert.ok(report.blockers.includes("SINGLE_GUEST_SYSTEMD_CGROUP_CLOUD_MTLS_E2E_NOT_RUN"));
  assert.equal(report.guestModified,false);
  assert.equal(report.hostModified,false);
