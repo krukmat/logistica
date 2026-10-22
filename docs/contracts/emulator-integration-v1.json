@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "IMPLEMENTED_LAB",
-  "policy": "Every new implemented PEF feature requires dashboard control, API handler, integration test and CI evidence; privileged Linux/physical capabilities remain read-only/CI-only in the Mac dashboard.",
+  "policy": "Every new implemented PEF feature requires dashboard control, API handler, integration test and operator-invoked local automated test evidence; privileged Linux/physical capabilities remain read-only/BLOCKED in the Mac dashboard, with historical CI results read-only.",
   "features": [
     {
       "task": "W1.9.F",
@@ -741,6 +741,23 @@
       ],
       "implementation": "src/runtime/m76-pilot-gate.js",
       "test": "test/m76-pilot.test.js",
+      "hardwareValidated": false
+    },
+    {
+      "task": "M8.1.A",
+      "mode": "lab",
+      "title": "Fail-closed ARM64 1GiB guest contract and untrusted read-only observation inspector",
+      "controlIds": [
+        "arm64-lab-panel",
+        "m81-preflight-run",
+        "m81-preflight-file",
+        "m81-preflight-evidence"
+      ],
+      "actions": [
+        "m81Preflight"
+      ],
+      "implementation": "src/runtime/m81-guest-preflight.js",
+      "test": "test/m81-guest-preflight.test.js",
       "hardwareValidated": false
     }
   ]

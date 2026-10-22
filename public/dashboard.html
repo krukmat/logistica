@@ -64,6 +64,13 @@
       <section class="panel lab-panel" id="lab-panel" hidden>
         <div class="panel-heading"><div><h3>Laboratorio integrado: WAN + journal + Cloud mock</h3><p>Ejecuta el Core de integración con fsync real del SO en un directorio temporal seguro.</p></div><span class="chip">LAB • NO NIC / NO ROOT</span></div>
         <div class="lab-detail" id="arm64-lab-panel">
+          <h4>M8.1.A — Preflight ARM64 1 GiB (sin tocar VM)</h4>
+          <p class="micro">Inspección estática y, opcionalmente, análisis de un JSON de observación de la VM aportado por el operador. No inicia Lima ni instala servicios. El driver Linux sigue bloqueado para el guest; ningún informe importado lo habilita.</p>
+          <button id="m81-preflight-run" class="secondary" type="button">Inspeccionar contrato M8.1.A</button>
+          <label for="m81-preflight-file" class="select-label">Observación guest local (JSON, sin autenticación)
+            <input id="m81-preflight-file" type="file" accept=".json,application/json"/>
+          </label>
+          <pre id="m81-preflight-evidence" role="status" aria-live="polite">M8.1.A NOT_RUN · guest no inspeccionado</pre>
           <h4>W1.10.D4 — ARM64 Virtual Hardware Lab</h4>
           <p class="micro">Importa el JSON de comparación generado en la VM ARM64 de 1 GB. Los informes no certifican hardware físico: no validan Rockchip, microSD, WAN físicas ni cortes eléctricos.</p>
           <label for="arm64-comparison-file" class="select-label">Informe ARM64 (JSON)

@@ -798,3 +798,34 @@ test("M7.5.D2 API reports two separate actual child processes from an authentica
  assert.equal(children[0].samples,r.result.resourceSamples.length);
  assert.equal(children[1].samples,r.result.resourceSamples.length);
 }));
+
+test("M8.1.A dashboard HTTP invokes real fail-closed guest inspection without starting Lima",()=>withPanel(async({url,call})=>{
+ const html=await(await fetch(url)).text(),js=await(await fetch(url+"dashboard.js")).text();
+ for(const id of ["m81-preflight-run","m81-preflight-file","m81-preflight-evidence"])
+  assert.ok(html.includes('id="'+id+'"'),id);
+ assert.ok(js.includes('labAction("m81Preflight")'));
+ const selected=await call({command:"mode",mode:"lab"});
+ assert.equal(selected.lab.m81Preflight.lastEvidence,null);
+ const result=await call({command:"lab",action:"m81Preflight"});
+ assert.equal(result.httpStatus,200);
+ assert.equal(result.result.status,"BLOCKED");
+ assert.equal(result.result.contractStatus,"STATIC_CONTRACT_PASS");
+ assert.equal(result.result.guestObservationStatus,"NOT_RUN");
+ assert.equal(result.result.staticChecks.GUARDED_GUEST_ISOLATION_DRIVER_AVAILABLE,false);
+ assert.equal(result.result.guestModified,false);
+ assert.equal(result.result.readyForM81B,false);
+ assert.equal(result.lab.m81Preflight.lastEvidence.status,"BLOCKED");
+ assert.ok(result.lab.history.some(x=>x.action==="m81-guest-preflight"));
+ const evidence={kind:"PEF_M81_GUEST_OBSERVATION_V1",profile:"r28s-1g",
+  readOnly:true,guestServicesModified:false,hostRoutesModified:false,
+  observed:{platform:"linux",arch:"arm64",memoryMiB:972,cpuCount:4,nodeMajor:22,
+   pid1:"systemd",cgroupV2:true,controllers:["cpu","memory","pids"],vmDetected:true}};
+ const imported=await call({command:"lab",action:"m81Preflight",guestReport:evidence});
+ assert.equal(imported.result.guestObservationStatus,"OPERATOR_REPORTED_UNATTESTED");
+ assert.equal(imported.result.guestRuntimeValidated,false);
+ assert.equal(imported.result.readyForM81B,false);
+ const tampered=await call({command:"lab",action:"m81Preflight",
+   guestReport:{...evidence,readOnly:false,physicalValidated:true}});
+ assert.equal(tampered.result.guestObservationStatus,"REJECTED");
+ assert.equal(tampered.result.status,"BLOCKED");
+}));
