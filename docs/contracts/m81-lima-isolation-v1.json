@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "kind": "PEF_M81_B1_ISOLATION_POLICY_V1",
+  "task": "M8.1.B1",
+  "scope": "M81_LIMA_VM",
+  "target": {
+    "vmName": "pef-r28s-1g",
+    "os": "linux",
+    "arch": "arm64",
+    "memoryMiB": 1024,
+    "observedAllowedMemoryMiB": [
+      901,
+      1086
+    ],
+    "maxVcpu": 4,
+    "nodeMajorMin": 20,
+    "pid1": "systemd",
+    "cgroupV2Controllers": [
+      "cpu",
+      "memory",
+      "pids"
+    ],
+    "vmDetection": "systemd-detect-virt --vm",
+    "permittedHostnames": [
+      "pef-r28s-1g",
+      "lima-pef-r28s-1g"
+    ]
+  },
+  "explicitAuthorization": {
+    "scopeEnv": "PEF_M81_ISOLATION_SCOPE=M81_LIMA_VM",
+    "operatorAck": "PEF_M81_ISOLATION_ACK=EXPLICIT_M81_LIMA_ISOLATED_WORKER",
+    "guestName": "PEF_M81_VM_ID=pef-r28s-1g",
+    "githubSpoofingAllowed": false,
+    "requiresGuestUid0": true,
+    "readOnlyDashboardCannotAuthorize": true
+  },
+  "sandbox": {
+    "namespaceRegex": "^pef-m81-[0-9]+-[0-9]+$",
+    "cgroupPathPrefix": "/sys/fs/cgroup/pef-m81-",
+    "scopeDirPrefix": "/tmp/pef-m81-",
+    "rootDir": "/tmp/<namespace>/root",
+    "hostCanary": "/tmp/<namespace>/host-canary",
+    "owner": "guest-root",
+    "scopeDirMode": "0700",
+    "rootfsGroupWorldWriteAllowed": false,
+    "workerNodeInside": [
+      "/usr/bin/node",
+      "/usr/local/bin/node"
+    ],
+    "allowlistedWorkloads": [
+      "pef-property",
+      "pef-host"
+    ],
+    "isolationMechanisms": [
+      "cgroup v2 CPU/memory/swap/PIDs",
+      "Linux network namespace",
+      "chroot",
+      "uid/gid 65534"
+    ],
+    "networkDeniedMustBeProven": true,
+    "missingOrMismatchedKernelLimitsBlocked": true,
+    "unsandboxedFallbackAllowed": false,
+    "storageQuotaEnforced": false,
+    "driverOwnsWorkerTermination": true,
+    "callerOwnsSandboxProvisionAndCleanup": true
+  },
+  "manifestBudgets": {
+    "property": {
+      "cpuMax": "15000 100000",
+      "memoryMaxBytes": 67108864,
+      "memorySwapMax": "0",
+      "pidsMax": "16"
+    },
+    "host": {
+      "cpuMax": "18000 100000",
+      "memoryMaxBytes": 83886080,
+      "memorySwapMax": "0",
+      "pidsMax": "16"
+    }
+  },
+  "operatorExecution": {
+    "cliContract": "npm run m8:isolation -- --contract",
+    "cliReadOnlyGuestAuthorization": "npm run m8:isolation -- --guest-check",
+    "privilegedSandboxLauncherImplemented": false,
+    "liveGuestOptInAndIsolationNotYetRun": true,
+    "approvalRequiredForActualGuestModifications": true
+  },
+  "evidence": {
+    "codeReviewedByStaticChecks": true,
+    "cliTestsCreated": true,
+    "dashboardIntegrationTestsCreated": true,
+    "localNpmTestRunObserved": false,
+    "actualGuestKernelLimitsValidated": false,
+    "actualVMIsolationValidated": false,
+    "systemdWithCloudLiteSameRunValidated": false,
+    "cleanupOnExitValidated": false,
+    "hardwareValidated": false,
+    "productionAuthorized": false
+  }
+}
