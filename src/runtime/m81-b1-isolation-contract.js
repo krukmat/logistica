@@ -29,7 +29,7 @@ function runM81B1IsolationContract(){
  return {kind:"PEF_M81_B1_ISOLATION_CONTRACT_V1",
   task:"M8.1.B1",status:"CODE_READY_GUEST_NOT_RUN",ok:false,
   readyForM81B2:false,actualGuestIsolationValidated:false,
-  staticContractOk:checks.PROPERTY_QUOTAS_PINN&&checks.HOST_QUOTAS_PINN&&
+  staticContractOk:checks.PROPERTY_QUOTAS_PINNED&&checks.HOST_QUOTAS_PINNED&&
    !checks.UNSANDBOXED_FALLBACK_ALLOWED&&!policyProbe.ok,
   checks,policyProbe:{status:policyProbe.status,
    rootDenied:policyProbe.failed.includes("ROOT_IN_GUEST"),
