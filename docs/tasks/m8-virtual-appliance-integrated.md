@@ -87,3 +87,5 @@ node --test test/m81-lima-isolation.test.js test/dashboard-integrated.test.js
 ```
 
 **Not approved or executed in this task:** `sudo`, root-only `--guest-check`, VM start/reboot, cgroup/netns creation, systemd install, Cloud Lite deployment, fault injection, kernel stress. Any later root execution requires a distinct explicit guest operator approval and a reviewed B2 isolation harness with cleanup, not only setting environment variables. **No GitHub Actions run is a gate.**
+
+[B1 static implementation and verification audit](../audit/m81-b1-linux-guest-adapter-2026-10-22.md).
