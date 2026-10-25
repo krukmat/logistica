@@ -60,7 +60,8 @@
     "m7:sustained": "node bin/pef-m75-sustained.js",
     "m7:memory": "node bin/pef-m75-memory.js",
     "m8:preflight": "node bin/pef-m81-preflight.js",
-    "m8:isolation": "node bin/pef-m81-isolation.js"
+    "m8:isolation": "node bin/pef-m81-isolation.js",
+    "m8:integrated": "node bin/pef-m81-b2.js"
   },
   "license": "UNLICENSED",
   "devDependencies": {
