@@ -15,7 +15,7 @@ fi
  blocked "Linux ARM64 root guest required"
 [[ -f "$repo/src/runtime/m81-b2-guest-stack.js" && -f "$repo/package.json" ]] ||
  blocked "mounted source not present"
-for bin in node ip chroot cp ldd awk readlink stat mktemp;do
+for bin in node ip chroot cp ldd awk readlink stat mktemp timeout openssl;do
  command -v "$bin" >/dev/null || blocked "missing $bin"
 done
 # Actual guest/VM/root/systemd/cgroup check, NOT an imported JSON report.
@@ -55,20 +55,30 @@ cleanup(){
    [[ "${dirs[i]}" == /tmp/pef-m81-[0-9]* ]] || { cleaned=false; continue; }
    rm -rf -- "${dirs[i]}" || cleaned=false
  done
+ local raw="" has_report=false
  if [[ -s "$scope/guest-result.json" ]];then
-  node - "$scope/guest-result.json" "$cleaned" "$rc" <<'NODE'
-const fs=require("node:fs");
-const data=JSON.parse(fs.readFileSync(process.argv[2],"utf8"));
-const cleanupOk=process.argv[3]==="true",processOk=process.argv[4]==="0";
-data.cleanup={status:cleanupOk?"PASS":"FAIL",ownedResourcesRemoved:cleanupOk};
-data.ok=data.ok===true&&cleanupOk&&processOk;
-data.status=data.ok?"LAB_PASS":"LAB_FAIL";
-console.log(JSON.stringify(data,null,2));
-NODE
+  raw="$(cat "$scope/guest-result.json")";has_report=true
+ fi
+ # Confirm that the entire owned scratch scope was removed BEFORE reporting PASS.
+ rm -rf -- "$scope" || cleaned=false
+ [[ ! -e "$scope" ]] || cleaned=false
+ if [[ "$has_report" == true ]];then
+  printf '%s' "$raw" | node -e '
+  let raw="";process.stdin.on("data",x=>raw+=x);
+  process.stdin.on("end",()=>{
+   try{
+    const data=JSON.parse(raw),cleanupOk=process.argv[1]==="true",
+     processOk=process.argv[2]==="0";
+    data.cleanup={status:cleanupOk?"PASS":"FAIL",ownedResourcesRemoved:cleanupOk};
+    data.ok=data.ok===true&&cleanupOk&&processOk;
+    data.status=data.ok?"LAB_PASS":"LAB_FAIL";
+    console.log(JSON.stringify(data,null,2));
+    if(!data.ok)process.exitCode=1;
+   }catch{console.error("M81_B2_EVIDENCE_FINALIZATION_FAILED");process.exitCode=1;}
+  });' "$cleaned" "$rc" || rc=1
  else
   printf 'M81_B2_GUEST_INCOMPLETE exit=%s cleanup=%s\n' "$rc" "$cleaned" >&2
  fi
- rm -rf -- "$scope" || cleaned=false
  [[ "$cleaned" == true && "$rc" -eq 0 ]] || exit 1
  exit 0
 }
@@ -125,4 +135,4 @@ stage property
 stage host
 # Runs both workload types + localhost TLS Cloud Lite in this guest. Node process
 # is the supervisor; the kernel workers have distinct cgroups and netns.
-node "$repo/bin/pef-m81-b2.js" --run "$scope" "${names[0]}" "${names[1]}"  > "$scope/guest-result.json"
+timeout -k 5s 120s node "$repo/bin/pef-m81-b2.js" --run "$scope" "${names[0]}" "${names[1]}"  > "$scope/guest-result.json"
