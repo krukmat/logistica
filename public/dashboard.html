@@ -64,6 +64,15 @@
       <section class="panel lab-panel" id="lab-panel" hidden>
         <div class="panel-heading"><div><h3>Laboratorio integrado: WAN + journal + Cloud mock</h3><p>Ejecuta el Core de integración con fsync real del SO en un directorio temporal seguro.</p></div><span class="chip">LAB • NO NIC / NO ROOT</span></div>
         <div class="lab-detail" id="arm64-lab-panel">
+          <div id="m81-b2-panel">
+            <h4>M8.1.B2 — Sandbox + Edge Property/Host + Cloud Lite mTLS</h4>
+            <p class="micro">Plan de ejecución Linux ARM64 con cgroups y netns efímeros; importación opcional de evidencia JSON sin autenticación. Este dashboard NO ejecuta comandos privilegiados, NO arranca Lima y nunca da permiso para un piloto físico.</p>
+            <button id="m81-b2-run" class="secondary" type="button">Inspeccionar plan B2</button>
+            <label for="m81-b2-file" class="select-label">Evidencia JSON B2 del operador (sin autenticación)
+              <input id="m81-b2-file" type="file" accept=".json,application/json"/>
+            </label>
+            <pre id="m81-b2-evidence" role="status" aria-live="polite">M8.1.B2 GUEST_NOT_RUN</pre>
+          </div>
           <h4>M8.1.B1 — Adaptador Linux aislado para Lima (código)</h4>
           <p class="micro">La ruta M81_LIMA_VM ya no depende de GitHub Actions; conserva verificación real de Linux/ARM64, root, systemd, cgroup y memoria de la VM. Este botón inspecciona código/contratos: NO crea namespaces, NO activa servicios y NO demuestra aislamiento de kernel.</p>
           <button id="m81-isolation-run" class="secondary" type="button">Inspeccionar contrato B1</button>

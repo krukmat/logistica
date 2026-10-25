@@ -35,6 +35,7 @@ const {runM75Sustained}=require("../runtime/m75-sustained.js");
 const {runM76PilotGate}=require("../runtime/m76-pilot-gate.js");
 const {runM81GuestPreflight}=require("../runtime/m81-guest-preflight.js");
 const {runM81B1IsolationContract}=require("../runtime/m81-b1-isolation-contract.js");
+const {createM81B2Plan,inspectM81B2Evidence}=require("../runtime/m81-b2-plan.js");
 const {runPredeviceConformance}=require("../runtime/predevice-conformance.js");
 const {runGoldenTraces}=require("../runtime/golden-traces.js");
 const {runDeviceIntegrationRehearsal}=require("../runtime/device-integration-rehearsal.js");
@@ -49,12 +50,12 @@ const CAPABILITIES=Object.freeze([
   "ci-linux-supervised-worker","autonomous-edge-host","boot-reopen-without-dashboard",
   "predevice-port-conformance","golden-trace-parity","safe-device-integration-preflight",
   "hardware-candidate-screening","m3-headless-lifecycle","m3-policy-safe-recovery",
-  "m3-operational-diagnostics","m3-same-run-evidence","m4-property-offline-workload","m4-host-offline-workload","m4-commonality-and-faults","m4-integrated-evidence-bundle","m5-packaged-install-rollback","m54-systemd-contract","m55-kernel-profile-plan","m56-systemd-kernel-contract","m61-cloud-lite-local-registry","m62-cloud-lite-durable-ingest","m63-edge-real-cloud-lite-sync","m64-cloud-lite-failure-matrix","m71-device-identity","m72-signed-release","m73-mtls-edge-cloud","m74-operational-audit","m75-short-stress","m75-sustained-mtls","m76-software-pilot-gate","m81-guest-preflight-readonly","m81-b1-isolation-contract"
+  "m3-operational-diagnostics","m3-same-run-evidence","m4-property-offline-workload","m4-host-offline-workload","m4-commonality-and-faults","m4-integrated-evidence-bundle","m5-packaged-install-rollback","m54-systemd-contract","m55-kernel-profile-plan","m56-systemd-kernel-contract","m61-cloud-lite-local-registry","m62-cloud-lite-durable-ingest","m63-edge-real-cloud-lite-sync","m64-cloud-lite-failure-matrix","m71-device-identity","m72-signed-release","m73-mtls-edge-cloud","m74-operational-audit","m75-short-stress","m75-sustained-mtls","m76-software-pilot-gate","m81-guest-preflight-readonly","m81-b1-isolation-contract","m81-b2-integrated-guest-plan"
 ]);
 const IDENTITY=Object.freeze({siteId:"demo-site",deviceId:"demo-edge",configRevision:"cfg-demo-1"});
 function createDashboardLab({tmpParent=os.tmpdir()}={}){
   let dir=null,edge=null,cloud=null,history=[],route=null,revision=0,closed=false,busy=false;
-  let cloudAvailable=true,profile="normal",lastResult=null,wan=null,boot=null,supervisor=null,autonomousEvidence=null,m3Evidence=null,m3RecoveryEvidence=null,m3OperationsEvidence=null,propertyEvidence=null,hostEvidence=null,m43Evidence=null,m44Evidence=null,m5Evidence=null,m54Evidence=null,m55Evidence=null,m56Evidence=null,m61Evidence=null,m62Evidence=null,m63Evidence=null,m64Evidence=null,m71Evidence=null,m72Evidence=null,m73Evidence=null,m74Evidence=null,m75Evidence=null,m75SustainedEvidence=null,m76Evidence=null,m81Evidence=null,m81B1Evidence=null,predeviceEvidence=null,goldenTraceEvidence=null,devicePreflightEvidence=null,candidateEvidence=null;
+  let cloudAvailable=true,profile="normal",lastResult=null,wan=null,boot=null,supervisor=null,autonomousEvidence=null,m3Evidence=null,m3RecoveryEvidence=null,m3OperationsEvidence=null,propertyEvidence=null,hostEvidence=null,m43Evidence=null,m44Evidence=null,m5Evidence=null,m54Evidence=null,m55Evidence=null,m56Evidence=null,m61Evidence=null,m62Evidence=null,m63Evidence=null,m64Evidence=null,m71Evidence=null,m72Evidence=null,m73Evidence=null,m74Evidence=null,m75Evidence=null,m75SustainedEvidence=null,m76Evidence=null,m81Evidence=null,m81B1Evidence=null,m81B2Evidence=null,predeviceEvidence=null,goldenTraceEvidence=null,devicePreflightEvidence=null,candidateEvidence=null;
   function guard(){if(closed)throw Error("LAB_CLOSED");}
   function start(next="normal"){
     if(!["normal","pressure"].includes(next))throw Error("UNSUPPORTED_LAB_PROFILE");
@@ -62,7 +63,7 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
     if(edge)edge.close();
     if(dir)fs.rmSync(dir,{recursive:true,force:true});
     dir=fs.mkdtempSync(path.join(tmpParent,"pef-visual-lab-"));
-    profile=next;history=[];lastResult=null;route=null;revision=0;cloudAvailable=true;autonomousEvidence=null;m3Evidence=null;m3RecoveryEvidence=null;m3OperationsEvidence=null;m43Evidence=null;m44Evidence=null;m5Evidence=null;m54Evidence=null;m55Evidence=null;m56Evidence=null;m61Evidence=null;m62Evidence=null;m63Evidence=null;m64Evidence=null;m71Evidence=null;m72Evidence=null;m73Evidence=null;m74Evidence=null;m75Evidence=null;m75SustainedEvidence=null;m76Evidence=null;m81Evidence=null;m81B1Evidence=null;propertyEvidence=null;hostEvidence=null;predeviceEvidence=null;goldenTraceEvidence=null;devicePreflightEvidence=null;candidateEvidence=null;
+    profile=next;history=[];lastResult=null;route=null;revision=0;cloudAvailable=true;autonomousEvidence=null;m3Evidence=null;m3RecoveryEvidence=null;m3OperationsEvidence=null;m43Evidence=null;m44Evidence=null;m5Evidence=null;m54Evidence=null;m55Evidence=null;m56Evidence=null;m61Evidence=null;m62Evidence=null;m63Evidence=null;m64Evidence=null;m71Evidence=null;m72Evidence=null;m73Evidence=null;m74Evidence=null;m75Evidence=null;m75SustainedEvidence=null;m76Evidence=null;m81Evidence=null;m81B1Evidence=null;m81B2Evidence=null;propertyEvidence=null;hostEvidence=null;predeviceEvidence=null;goldenTraceEvidence=null;devicePreflightEvidence=null;candidateEvidence=null;
     wan={primary:{link:true,upstream:true},backup:{link:true,upstream:true}};
     const proofKey=randomBytes(32);
     cloud=createLabCloudReplica({siteId:IDENTITY.siteId,deviceId:IDENTITY.deviceId,
@@ -133,6 +134,8 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
         twoHourSoakValidated:false,physicalValidated:false},
       m75Sustained:{kind:"PEF_M75_SUSTAINED_MTLS_LAB_V1",scope:"SIX_SECOND_CI_PACED_MTLS_ONLY",
         lastEvidence:m75SustainedEvidence,physicalValidated:false},
+      m81B2:{kind:"PEF_M81_B2_PLAN_V1",scope:"LOCAL_READ_ONLY_UNATTESTED_JSON",
+        lastEvidence:m81B2Evidence,guestModified:false,hardwareValidated:false},
       m81Isolation:{kind:"PEF_M81_B1_ISOLATION_CONTRACT_V1",scope:"CODE_ONLY_GUEST_NOT_RUN",
         lastEvidence:m81B1Evidence,guestModified:false,hardwareValidated:false},
       m81Preflight:{kind:"PEF_M81_GUEST_PREFLIGHT_V1",scope:"STATIC_AND_UNATTESTED_GUEST_READONLY",
@@ -223,6 +226,12 @@ function createDashboardLab({tmpParent=os.tmpdir()}={}){
         case "m75Sustained":
           m75SustainedEvidence=await runM75Sustained({durationSeconds:6,intervalMs:650});
           return emit("m75-sustained-mtls",m75SustainedEvidence);
+        case "m81B2Plan":
+          m81B2Evidence=createM81B2Plan();
+          return emit("m81-b2-static-plan",m81B2Evidence);
+        case "m81B2Inspect":
+          m81B2Evidence=inspectM81B2Evidence(body.operatorReport);
+          return emit("m81-b2-untrusted-evidence-inspection",m81B2Evidence);
         case "m81Isolation":
           m81B1Evidence=runM81B1IsolationContract();
           return emit("m81-b1-isolation-contract",m81B1Evidence);

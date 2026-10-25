@@ -131,6 +131,7 @@ function renderIntegrated(lab){
      physicalValidated:m75.physicalValidated
    }:{status:"NOT_RUN",edgeCloudRssSeparatelyValidated:false},null,2);
   $("m75-memory-trend-evidence").textContent=JSON.stringify(m75?.memoryTrend||{status:"NOT_RUN",trendEligible:false},null,2);
+  $("m81-b2-evidence").textContent=JSON.stringify(lab.m81B2,null,2);
   $("m81-isolation-evidence").textContent=JSON.stringify(lab.m81Isolation,null,2);
   $("m81-preflight-evidence").textContent=JSON.stringify(lab.m81Preflight,null,2);
   $("m76-pilot-evidence").textContent=JSON.stringify(lab.m76Pilot,null,2);
@@ -346,6 +347,14 @@ function bind(){
   $("golden-traces").addEventListener("click",()=>labAction("goldenTraces"));
   $("device-preflight").addEventListener("click",()=>labAction("devicePreflight"));
   $("hardware-screening").addEventListener("click",()=>labAction("hardwareScreening"));
+  $("m81-b2-run").addEventListener("click",()=>labAction("m81B2Plan"));
+  $("m81-b2-file").addEventListener("change",async e=>{
+    try{
+      const file=e.target.files?.[0];if(!file)return;
+      if(file.size>32768)throw Error("M8.1.B2: JSON excede 32KiB");
+      await labAction("m81B2Inspect",{operatorReport:JSON.parse(await file.text())});
+    }catch(err){message("M8.1.B2 JSON rechazado: "+String(err.message||err),true);}
+  });
   $("m81-isolation-run").addEventListener("click",()=>labAction("m81Isolation"));
   $("m81-preflight-run").addEventListener("click",()=>labAction("m81Preflight"));
   $("m81-preflight-file").addEventListener("change",async e=>{

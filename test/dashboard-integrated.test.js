@@ -849,3 +849,25 @@ test("M8.1.B1 dashboard HTTP displays code-only isolation status and never autho
  assert.equal(run.lab.m81Isolation.lastEvidence.readyForM81B2,false);
  assert.ok(run.lab.history.some(x=>x.action==="m81-b1-isolation-contract"&&x.ok===false));
 }));
+
+test("M8.1.B2 dashboard only inspects guest plan and unattested report, never starts Lima",()=>withPanel(async({url,call})=>{
+ const html=await (await fetch(url)).text();
+ const script=await (await fetch(url+"dashboard.js")).text();
+ for(const id of ["m81-b2-panel","m81-b2-run","m81-b2-file","m81-b2-evidence"])
+  assert.ok(html.includes('id="'+id+'"'),id);
+ assert.ok(script.includes('labAction("m81B2Plan")'));
+ await call({command:"mode",mode:"lab"});
+ const plan=await call({command:"lab",action:"m81B2Plan"});
+ assert.equal(plan.httpStatus,200);
+ assert.equal(plan.result.status,"GUEST_NOT_RUN");
+ assert.equal(plan.result.ok,false);
+ assert.equal(plan.result.readyForM81C,false);
+ assert.equal(plan.result.profiles.property.memoryMax,"67108864");
+ const rejected=await call({command:"lab",action:"m81B2Inspect",
+  operatorReport:{kind:"PEF_M81_B2_GUEST_STACK_V1",ok:true}});
+ assert.equal(rejected.httpStatus,200);
+ assert.equal(rejected.result.status,"REJECTED");
+ assert.equal(rejected.result.accepted,false);
+ assert.equal(rejected.result.readyForM81C,false);
+ assert.equal(rejected.lab.m81B2.lastEvidence.provenance,"OPERATOR_JSON_UNATTESTED");
+}));

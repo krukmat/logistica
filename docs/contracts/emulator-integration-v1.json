@@ -775,6 +775,24 @@
       "implementation": "src/runtime/m81-b1-isolation-contract.js",
       "test": "test/m81-lima-isolation.test.js",
       "hardwareValidated": false
+    },
+    {
+      "task": "M8.1.B2",
+      "mode": "lab",
+      "title": "Guest-root opt-in ephemeral cgroup/netns staging, isolated Edge Property+Host, local TLS1.3 Cloud Lite; read-only plan and unattested evidence import",
+      "controlIds": [
+        "m81-b2-panel",
+        "m81-b2-run",
+        "m81-b2-file",
+        "m81-b2-evidence"
+      ],
+      "actions": [
+        "m81B2Plan",
+        "m81B2Inspect"
+      ],
+      "implementation": "src/runtime/m81-b2-plan.js",
+      "test": "test/m81-b2-integration.test.js",
+      "hardwareValidated": false
     }
   ]
 }
