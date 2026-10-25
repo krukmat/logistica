@@ -37,6 +37,24 @@ test("M5.2 real packaged Node subprocess: install, fsync, update, fault, reopen,
  assert.equal(report.systemdActivated,false);
 });
 
+test("M5.2 packaged child inherits exactly the parent installer tmp root",async()=>{
+ // macOS sets TMPDIR=/var/folders/...; the previous allowlisted child env
+ // omitted TMPDIR and made verifyInstall reject its already-vetted release.
+ const old=process.env.TMPDIR;
+ const sandbox=fs.mkdtempSync(path.join(os.tmpdir(),"pef-m5-child-tmp-"));
+ try{
+   process.env.TMPDIR=sandbox;
+   const report=await runM5InstallSmoke();
+   assert.equal(report.status,"LAB_PASS",JSON.stringify(report));
+   assert.equal(report.checks.PACKAGED_PROCESS_BOOT,true);
+   assert.equal(report.checks.ROLLBACK_PRESERVES_JOURNAL,true);
+ }finally{
+   if(old===undefined)delete process.env.TMPDIR;
+   else process.env.TMPDIR=old;
+   fs.rmSync(sandbox,{recursive:true,force:true});
+ }
+});
+
 test("M5.1 rejects symlinked installation tree and release/data paths",()=>{
  const root=fs.mkdtempSync(path.join(os.tmpdir(),"pef-m5-symlink-"));
  const external=fs.mkdtempSync(path.join(os.tmpdir(),"pef-m5-external-"));

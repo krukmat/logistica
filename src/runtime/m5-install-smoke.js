@@ -10,7 +10,10 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
 async function boot(release,configFile,token){
  const bin=path.join(release,"bin/pef-edge.js");
  const child=spawn(process.execPath,[bin,"--config",configFile],{
-   stdio:["ignore","pipe","pipe"],env:{PATH:process.env.PATH||"/usr/bin",LANG:"C",PEF_EDGE_TOKEN:token}});
+   // Keep env allowlisted, but preserve the same temporary root used by the installer.
+   // Otherwise macOS child falls back to /tmp rather than $TMPDIR (/var/folders/...).
+   stdio:["ignore","pipe","pipe"],env:{PATH:process.env.PATH||"/usr/bin",
+     LANG:"C",TMPDIR:os.tmpdir(),PEF_EDGE_TOKEN:token}});
  let stdout="",stderr="",done=false;
  child.stdout.on("data",data=>{stdout=(stdout+String(data)).slice(-20000);});
  child.stderr.on("data",data=>{stderr=(stderr+String(data)).slice(-10000);});
