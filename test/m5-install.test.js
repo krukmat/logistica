@@ -86,7 +86,9 @@ test("M5.1 accepts canonical macOS tmp path after creating under /var alias",()=
    const original=fs.mkdtempSync(path.join(aliasAnchor,"pef-m5-alias-"));
    const first=applyRelease({root:original,version:"v1",mode:"install"});
    assert.ok(original.startsWith(aliasAnchor+path.sep));
-   assert.ok(first.root.startsWith(realAnchor+path.sep));
+   // On macOS even the fixture sandbox can itself use /var -> /private/var.
+   // Compare two canonical paths, never an alias-spelled fixture with a realpath.
+   assert.ok(first.root.startsWith(fs.realpathSync(realAnchor)+path.sep));
    assert.equal(verifyInstall(original).digest,first.digest);
    assert.equal(verifyInstall(first.root).digest,first.digest);
    const repeated=applyRelease({root:original,version:"v1",mode:"install"});
