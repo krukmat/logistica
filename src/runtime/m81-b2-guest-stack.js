@@ -85,7 +85,8 @@ async function runM81B2GuestStack({base,propertyNamespace,hostNamespace}={}){
    const driver=createLinuxIsolatedProcessDriver({...space,
     runtimeScope:"M81_LIMA_VM",nodeInside:process.execPath});
    const cfg={schemaVersion:1,backend:"virtual-lab",identity,storageDir:dataDir,
-    http:{host:"127.0.0.1",port:0},sampleIntervalMs:500,
+    // Bound periodic samples to avoid racing an expensive 1GiB guest mTLS replay.
+    http:{host:"127.0.0.1",port:0},sampleIntervalMs:30000,
     workload:{enabled:true,profile,reconcileMs:300},
     journal:{capacityBytes:131072,controlReserveBytes:8192},
     wan:{primary:{link:true,upstream:false},backup:{link:true,upstream:false}}};
