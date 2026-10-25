@@ -302,3 +302,7 @@ The **ARM64 Virtual Lab** panel includes M8.1.A: `m81Preflight` invokes the *sam
 ## M8.1.B1 — Guest kernel driver source contract
 
 ARM64 Virtual Lab → **M8.1.B1** invokes the pure `m81Isolation` inspector via authenticated localhost dashboard HTTP. It reads only static code/manifests; no VM, `sudo`, kernel namespace, cgroup, systemd or Cloud Lite activation. Correct output is `CODE_READY_GUEST_NOT_RUN`, `readyForM81B2=false`. See `docs/contracts/m81-lima-isolation-v1.json` and the corresponding task plan. `npm run m8:isolation -- --contract` is the equivalent local CLI. Unit/HTTP tests are operator-invoked, no GitHub Actions needed.
+
+## M8.1.B2 — Integrated guest plan and evidence viewer
+
+The dashboard implements `m81B2Plan` and `m81B2Inspect`: both are **local read-only** actions. It never invokes the guest harness, privileged kernel APIs, `limactl`, `sudo` or host networking. JSON reports remain `OPERATOR_JSON_UNATTESTED`, even if a report claims PASS; `readyForM81C=false`. A real guest run is separately operator-gated and may only affect the named existing Lima VM. [Plan](tasks/m8-virtual-appliance-integrated.md).

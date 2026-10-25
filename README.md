@@ -336,3 +336,14 @@ An imported guest report is **unattested** and never authorizes M8.1.B: the prod
 `npm run m8:isolation -- --contract` inspects the **code contract only**, also exposed via Dashboard → ARM64 Virtual Lab → M8.1.B1. A separate `M81_LIMA_VM` scope has been added to the Linux process driver with strict ARM64/Linux/1GiB VM/systemd/root/cgroup verification, dedicated namespace prefix and exact root-owned staging paths. Existing `GITHUB_HOSTED_CI` behavior is left intact for historical compatibility, but **GitHub Actions are not part of the workflow**. Property/Host retain their cgroup budgets (64/80MiB RAM, 150/180mCPU; swap disabled).
 
 **The new path has NOT been run as root inside Lima.** The contract reports `CODE_READY_GUEST_NOT_RUN`; B2 must provision and clean up a disposable guest sandbox, then test Edge, Cloud Lite and both workers in one run. Do not spoof CI variables or downgrade to an unsandboxed driver. [B1 scope, tests and safety gates](docs/tasks/m8-virtual-appliance-integrated.md).
+
+## M8.1.B2 — Same-guest integrated runner (2026-10-25)
+
+Source is ready for an **operator-approved** lab using the *already running* `pef-r28s-1g` Lima guest: two private netns/cgroups, manifest-capped Property/Host Node workers, Edge journal and Cloud Lite TLS1.3 mTLS on localhost. **Not run on the guest, not validated as systemd services**. Dashboard → ARM64 Virtual Lab → **M8.1.B2** provides a *non-privileged* plan view and optional **unattested** JSON inspection.
+
+```bash
+npm run m8:integrated -- --plan
+node --test test/m81-b2-integration.test.js test/dashboard-integrated.test.js
+```
+
+[Detailed operator safety gates and follow-up](docs/tasks/m8-virtual-appliance-integrated.md). No GitHub Actions. No VM start/stop, hardware purchase or external cloud provisioned.

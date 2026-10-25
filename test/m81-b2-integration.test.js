@@ -100,3 +100,13 @@ test("M8.1.B2 guest shell parses and never executes without operator ACK",()=>{
  assert.equal(plan.status,0,plan.stderr);
  assert.equal(JSON.parse(plan.stdout).guestModificationPerformed,false);
 });
+
+test("M8.1.B2 Mac runner refuses mutation without its separate opt-in",()=>{
+ const wrapper=path.join(root,"scripts/arm64-vm/m81-b2-lima.sh");
+ const syntax=spawnSync("bash",["-n",wrapper],{encoding:"utf8",timeout:4000});
+ assert.equal(syntax.status,0,syntax.stderr);
+ const denied=spawnSync("bash",[wrapper,"--run"],{encoding:"utf8",timeout:4000,
+  env:{...process.env,PEF_M81_B2_MAC_ACK:""}});
+ assert.equal(denied.status,78,denied.stderr);
+ assert.match(denied.stderr,/separate Mac operator authorization absent/);
+});

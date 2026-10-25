@@ -81,9 +81,13 @@
   "operatorExecution": {
     "cliContract": "npm run m8:isolation -- --contract",
     "cliReadOnlyGuestAuthorization": "npm run m8:isolation -- --guest-check",
-    "privilegedSandboxLauncherImplemented": false,
+    "privilegedSandboxLauncherImplemented": true,
     "liveGuestOptInAndIsolationNotYetRun": true,
-    "approvalRequiredForActualGuestModifications": true
+    "approvalRequiredForActualGuestModifications": true,
+    "operatorMacAck": "PEF_M81_B2_MAC_ACK=EXPLICIT_EXISTING_RUNNING_LIMA_B2",
+    "operatorGuestAck": "PEF_M81_B2_ACK=EXPLICIT_VM_ROOT_SANDBOX_M81B2",
+    "guestRunner": "scripts/arm64-vm/m81-b2-guest.sh",
+    "macRunner": "scripts/arm64-vm/m81-b2-lima.sh"
   },
   "evidence": {
     "codeReviewedByStaticChecks": true,
@@ -95,6 +99,8 @@
     "systemdWithCloudLiteSameRunValidated": false,
     "cleanupOnExitValidated": false,
     "hardwareValidated": false,
-    "productionAuthorized": false
+    "productionAuthorized": false,
+    "harnessSourceImplemented": true,
+    "fullSystemdGuestIntegrationImplemented": false
   }
 }

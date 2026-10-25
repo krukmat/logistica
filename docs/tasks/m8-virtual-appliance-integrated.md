@@ -1,6 +1,6 @@
 # M8.1 — ARM64 1 GiB integrated virtual appliance (SOFTWARE PLAN)
 
-**Repo:** krukmat/logistica, main. **Status:** A1–A4 implemented (operator observation NOT_RUN); B1 Linux guest driver scope implemented in code (kernel runtime NOT_RUN); B2–D NOT_IMPLEMENTED. No hardware purchase, hosted cloud, or guest changes authorized.
+**Repo:** krukmat/logistica, main. **Status:** A1–A4 implemented (operator observation NOT_RUN); B1 driver code present; B2.1–B2.5 source/harness implemented for opt-in guest lab, actual VM NOT_RUN; systemd guest integration and C–D NOT_RUN. No hardware purchase, hosted cloud, or guest changes authorized.
 
 ## Objective
 
@@ -11,7 +11,7 @@ Prove the **same** PEF Core, Linux driver and Cloud Lite working together on the
 | Task | Dependency | Subtasks and acceptance | State |
 | --- | --- | --- | --- |
 | **M8.1.A — Guest contract** | M5.4, M5.6, M7.5.E | A1 inspect existing source constraints and collect opt-in guest facts; A2 define guest-only authorization/rollback; A3 read-only CLI/dashboard; A4 local negative/HTTP tests | IMPLEMENTED (source + static contract); operator guest inspection NOT_RUN; npm tests NOT_RUN |
-| **M8.1.B — Integrated stack** | A, M6, M7.3/4 | B1 adapt the isolated Linux process driver to separately authorized Lima VM with manifest quotas and no CI spoofing; B2 disposable guest namespace/cgroup setup, shared guest systemd + Property/Host + mTLS Cloud Lite and reproducible teardown | B1 IMPLEMENTED_CODE_GUEST_NOT_RUN; B2 PROPOSED |
+| **M8.1.B — Integrated stack** | A, M6, M7.3/4 | B1 adapt the isolated Linux process driver to separately authorized Lima VM with manifest quotas and no CI spoofing; B2 disposable guest namespace/cgroup setup, shared guest systemd + Property/Host + mTLS Cloud Lite and reproducible teardown | B1 IMPLEMENTED_CODE_GUEST_NOT_RUN; B2 SOURCE_IMPLEMENTED_GUEST_NOT_RUN |
 | **M8.1.C — Recovery journey** | B | C1 offline durable Property/Host operations, Cloud down/up and deduplicated ACK; C2 guest reboot, changed boot_id and session, journal/incident retention | PROPOSED |
 | **M8.1.D — Evidence** | C, M7.5.D | D1 measure Edge, Cloud and worker process RSS, CPU, disk use, cgroup pressure and replay counts; D2 reproducible JSON/NDJSON + independent checks and read-only dashboard evidence | PROPOSED |
 
@@ -89,3 +89,41 @@ node --test test/m81-lima-isolation.test.js test/dashboard-integrated.test.js
 **Not approved or executed in this task:** `sudo`, root-only `--guest-check`, VM start/reboot, cgroup/netns creation, systemd install, Cloud Lite deployment, fault injection, kernel stress. Any later root execution requires a distinct explicit guest operator approval and a reviewed B2 isolation harness with cleanup, not only setting environment variables. **No GitHub Actions run is a gate.**
 
 [B1 static implementation and verification audit](../audit/m81-b1-linux-guest-adapter-2026-10-22.md).
+
+## M8.1.B2 — same-guest integrated harness (2026-10-25)
+
+**Scope:** source implementation for the already existing `pef-r28s-1g` Lima guest. The root runner **has not been invoked**. Operator approval must be separately supplied; do not infer it from this document.
+
+| Task | Implemented | State / acceptance |
+| --- | --- | --- |
+| **B2.1 — Disposable guest sandbox** | `scripts/arm64-vm/m81-b2-guest.sh`: fails closed before mutation unless Linux ARM64, actual root, B1 live guest scope, exact VM, Node >=20, systemd PID1 and cgroup v2 controllers. Creates two never-reused `pef-m81-PID-RANDOM` private rootfs trees; copies allowlisted site worker, site command contract, pinned Node and shared libraries. | CODE; VM_STAGE_NOT_RUN |
+| **B2.2 — Kernel quotas + teardown** | Two independent cgroups, netns, root-owned private canaries and readback of manifest-derived `cpu.max`, `memory.max`, `memory.swap.max` and `pids.max`. EXIT trap owns only newly created objects and attempts `cgroup.kill`, `rmdir`, `ip netns del`, staged-dir cleanup; refuses scope collision. | CODE; ACTUAL_CLEANUP_NOT_RUN |
+| **B2.3 — Edge and Cloud Lite** | `src/runtime/m81-b2-guest-stack.js` composes both concurrent `createAutonomousEdgeHost` instances with B1 `M81_LIMA_VM` driver injection, actual Cloud Lite HTTPS TLSv1.3 mTLS loopback, certificate enrolment for each device and durable Edge journal. No unsandboxed fallback. | CODE; GUEST_INTEGRATION_NOT_RUN; **systemd-managed services are not yet implemented** |
+| **B2.4 — Assert isolation + offline recovery** | Each worker must report `RUNNING`, `LINUX_CGROUP_NETNS_CHROOT_M81_LIMA_VM`, real PID; quotas and `/proc/<pid>/cgroup` read from guest kernel, `memory.peak` within manifest cap; Property/Host operations ACK only after fsync; synthetic WAN offline blocks sync, then correct client mTLS replays queued operations. | CODE; ACTUAL_GUEST_ASSERTIONS_NOT_RUN |
+| **B2.5 — Evidence + dashboard** | `src/runtime/m81-b2-plan.js` produces a static plan and validates an operator's report structurally (never attests it). `bin/pef-m81-b2.js` exposes `--plan`, `--inspect`, and guest-gated `--run`. Dashboard ARM64 Virtual Lab has a read-only plan button and limited JSON import. Tests `test/m81-b2-integration.test.js` and HTTP regression added. | CODE; NODE_TESTS_NOT_RUN; OPERATOR_GUEST_EVIDENCE_NOT_RUN |
+
+### Authorization and operation boundaries
+
+Use `npm run m8:integrated -- --plan` or `bash scripts/arm64-vm/m81-b2-lima.sh --plan` **locally on Mac** to inspect the plan (no VM interactions).
+
+**Only after separate explicit approval to change the existing guest**, the operator may execute the *existing running VM* experiment:
+
+```bash
+# CAUTION: creates/deletes private cgroups, netns and /tmp trees INSIDE the VM.
+# No VM start/stop and no persistent services. Operator-controlled; do not automate.
+PEF_M81_B2_MAC_ACK=EXPLICIT_EXISTING_RUNNING_LIMA_B2 \
+ bash scripts/arm64-vm/m81-b2-lima.sh --run > m81-b2-guest.json
+
+npm run m8:integrated -- --inspect m81-b2-guest.json
+```
+
+The wrapper only accepts a running **`pef-r28s-1g`** from `limactl list --json`. It never starts the VM, changes Mac network state, touches Mac system services or silently installs packages. `sudo -n` is invoked **inside the guest only**. It passes separate B1 Linux root/VM scope and B2 operator ACK values. Any missing ACK, tool, controller or scope causes `BLOCKED`.
+
+All generated PKI keys, token and journal data live in the disposable guest scope and are removed via the shell trap. Evidence emitted to stdout contains checks/PIDs/peak memory and cleanup status, **not secrets**. If cleanup fails the run fails, and a technician must inspect the named VM before re-running; never blindly delete existing resources.
+
+### Honest acceptance / remaining gaps
+
+- Source and fail-closed contracts are present. Actual guest root orchestration, netns/chroot, systemd, Cloud TLS and resource measurements **NOT_RUN**, and `npm test` on the complete checkout is **NOT_RUN** in this task. No GitHub Actions used.
+- Unlike the original M8 integrated goal, **B2 currently runs both Edge instances and Cloud Lite under a temporary guest Node coordinator, not as systemd units**; systemd PID1 is only a safety preflight. Thus `systemdManagedValidated=false`, `vmRebootValidated=false`, `readyForM81C=false`, and no field or hardware GO may be inferred.
+- Imported successful-looking JSON is marked `OPERATOR_REPORTED_UNATTESTED`; valid cleanup and quota fields can be checked structurally but are not independent proof. Only a reviewed live guest run supports a local VM test claim, never a physical one.
+- Next execution gate: local tests → operator approval → actual guest run and cleanup evidence → if green, design systemd guest service lifecycle/restart under M8.1.C without replacing or overwriting pre-existing M5.4 services.
