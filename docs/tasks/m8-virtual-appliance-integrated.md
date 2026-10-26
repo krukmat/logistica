@@ -141,3 +141,11 @@ PEF_M81_VM_ACK=EXPLICIT_READ_ONLY_LIMA_M81 \
 ```
 
 Expected safe result: `status=READY_FOR_OPERATOR_OPT_IN`, `ok=true`, `guestSandboxStarted=false`, `operatorRunApproved=false`. A blocked result identifies exactly which checks need repair, **without** attempting privileged sandbox staging. A green inspection is **not** B2 `LAB_PASS` and cannot authorize the next gate without a separate approval.
+
+### 2026-10-26 — B2 authorized runtime attempt (BLOCKED, cleanup reported)
+
+The operator ran the B2 privileged harness in the existing `pef-r28s-1g` VM; actual worker boot returned `WORKLOAD_BOOT_FAILED:EXIT_SIGABRT`. Guest harness emitted `M81_B2_GUEST_INCOMPLETE exit=78 cleanup=true` (shell-reported cleanup, not independent proof). Consequently **B2 remains operationally BLOCKED**, and M8.1.C/D must not start on the basis of this attempt.
+
+Follow-up patch: M81-only Node flag `--v8-pool-size=1` and `UV_THREADPOOL_SIZE=1` for the already pinned 16-PID cgroup; bounded kernel `pids.events`/`memory.events` and stderr diagnostics to distinguish causes; expose real supervisor worker PID; stage chroot `/tmp`; return machine-readable `LAB_FAIL` JSON on early abort **after** cleanup. Existing manifest quotas, netns/chroot policy and VM-only authorization remain unchanged.
+
+**Next dependency:** operator confirms the updated local tests; rerun the bounded B2 integration once to obtain detailed live kernel counters if it still aborts. Do not count attempted execution as `LAB_PASS`.
