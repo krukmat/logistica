@@ -131,3 +131,40 @@ test("M8.1.B2 Lima --check requires read-only opt-in, not mutation approval",()=
  assert.equal(r.status,78,r.stderr);
  assert.match(r.stderr,/read-only VM operator authorization absent/);
 });
+
+test("M8.1.B2 runtime exposes actual isolated worker PID, never invents one",async()=>{
+ const {createWorkloadSupervisor}=require("../src/core/workload-supervisor.js");
+ const {createWorkloadManager}=require("../src/core/workload-manager.js");
+ const {propertyManifest}=require("../src/runtime/demo-workload.js");
+ const fake={start:async()=>({
+  pid:15432,isolation:"LINUX_CGROUP_NETNS_CHROOT_M81_LIMA_VM",
+  actualLimitsEnforced:true,kernelLimits:{pidsMax:"16"},
+  async health(){return {ok:true};},async stop(){return {ok:true};}
+ })};
+ const manager=createWorkloadManager();
+ const sup=createWorkloadSupervisor({manager,driver:fake});
+ try{
+  const status=await sup.start(propertyManifest(),{trusted:true,offline:true});
+  assert.equal(status.ok,true);
+  assert.equal(status.pid,15432);
+  assert.equal(sup.list()[0].pid,15432);
+ }finally{await sup.close();}
+});
+test("M8.1.B2 SIGABRT diagnosis distinguishes PID and memory pressure without revealing secrets",()=>{
+ const {m81KernelExitDiagnostic,M81_NODE_FLAGS}=
+  require("../src/adapters/linux-isolated-process-driver.js");
+ const read=(file)=>{
+  if(file.endsWith("/pids.events"))return "max 2\\n";
+  if(file.endsWith("/memory.events"))return "low 0\\nmax 0\\noom 0\\noom_kill 0\\n";
+  if(file.endsWith("/memory.peak"))return "42000000\\n";
+  throw Error("unexpected file");
+ };
+ const report=m81KernelExitDiagnostic({signal:"SIGABRT",code:null,
+  cgroup:"/sys/fs/cgroup/pef-m81-100-2",
+  stderr:"uv_thread_create failed\\n",read});
+ assert.match(report,/EXIT_SIGABRT/);
+ assert.match(report,/pidsMaxHits=2/);
+ assert.match(report,/memoryOomKill=0/);
+ assert.match(report,/stderr=uv_thread_create failed/);
+ assert.deepEqual(M81_NODE_FLAGS,["--v8-pool-size=1"]);
+});

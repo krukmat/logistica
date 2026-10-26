@@ -14,7 +14,8 @@ function createWorkloadSupervisor({manager,driver,clock=()=>Date.now(),autoRecon
   const show=x=>({workloadId:x.manifest.workload_id,state:x.state,attempts:x.attempts,
     nextRetryAt:x.nextRetryAt,lastError:x.lastError,manifestVersion:x.manifest.manifest_version,
     isolation:x.isolation||"NONE",actualLimitsEnforced:x.actualLimitsEnforced===true,
-    kernelLimits:x.kernelLimits||null});
+    kernelLimits:x.kernelLimits||null,
+    ...(Number.isSafeInteger(x.handle?.pid)&&x.handle.pid>1?{pid:x.handle.pid}:{})});
   function onExit(x,reason){
     if(x.stopping||closed||!entries.has(x.manifest.workload_id)||
        x.state==="BACKOFF"||x.state==="ISOLATED")return;

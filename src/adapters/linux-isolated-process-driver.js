@@ -8,6 +8,29 @@ const {spawn}=require("node:child_process");
 const {makeLinuxIsolationPlan,assertHostedLinuxIsolationPreflight}=require("./linux-workload-isolation.js");
 const {assertM81LimaIsolationPreflight}=require("./m81-lima-isolation-scope.js");
 const CI_NAME=/^pef-s3-[0-9]+-[0-9]+$/,M81_NAME=/^pef-m81-[0-9]+-[0-9]+$/;
+// The 16-PID B1 workload quota includes all Node native threads, not only processes.
+// Keep the guest's V8 worker pool small instead of increasing manifest cgroup quotas.
+const M81_NODE_FLAGS=Object.freeze(["--v8-pool-size=1"]);
+function m81KernelExitDiagnostic({signal,code,stderr="",cgroup,read=fs.readFileSync}={}){
+ const counter=(file,key)=>{
+  try{
+   const data=read(path.join(cgroup,file),"utf8");
+   const found=key?data.match(new RegExp("^"+key+"\\\\s+(\\\\d+)$","m")):
+    data.trim().match(/^(\\d+)$/);
+   return found?Number(found[1]):null;
+  }catch{return null;}
+ };
+ const observations=[
+  ["pidsMaxHits",counter("pids.events","max")],
+  ["memoryOom",counter("memory.events","oom")],
+  ["memoryOomKill",counter("memory.events","oom_kill")],
+  ["memoryPeakBytes",counter("memory.peak")]
+ ].filter(([,n])=>Number.isSafeInteger(n));
+ const suffix=observations.map(([k,n])=>k+"="+n).join(",");
+ const log=String(stderr).replace(/[\r\n\t]+/g," ").slice(-900);
+ return "EXIT_"+(signal||code)+
+  (suffix?":cgroup{"+suffix+"}":"")+(log?":stderr="+log:"");
+}
 function createLinuxIsolatedProcessDriver({namespace,cgroup,rootfs,nodeInside,hostCanary,
   runtimeScope="GITHUB_HOSTED_CI"}={}){
   if(!["GITHUB_HOSTED_CI","M81_LIMA_VM"].includes(runtimeScope))
@@ -82,9 +105,10 @@ function createLinuxIsolatedProcessDriver({namespace,cgroup,rootfs,nodeInside,ho
       verifyLimit("pids.max",plan.pidsMax);
       const argv=["-c",'kill -STOP "$$"; exec "$@"',"pef-worker",
         "ip","netns","exec",namespace,"chroot","--userspec=65534:65534",
-        real,nodeInside,workerFile];
+        real,nodeInside,...(inGuest?M81_NODE_FLAGS:[]),workerFile];
       const child=spawn("/bin/sh",argv,{detached:true,stdio:["ignore","pipe","pipe","ipc"],
         env:{PATH:"/usr/sbin:/usr/bin:/bin",LANG:"C",
+          ...(inGuest?{UV_THREADPOOL_SIZE:"1"}:{}),
           PEF_ALLOW_FAULT_INJECTION:inGuest?"M81_ISOLATED_WORKER":"CI_ISOLATED_WORKER",
           PEF_HOST_SENTINEL:hostCanary||"/host-cannot-be-reached",
           ...(isSite?{PEF_SITE_PROFILE:profile,PEF_WORKLOAD_ID:workerId}:{})}});
@@ -101,7 +125,9 @@ function createLinuxIsolatedProcessDriver({namespace,cgroup,rootfs,nodeInside,ho
         for(const [id,p] of pending){clearTimeout(p.timer);p.reject(Error("WORKER_EXITED"));pending.delete(id);}
         if(!stopping)onExit(String(e));
       };
-      child.on("exit",(code,signal)=>fail("EXIT_"+(signal||code)));
+      child.on("exit",(code,signal)=>fail(inGuest?
+        m81KernelExitDiagnostic({code,signal,stderr:stdErr,cgroup}):
+        "EXIT_"+(signal||code)));
       child.on("error",err=>fail("ERROR_"+(err.code||err.message)));
       const killGroup=signal=>{try{process.kill(-child.pid,signal);}catch(e){if(e.code!=="ESRCH")throw e;}};
       const request=(type,body={},deadlineMs=1500)=>new Promise((resolve,reject)=>{
@@ -177,4 +203,4 @@ function createLinuxIsolatedProcessDriver({namespace,cgroup,rootfs,nodeInside,ho
       enforcedBy:"cgroup v2 + netns + chroot + uid 65534",hardwareValidated:false})
   };
 }
-module.exports={createLinuxIsolatedProcessDriver};
+module.exports={createLinuxIsolatedProcessDriver,m81KernelExitDiagnostic,M81_NODE_FLAGS};
