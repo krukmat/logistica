@@ -4,13 +4,18 @@
 set -Eeuo pipefail
 blocked(){ echo "M81_B2_LIMA_BLOCKED:$*" >&2; exit 78; }
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd -P)"
-[[ $# -eq 1 && ( "$1" == --plan || "$1" == --run ) ]] ||
- blocked "Usage: m81-b2-lima.sh --plan|--run"
+[[ $# -eq 1 && ( "$1" == --plan || "$1" == --check || "$1" == --run ) ]] ||
+ blocked "Usage: m81-b2-lima.sh --plan|--check|--run"
 if [[ "$1" == --plan ]];then
  exec node "$root/bin/pef-m81-b2.js" --plan
 fi
-[[ "${PEF_M81_B2_MAC_ACK:-}" == EXPLICIT_EXISTING_RUNNING_LIMA_B2 ]] ||
- blocked "separate Mac operator authorization absent"
+if [[ "$1" == --check ]];then
+ [[ "${PEF_M81_VM_ACK:-}" == EXPLICIT_READ_ONLY_LIMA_M81 ]] ||
+  blocked "read-only VM operator authorization absent"
+else
+ [[ "${PEF_M81_B2_MAC_ACK:-}" == EXPLICIT_EXISTING_RUNNING_LIMA_B2 ]] ||
+  blocked "separate Mac operator authorization absent"
+fi
 [[ "$(uname -s)" == Darwin && "$(uname -m)" == arm64 ]] ||
  blocked "Apple Silicon Mac required"
 command -v node >/dev/null && command -v limactl >/dev/null ||
@@ -30,9 +35,17 @@ process.stdin.on("end",()=>{try{
 ' || blocked "exact existing Lima guest is absent or stopped"
 # Explicit guest authorization is separate from Mac approval and must pass B1.
 # Root privileges exist only inside the named guest via sudo -n (no prompt).
-limactl shell pef-r28s-1g sudo -n env \
- PEF_M81_B2_ACK=EXPLICIT_VM_ROOT_SANDBOX_M81B2 \
- PEF_M81_ISOLATION_ACK=EXPLICIT_M81_LIMA_ISOLATED_WORKER \
- PEF_M81_VM_ID=pef-r28s-1g \
- PEF_M81_ISOLATION_SCOPE=M81_LIMA_VM \
- bash "$root/scripts/arm64-vm/m81-b2-guest.sh" --run
+if [[ "$1" == --check ]];then
+ limactl shell pef-r28s-1g sudo -n env \
+  PEF_M81_ISOLATION_ACK=EXPLICIT_M81_LIMA_ISOLATED_WORKER \
+  PEF_M81_VM_ID=pef-r28s-1g \
+  PEF_M81_ISOLATION_SCOPE=M81_LIMA_VM \
+  node "$root/bin/pef-m81-b2-guest-check.js"
+else
+ limactl shell pef-r28s-1g sudo -n env \
+  PEF_M81_B2_ACK=EXPLICIT_VM_ROOT_SANDBOX_M81B2 \
+  PEF_M81_ISOLATION_ACK=EXPLICIT_M81_LIMA_ISOLATED_WORKER \
+  PEF_M81_VM_ID=pef-r28s-1g \
+  PEF_M81_ISOLATION_SCOPE=M81_LIMA_VM \
+  bash "$root/scripts/arm64-vm/m81-b2-guest.sh" --run
+fi

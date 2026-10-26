@@ -110,3 +110,24 @@ test("M8.1.B2 Mac runner refuses mutation without its separate opt-in",()=>{
  assert.equal(denied.status,78,denied.stderr);
  assert.match(denied.stderr,/separate Mac operator authorization absent/);
 });
+
+test("M8.1.B2 read-only guest readiness is fail-closed on the current non-VM host",()=>{
+ const tool=path.join(root,"bin/pef-m81-b2-guest-check.js");
+ const p=spawnSync(process.execPath,[tool],{encoding:"utf8",timeout:6000,
+  env:{...process.env,PEF_M81_ISOLATION_ACK:"EXPLICIT_M81_LIMA_ISOLATED_WORKER",
+   PEF_M81_ISOLATION_SCOPE:"M81_LIMA_VM",PEF_M81_VM_ID:"pef-r28s-1g"}});
+ assert.equal(p.status,78,p.stderr);
+ const result=JSON.parse(p.stdout);
+ assert.equal(result.readOnly,true);
+ assert.equal(result.guestSandboxStarted,false);
+ assert.equal(result.operatorRunApproved,false);
+ assert.equal(result.checks.GUEST_B1_SCOPE,false);
+ assert.ok(result.failed.includes("GUEST_B1_SCOPE"));
+});
+test("M8.1.B2 Lima --check requires read-only opt-in, not mutation approval",()=>{
+ const tool=path.join(root,"scripts/arm64-vm/m81-b2-lima.sh");
+ const r=spawnSync("bash",[tool,"--check"],{encoding:"utf8",timeout:4000,
+  env:{...process.env,PEF_M81_VM_ACK:"",PEF_M81_B2_MAC_ACK:""}});
+ assert.equal(r.status,78,r.stderr);
+ assert.match(r.stderr,/read-only VM operator authorization absent/);
+});
