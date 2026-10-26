@@ -27,7 +27,8 @@ function m81KernelExitDiagnostic({signal,code,stderr="",cgroup,read=fs.readFileS
   ["memoryPeakBytes",counter("memory.peak")]
  ].filter(([,n])=>Number.isSafeInteger(n));
  const suffix=observations.map(([k,n])=>k+"="+n).join(",");
- const log=String(stderr).replace(/[\r\n\t]+/g," ").slice(-900);
+ const raw=String(stderr).replace(/[\r\n\t]+/g," ");
+ const log=raw.length>1000?raw.slice(0,600)+" [MIDDLE_TRUNCATED] "+raw.slice(-380):raw;
  return "EXIT_"+(signal||code)+
   (suffix?":cgroup{"+suffix+"}":"")+(log?":stderr="+log:"");
 }
@@ -114,8 +115,10 @@ function createLinuxIsolatedProcessDriver({namespace,cgroup,rootfs,nodeInside,ho
           ...(isSite?{PEF_SITE_PROFILE:profile,PEF_WORKLOAD_ID:workerId}:{})}});
       active=child;
       let closed=false,stopping=false,ready=false,nextId=0;
-      let stdErr="";
-      child.stderr.on("data",d=>{stdErr=(stdErr+String(d)).slice(-1500);});
+      let stdErr="",stdErrHead="",stderrBytes=0;
+      child.stderr.on("data",d=>{const data=String(d);
+        stderrBytes+=data.length;stdErrHead=(stdErrHead+data).slice(0,650);
+        stdErr=(stdErr+data).slice(-1500);});
       child.stdout.resume();
       const pending=new Map();
       const fail=e=>{
@@ -126,7 +129,8 @@ function createLinuxIsolatedProcessDriver({namespace,cgroup,rootfs,nodeInside,ho
         if(!stopping)onExit(String(e));
       };
       child.on("exit",(code,signal)=>fail(inGuest?
-        m81KernelExitDiagnostic({code,signal,stderr:stdErr,cgroup}):
+        m81KernelExitDiagnostic({code,signal,stderr:stderrBytes>1500?
+          stdErrHead+" [MIDDLE_TRUNCATED] "+stdErr:stdErr,cgroup}):
         "EXIT_"+(signal||code)));
       child.on("error",err=>fail("ERROR_"+(err.code||err.message)));
       const killGroup=signal=>{try{process.kill(-child.pid,signal);}catch(e){if(e.code!=="ESRCH")throw e;}};
