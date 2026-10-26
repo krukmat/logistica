@@ -49,3 +49,27 @@ The operator output is not cryptographically attested. Do not paste private keys
 The operator ran the M8.1.A Lima observation after starting the existing VM. Reported: Linux ARM64, 972 MiB, 4 vCPU, Node 20, PID1 systemd, cgroup v2 including cpu/memory/pids, virtualization detected. Host routes and guest services were not modified by that read-only observation. No verified M8.1.B2 runtime execution yet.
 
 Follow-up change: `bin/pef-m81-b2-guest-check.js`, operator gated `m81-b2-lima.sh --check`, tests for host-denial and missing read-only ACK. The inspector does not touch the Linux kernel beyond reading files or run the sandbox. **LIVE_GUEST_B2_CHECK_NOT_RUN**, **PRIVILEGED_SANDBOX_NOT_RUN** at commit time. The next operator report is necessary to confirm root B1 hostname and cgroup subtree delegation.
+
+## 2026-10-26 — first operator-authorized guest attempt failed closed
+
+The operator supplied the exact privileged B2 Lima command after separate approval. The real guest attempt **did not complete**:
+
+```text
+M81_B2_BLOCKED:Error: WORKLOAD_BOOT_FAILED:EXIT_SIGABRT
+    at Object.listen (src/runtime/autonomous-edge.js:229:31)
+    at async runM81B2GuestStack (src/runtime/m81-b2-guest-stack.js:96:14)
+M81_B2_GUEST_INCOMPLETE exit=78 cleanup=true
+```
+
+The failure is **at isolated worker startup**, not at Cloud Lite ingestion or durable replay. The shell reported cleanup success (`cleanup=true`); this is not an independently measured zero-residue proof. No full B2 guest report was produced, no kernel isolation PASS is claimed, and M8.1.C remains blocked.
+
+**Potential causes not yet distinguished:** 16-PID cgroup cap includes shell/ip-netns/chroot processes and Node native threads; Node SIGABRT can also result from missing runtime facilities, image libraries or memory/runtime initialization. Do not claim confirmed OOM or PID exhaustion without actual `pids.events`/`memory.events` and stderr.
+
+**Corrections committed in response**, without widening manifests or changing guest infrastructure:
+
+- `src/adapters/linux-isolated-process-driver.js`: only in explicit M81 Lima runtime, worker Node receives `--v8-pool-size=1` and `UV_THREADPOOL_SIZE=1`; CI driver remains unchanged. On early worker exit, the supervisor error now includes bounded worker stderr plus kernel `pids.events.max`, `memory.events.oom`/`oom_kill` and `memory.peak` when accessible.
+- `src/core/workload-supervisor.js`: surface the **actual** active worker handle PID when available, rather than requiring a PID that the existing supervisor previously omitted. M8 kernel membership checks continue to use the actual PID, never an invented value.
+- `scripts/arm64-vm/m81-b2-guest.sh`: stage a private `/tmp` in the chroot, and emit a failure-only JSON `LAB_FAIL` report including the post-teardown cleanup result when the coordinator aborts before writing its report. The existing 120 s limit and private-scope teardown remain.
+- Regression tests added to `test/m81-b2-integration.test.js` for PID exposure and diagnostic format. An isolated JavaScript evaluation of the supervisor PID and mock kernel diagnostic returned PASS. The complete Node test suite and privileged guest rerun after these changes are **NOT_RUN** in this session.
+
+**Next operator gate:** pull latest `main`, execute `node --test test/m81-b2-integration.test.js test/dashboard-integrated.test.js`. Only with passing tests and the already granted B2 guest-run authorization, repeat the single bounded guest run; capture stdout as `m81-b2-guest.json` and stderr as `m81-b2-guest.stderr` for inspection. **Do not blindly repeat if it fails again**; read `EXIT_SIGABRT:cgroup{...}:stderr=...` and investigate. Do not loosen quotas, enable broad host permissions or impersonate GitHub CI.
