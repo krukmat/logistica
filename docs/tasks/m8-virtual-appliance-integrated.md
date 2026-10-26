@@ -155,3 +155,9 @@ Follow-up patch: M81-only Node flag `--v8-pool-size=1` and `UV_THREADPOOL_SIZE=1
 Second authorized B2 guest attempt returned `EXIT_SIGABRT` at `libnode.so.115::InitializePrimordials`, but actual cgroup counters were `pids.events.max=0`, `memory.events.oom=0`, `oom_kill=0` and `memory.peak=5193728`. This points away from cgroup quotas and toward the incomplete Node runtime copied into `chroot`. Debian Node links externalized builtin JS files under `/usr/share/nodejs`, which ELF `ldd` alone does not copy. The patch now stages a small fixed distro-only JS allowlist, then proves Node initialization as uid=65534 within the chroot **before** starting the isolated Edge worker. A failure captures the earliest fatal stderr line and aborts/cleans up, without reducing isolation.
 
 **Tests are not yet confirmed by the Mac operator for this patch.** `B2.3/B2.4` stay `GUEST_LAB_FAIL` until live replay and zero-residue cleanup; no automatic jump to M8.1.C.
+
+### 2026-10-26 — third guest attempt rootfs dependency proof
+
+The B2 chroot bootstrap probe failed before any Edge worker with `Cannot load externalized builtin: internal/deps/undici/undici:/usr/share/nodejs/undici/undici-fetch.js`. The cleanup JSON remained `LAB_FAIL` and reported `ownedResourcesRemoved=true`. This is a **confirmed omission in the staged chroot rootfs**, not proof of systemd/kernel or mTLS success.
+
+The rootfs allowlist now contains the exact `undici-fetch.js` path; it is required to exist in the guest source and destination. A **read-only** preflight `NODE_EXTERNALIZED_UNDICI_FETCH_PRESENT` detects missing source files before another sandbox run. New tests assert mandatory staging and immutable isolation settings. B2 remains `GUEST_LAB_FAIL` pending local tests and actual guest validation; M8.1.C remains blocked.

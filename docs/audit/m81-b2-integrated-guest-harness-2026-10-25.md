@@ -98,3 +98,22 @@ Machine-readable response: `kind=PEF_M81_B2_GUEST_STACK_V1`, `status=LAB_FAIL`, 
 **Follow-up:** pull to latest `main`; run the local M81 B2 tests and Bash syntax check. Only then perform one bounded guest B2 run under the same previously authorized, explicit operator scope. If the probe emits `Cannot load externalized builtin`, capture the exact path and add it only after confirming it is an appropriate distro-installed Node dependency. If the probe passes but isolated Node still aborts, diagnose the separate cgroup/netns/IPC transition; do **not** weaken the 16-PID/64-MiB caps without measured evidence.
 
 **Operational state:** `B2_LAB_FAIL`, `M8.1.C BLOCKED`. No systemd service deployment, VM reboot or hardware claims.
+
+## 2026-10-26 — third guest attempt, confirmed externalized Undici builtin missing in chroot
+
+User-supplied native guest probe error (exact error from real `chroot --userspec=65534:65534`):
+
+```text
+M81_B2_NODE_CHROOT_BOOT_FAILED profile=property builtins=5
+Cannot load externalized builtin:
+"internal/deps/undici/undici:/usr/share/nodejs/undici/undici-fetch.js".
+Node::BuiltinLoader::AddExternalizedBuiltin -> InitializePrimordials
+M81_B2_BLOCKED:guest chroot Node init rejected
+M81_B2_GUEST_INCOMPLETE exit=78 cleanup=true
+```
+
+The stdout JSON is `LAB_FAIL` with `error=GUEST_RUN_INCOMPLETE` and `cleanup={status:PASS,ownedResourcesRemoved:true}`. No isolated Edge workload or mTLS replay was run in this attempt. This **confirms the missing exact file in the staged rootfs** (the host source file's presence must still be verified). No evidence of cgroup PID/OOM exhaustion in the earlier 2nd attempt.
+
+**B2 narrow patch:** append `/usr/share/nodejs/undici/undici-fetch.js` to the existing fixed-path Linux distro builtin copy allowlist. Require both the source and copied destination as regular files, fail with `M81_B2_REQUIRED_NODE_BUILTIN_MISSING` when absent. Keep uid 65534 in the 8-second chroot Node bootstrap probe before Edge startup. Extend read-only `bin/pef-m81-b2-guest-check.js` with `NODE_EXTERNALIZED_UNDICI_FETCH_PRESENT`, and add unit assertions to prevent future omission. No distro install, recursive package copy, pids.max increase, ACL weakening or VM host modification.
+
+**Validation status at commit:** source inspection / syntax only. User Mac tests, guest read-only preflight and full B2 runtime **PENDING**. Do not claim LAB_PASS or proceed M8.1.C. After `git pull --ff-only`, run relevant tests and read-only `m81-b2-lima.sh --check`; then the operator may execute a single already-authorized bounded B2 attempt if the check is green. If more externalized files are identified, record exact paths and reconsider staging the matching bounded Debian Node runtime manifest, rather than iterating blindly.
