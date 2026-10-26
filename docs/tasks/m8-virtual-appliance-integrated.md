@@ -127,3 +127,17 @@ All generated PKI keys, token and journal data live in the disposable guest scop
 - Unlike the original M8 integrated goal, **B2 currently runs both Edge instances and Cloud Lite under a temporary guest Node coordinator, not as systemd units**; systemd PID1 is only a safety preflight. Thus `systemdManagedValidated=false`, `vmRebootValidated=false`, `readyForM81C=false`, and no field or hardware GO may be inferred.
 - Imported successful-looking JSON is marked `OPERATOR_REPORTED_UNATTESTED`; valid cleanup and quota fields can be checked structurally but are not independent proof. Only a reviewed live guest run supports a local VM test claim, never a physical one.
 - Next execution gate: local tests → operator approval → actual guest run and cleanup evidence → if green, design systemd guest service lifecycle/restart under M8.1.C without replacing or overwriting pre-existing M5.4 services.
+
+### 2026-10-26 — Operator read-only guest observation and B2 kernel/tool preflight
+
+Operator-provided M8.1.A guest observation: `platform=linux`, `arch=arm64`, `memoryMiB=972`, `cpuCount=4`, `nodeMajor=20`, `pid1=systemd`, `cgroupV2=true`, controllers contain `cpu`, `memory`, `pids`, `vmDetected=true`. The observation reports `readOnly=true`, services and host routes unchanged. **This is locally reported evidence, not independently authenticated; B2 execution and kernel isolation are still NOT_RUN.**
+
+Added a stricter read-only B2 gate before any sandbox mutation: `bin/pef-m81-b2-guest-check.js` evaluates **actual guest facts as root** (B1 hostname/VM, Node20, systemd, memory), root cgroup subtree controllers, cgroup2 mount type, available toolchain and canonical pinned Node binary. `scripts/arm64-vm/m81-b2-lima.sh --check` requires the **read-only** `PEF_M81_VM_ACK=EXPLICIT_READ_ONLY_LIMA_M81` approval and an already-running exact guest. It does **not** require the separate sandbox-mutation ACK and does not invoke `--run`. `sudo -n` runs the guest **read-only inspector**, never installs services or creates cgroups.
+
+```bash
+git pull --ff-only
+PEF_M81_VM_ACK=EXPLICIT_READ_ONLY_LIMA_M81 \
+  bash scripts/arm64-vm/m81-b2-lima.sh --check
+```
+
+Expected safe result: `status=READY_FOR_OPERATOR_OPT_IN`, `ok=true`, `guestSandboxStarted=false`, `operatorRunApproved=false`. A blocked result identifies exactly which checks need repair, **without** attempting privileged sandbox staging. A green inspection is **not** B2 `LAB_PASS` and cannot authorize the next gate without a separate approval.

@@ -347,3 +347,14 @@ node --test test/m81-b2-integration.test.js test/dashboard-integrated.test.js
 ```
 
 [Detailed operator safety gates and follow-up](docs/tasks/m8-virtual-appliance-integrated.md). No GitHub Actions. No VM start/stop, hardware purchase or external cloud provisioned.
+
+### Guest read-only B2 compatibility check (2026-10-26)
+
+After confirming the existing Lima VM is running, inspect the **actual Linux root preconditions** (no sandbox changes):
+
+```bash
+PEF_M81_VM_ACK=EXPLICIT_READ_ONLY_LIMA_M81 \
+  bash scripts/arm64-vm/m81-b2-lima.sh --check
+```
+
+Requires the existing read-only operator ACK; checks B1 VM hostname/guest facts, root cgroup-controller delegation, guest toolchain and pinned Node path via `sudo -n` **inside the guest**. It does not install packages, start Edge, create namespaces or authorize B2 execution.

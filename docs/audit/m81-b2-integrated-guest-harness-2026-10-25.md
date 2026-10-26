@@ -43,3 +43,9 @@ npm run m8:integrated -- --inspect m81-b2-guest.json
 ```
 
 The operator output is not cryptographically attested. Do not paste private keys, credentials, or disclose guest private paths in public CI logs.
+
+## Addendum 2026-10-26 — preflight observation and B2 read-only gate
+
+The operator ran the M8.1.A Lima observation after starting the existing VM. Reported: Linux ARM64, 972 MiB, 4 vCPU, Node 20, PID1 systemd, cgroup v2 including cpu/memory/pids, virtualization detected. Host routes and guest services were not modified by that read-only observation. No verified M8.1.B2 runtime execution yet.
+
+Follow-up change: `bin/pef-m81-b2-guest-check.js`, operator gated `m81-b2-lima.sh --check`, tests for host-denial and missing read-only ACK. The inspector does not touch the Linux kernel beyond reading files or run the sandbox. **LIVE_GUEST_B2_CHECK_NOT_RUN**, **PRIVILEGED_SANDBOX_NOT_RUN** at commit time. The next operator report is necessary to confirm root B1 hostname and cgroup subtree delegation.
