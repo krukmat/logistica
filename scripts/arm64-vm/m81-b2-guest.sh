@@ -144,6 +144,7 @@ NODE
   /usr/share/nodejs/minimatch/dist/cjs/index.bundle.js
   /usr/share/nodejs/minimatch/dist/commonjs/index.js
   /usr/share/nodejs/undici/undici.js
+  /usr/share/nodejs/undici/undici-fetch.js
  )
  for builtin in "${external_builtins[@]}";do
   if [[ -f "$builtin" ]];then
@@ -155,6 +156,12 @@ NODE
   fi
  done
  [[ "$staged" -gt 0 ]] || blocked "no Debian Node externalized builtins available"
+ # Real Debian libnode.so.115 revealed this *exact* externalized builtin
+ # during InitializePrimordials. It is mandatory for this guest profile.
+ # Refuse to launch workers if missing, rather than letting Node SIGABRT.
+ local required_undici=/usr/share/nodejs/undici/undici-fetch.js
+ [[ -f "$required_undici" && -f "$root$required_undici" ]] ||
+ blocked "M81_B2_REQUIRED_NODE_BUILTIN_MISSING:$required_undici"
  cp "$repo/src/workloads/site-operations-worker.js" "$root/app/workloads/"
  cp "$repo/src/core/site-operation-contract.js" "$root/app/core/"
  [[ -f "$root$nodebin" && -f "$root/app/workloads/site-operations-worker.js" ]] ||
