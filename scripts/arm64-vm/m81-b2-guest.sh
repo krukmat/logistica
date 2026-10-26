@@ -15,7 +15,7 @@ fi
  blocked "Linux ARM64 root guest required"
 [[ -f "$repo/src/runtime/m81-b2-guest-stack.js" && -f "$repo/package.json" ]] ||
  blocked "mounted source not present"
-for bin in node ip chroot cp ldd awk readlink stat mktemp timeout openssl;do
+for bin in node ip chroot cp ldd awk readlink stat mktemp timeout openssl head;do
  command -v "$bin" >/dev/null || blocked "missing $bin"
 done
 # Actual guest/VM/root/systemd/cgroup check, NOT an imported JSON report.
@@ -131,10 +131,48 @@ NODE
    [[ -f "$lib" ]] || blocked "Node shared library missing: $lib"
    cp -L --parents "$lib" "$root/"
  done < <(ldd "$nodebin" | awk '{for(i=1;i<=NF;i++)if($i ~ /^\//){print $i;break}}')
+ # Debian libnode 20 can externalize builtins into /usr/share/nodejs.
+ # The dynamic ELF libraries alone are insufficient: InitializePrimordials
+ # aborts when an externalized builtin is absent from the chroot.
+ # ONLY copy these pinned, distro-installed files; no recursive node_modules.
+ local builtin staged=0
+ local -a external_builtins=(
+  /usr/share/nodejs/acorn/dist/acorn.js
+  /usr/share/nodejs/acorn-walk/dist/walk.js
+  /usr/share/nodejs/cjs-module-lexer/lexer.js
+  /usr/share/nodejs/cjs-module-lexer/dist/lexer.js
+  /usr/share/nodejs/minimatch/dist/cjs/index.bundle.js
+  /usr/share/nodejs/minimatch/dist/commonjs/index.js
+  /usr/share/nodejs/undici/undici.js
+ )
+ for builtin in "${external_builtins[@]}";do
+  if [[ -f "$builtin" ]];then
+   [[ ! -L "$root$builtin" ]] || blocked "rootfs builtin target is symlink"
+   mkdir -p -- "$(dirname "$root$builtin")"
+   cp -L -- "$builtin" "$root$builtin"
+   chmod 0644 "$root$builtin"
+   staged=$((staged+1))
+  fi
+ done
+ [[ "$staged" -gt 0 ]] || blocked "no Debian Node externalized builtins available"
  cp "$repo/src/workloads/site-operations-worker.js" "$root/app/workloads/"
  cp "$repo/src/core/site-operation-contract.js" "$root/app/core/"
  [[ -f "$root$nodebin" && -f "$root/app/workloads/site-operations-worker.js" ]] ||
  blocked "worker rootfs incomplete"
+ # Probe an actual Node 20 JS context INSIDE the completed uid-65534 chroot
+ # before spinning up Cloud Lite or workers. No kernel quota relaxation or host
+ # writable mounts. A failed probe preserves the FIRST lines of Node stderr.
+ local output="$scope/node-boot-$profile.out" failure="$scope/node-boot-$profile.err"
+ if ! timeout -k 2s 8s chroot --userspec=65534:65534 "$root" \
+   "$nodebin" --v8-pool-size=1 -e 'process.stdout.write("M81_B2_NODE_BOOT_OK")' \
+   >"$output" 2>"$failure";then
+  printf 'M81_B2_NODE_CHROOT_BOOT_FAILED profile=%s builtins=%s stderr_head:\\n' "$profile" "$staged" >&2
+  head -c 1500 "$failure" >&2 || :
+  printf '\\n' >&2
+  blocked "guest chroot Node init rejected"
+ fi
+ [[ "$(cat "$output")" == M81_B2_NODE_BOOT_OK ]] ||
+ blocked "Node chroot init did not produce exact ready marker"
  names+=("$name")
 }
 stage property
