@@ -29,6 +29,10 @@ function inspect(){
  checks.PINNED_NODE_BINARY=["/usr/bin/node","/usr/local/bin/node"].includes(nodePath);
  details.nodePath=nodePath;
  checks.NODE_ARCH_NATIVE=process.arch==="arm64";
+ checks.NODE_EXTERNALIZED_UNDICI_FETCH_PRESENT=
+  fs.existsSync("/usr/share/nodejs/undici/undici-fetch.js")&&
+  fs.statSync("/usr/share/nodejs/undici/undici-fetch.js").isFile();
+
  const failed=Object.keys(checks).filter(x=>!checks[x]);
  return {kind:"PEF_M81_B2_READ_ONLY_PREFLIGHT_V1",task:"M8.1.B2",
   status:failed.length?"BLOCKED":"READY_FOR_OPERATOR_OPT_IN",
