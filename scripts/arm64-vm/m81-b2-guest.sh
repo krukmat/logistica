@@ -77,6 +77,11 @@ cleanup(){
    }catch{console.error("M81_B2_EVIDENCE_FINALIZATION_FAILED");process.exitCode=1;}
   });' "$cleaned" "$rc" || rc=1
  else
+  # Preserve a machine-readable failure record even when the coordinator
+  # aborted before emitting guest-result.json; never turn it into a PASS.
+  local cleanup_state="FAIL"
+  [[ "$cleaned" == true ]] && cleanup_state="PASS"
+  printf '{"kind":"PEF_M81_B2_GUEST_STACK_V1","task":"M8.1.B2","profile":"pef-r28s-1g","status":"LAB_FAIL","ok":false,"error":"GUEST_RUN_INCOMPLETE","cleanup":{"status":"%s","ownedResourcesRemoved":%s},"systemdManagedValidated":false,"vmRebootValidated":false,"physicalValidated":false,"productionAuthorized":false}\n' "$cleanup_state" "$cleaned"
   printf 'M81_B2_GUEST_INCOMPLETE exit=%s cleanup=%s\n' "$rc" "$cleaned" >&2
  fi
  [[ "$cleaned" == true && "$rc" -eq 0 ]] || exit 1
@@ -118,7 +123,8 @@ NODE
     "$(cat "$cg/pids.max")" == "$pids" ]] || blocked "kernel quota readback failed"
  ip netns add "$name";nspaces+=("$name")
  ip -n "$name" link set lo up
- mkdir -p "$root/app/workloads" "$root/app/core"
+ mkdir -p "$root/app/workloads" "$root/app/core" "$root/tmp"
+ chmod 1777 "$root/tmp"
  cp -L --parents "$nodebin" "$root/"
  local lib
  while IFS= read -r lib;do
