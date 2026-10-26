@@ -119,6 +119,7 @@ test("M8.1.B2 read-only guest readiness is fail-closed on the current non-VM hos
  assert.equal(p.status,78,p.stderr);
  const result=JSON.parse(p.stdout);
  assert.equal(result.readOnly,true);
+ assert.equal(typeof result.checks.NODE_EXTERNALIZED_UNDICI_FETCH_PRESENT,"boolean");
  assert.equal(result.guestSandboxStarted,false);
  assert.equal(result.operatorRunApproved,false);
  assert.equal(result.checks.GUEST_B1_SCOPE,false);
@@ -213,4 +214,12 @@ test("M8.1.B2 Debian libnode externalized undici-fetch is mandatory before chroo
    script.indexOf('M81_B2_NODE_CHROOT_BOOT_FAILED'));
  assert.ok(script.indexOf('M81_B2_REQUIRED_NODE_BUILTIN_MISSING')<
    script.indexOf('timeout -k 5s 120s node'));
+});
+
+test("M8.1.B2 read-only gate checks Debian externalized Node builtin before opt-in",()=>{
+ const script=fs.readFileSync(path.join(root,"bin/pef-m81-b2-guest-check.js"),"utf8");
+ assert.match(script,/NODE_EXTERNALIZED_UNDICI_FETCH_PRESENT/);
+ assert.match(script,/\/usr\/share\/nodejs\/undici\/undici-fetch\.js/);
+ assert.match(script,/guestSandboxStarted:false/);
+ assert.match(script,/readOnly:true/);
 });
