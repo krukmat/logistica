@@ -73,3 +73,28 @@ The failure is **at isolated worker startup**, not at Cloud Lite ingestion or du
 - Regression tests added to `test/m81-b2-integration.test.js` for PID exposure and diagnostic format. An isolated JavaScript evaluation of the supervisor PID and mock kernel diagnostic returned PASS. The complete Node test suite and privileged guest rerun after these changes are **NOT_RUN** in this session.
 
 **Next operator gate:** pull latest `main`, execute `node --test test/m81-b2-integration.test.js test/dashboard-integrated.test.js`. Only with passing tests and the already granted B2 guest-run authorization, repeat the single bounded guest run; capture stdout as `m81-b2-guest.json` and stderr as `m81-b2-guest.stderr` for inspection. **Do not blindly repeat if it fails again**; read `EXIT_SIGABRT:cgroup{...}:stderr=...` and investigate. Do not loosen quotas, enable broad host permissions or impersonate GitHub CI.
+
+## 2026-10-26 — second guest retry: Debian Node bootstrap SIGABRT
+
+Observed from the operator's real existing Lima VM:
+
+```text
+WORKLOAD_BOOT_FAILED:EXIT_SIGABRT:
+ cgroup{pidsMaxHits=0,memoryOom=0,memoryOomKill=0,memoryPeakBytes=5193728}
+ stderr tail: node::InitializePrimordials / libnode.so.115
+M81_B2_GUEST_INCOMPLETE exit=78 cleanup=true
+```
+
+Machine-readable response: `kind=PEF_M81_B2_GUEST_STACK_V1`, `status=LAB_FAIL`, `ok=false`, `error=GUEST_RUN_INCOMPLETE`, `cleanup.status=PASS`, `ownedResourcesRemoved=true`, `systemdManagedValidated=false`, `physicalValidated=false`.
+
+**Root cause assessment:** cgroup PID exhaustion and cgroup OOM are not supported by observed counters. Debian's `libnode.so.115` can load externalized JavaScript builtins from `/usr/share/nodejs` during `InitializePrimordials`. The original B2 `chroot` copied ELF `ldd` libraries and worker JS but did **not** stage those `/usr/share/nodejs` external dependencies. Debian's published Node 20 packaging and historic `Cannot load externalized builtin` crashes have the same initialization stack. **Highly likely cause; not proven** because the truncated stderr did not include its first fatal-error line.
+
+**Constrained source patch, NOT guest-validated yet:**
+- `m81-b2-guest.sh` stages only explicit distro-installed paths for Acorn, Acorn-walk, cjs-module-lexer, minimatch and Undici. It does **not** copy `node_modules`, install packages, mount host paths or increase quotas. It aborts if no such files exist.
+- Before the Edge/Cloud coordinator it performs an 8-second, unprivileged `chroot --userspec=65534:65534` probe running actual Node 20 with the B2 V8 flag. Probe failure emits the **start** of stderr and cleans up both owned temporary sandboxes, returning a failure-only JSON.
+- B1 Linux driver now preserves both the beginning and end of Node's native-error stderr, while maintaining bounded output.
+- Regression assertions added for allowlisted dependencies, probe ordering and first-line error preservation.
+
+**Follow-up:** pull to latest `main`; run the local M81 B2 tests and Bash syntax check. Only then perform one bounded guest B2 run under the same previously authorized, explicit operator scope. If the probe emits `Cannot load externalized builtin`, capture the exact path and add it only after confirming it is an appropriate distro-installed Node dependency. If the probe passes but isolated Node still aborts, diagnose the separate cgroup/netns/IPC transition; do **not** weaken the 16-PID/64-MiB caps without measured evidence.
+
+**Operational state:** `B2_LAB_FAIL`, `M8.1.C BLOCKED`. No systemd service deployment, VM reboot or hardware claims.

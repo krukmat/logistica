@@ -149,3 +149,9 @@ The operator ran the B2 privileged harness in the existing `pef-r28s-1g` VM; act
 Follow-up patch: M81-only Node flag `--v8-pool-size=1` and `UV_THREADPOOL_SIZE=1` for the already pinned 16-PID cgroup; bounded kernel `pids.events`/`memory.events` and stderr diagnostics to distinguish causes; expose real supervisor worker PID; stage chroot `/tmp`; return machine-readable `LAB_FAIL` JSON on early abort **after** cleanup. Existing manifest quotas, netns/chroot policy and VM-only authorization remain unchanged.
 
 **Next dependency:** operator confirms the updated local tests; rerun the bounded B2 integration once to obtain detailed live kernel counters if it still aborts. Do not count attempted execution as `LAB_PASS`.
+
+### 2026-10-26 — Linux Debian Node 20 chroot bootstrap correction
+
+Second authorized B2 guest attempt returned `EXIT_SIGABRT` at `libnode.so.115::InitializePrimordials`, but actual cgroup counters were `pids.events.max=0`, `memory.events.oom=0`, `oom_kill=0` and `memory.peak=5193728`. This points away from cgroup quotas and toward the incomplete Node runtime copied into `chroot`. Debian Node links externalized builtin JS files under `/usr/share/nodejs`, which ELF `ldd` alone does not copy. The patch now stages a small fixed distro-only JS allowlist, then proves Node initialization as uid=65534 within the chroot **before** starting the isolated Edge worker. A failure captures the earliest fatal stderr line and aborts/cleans up, without reducing isolation.
+
+**Tests are not yet confirmed by the Mac operator for this patch.** `B2.3/B2.4` stay `GUEST_LAB_FAIL` until live replay and zero-residue cleanup; no automatic jump to M8.1.C.
