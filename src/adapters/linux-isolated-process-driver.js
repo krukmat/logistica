@@ -15,8 +15,8 @@ function m81KernelExitDiagnostic({signal,code,stderr="",cgroup,read=fs.readFileS
  const counter=(file,key)=>{
   try{
    const data=read(path.join(cgroup,file),"utf8");
-   const found=key?data.match(new RegExp("^"+key+"\\\\s+(\\\\d+)$","m")):
-    data.trim().match(/^(\\d+)$/);
+   const found=key?data.match(new RegExp("^"+key+"\\s+(\\d+)$","m")):
+    data.trim().match(/^(\d+)$/);
    return found?Number(found[1]):null;
   }catch{return null;}
  };

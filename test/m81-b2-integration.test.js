@@ -154,14 +154,14 @@ test("M8.1.B2 SIGABRT diagnosis distinguishes PID and memory pressure without re
  const {m81KernelExitDiagnostic,M81_NODE_FLAGS}=
   require("../src/adapters/linux-isolated-process-driver.js");
  const read=(file)=>{
-  if(file.endsWith("/pids.events"))return "max 2\\n";
-  if(file.endsWith("/memory.events"))return "low 0\\nmax 0\\noom 0\\noom_kill 0\\n";
-  if(file.endsWith("/memory.peak"))return "42000000\\n";
+  if(file.endsWith("/pids.events"))return "max 2\n";
+  if(file.endsWith("/memory.events"))return "low 0\nmax 0\noom 0\noom_kill 0\n";
+  if(file.endsWith("/memory.peak"))return "42000000\n";
   throw Error("unexpected file");
  };
  const report=m81KernelExitDiagnostic({signal:"SIGABRT",code:null,
   cgroup:"/sys/fs/cgroup/pef-m81-100-2",
-  stderr:"uv_thread_create failed\\n",read});
+  stderr:"uv_thread_create failed\n",read});
  assert.match(report,/EXIT_SIGABRT/);
  assert.match(report,/pidsMaxHits=2/);
  assert.match(report,/memoryOomKill=0/);
