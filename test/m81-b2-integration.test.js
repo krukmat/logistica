@@ -168,3 +168,37 @@ test("M8.1.B2 SIGABRT diagnosis distinguishes PID and memory pressure without re
  assert.match(report,/stderr=uv_thread_create failed/);
  assert.deepEqual(M81_NODE_FLAGS,["--v8-pool-size=1"]);
 });
+
+test("M8.1.B2 stages Debian Node externalized builtins without copying arbitrary npm packages",()=>{
+ const script=fs.readFileSync(path.join(root,"scripts/arm64-vm/m81-b2-guest.sh"),"utf8");
+ const allowlist=[
+  "/usr/share/nodejs/acorn/dist/acorn.js",
+  "/usr/share/nodejs/acorn-walk/dist/walk.js",
+  "/usr/share/nodejs/cjs-module-lexer/lexer.js",
+  "/usr/share/nodejs/cjs-module-lexer/dist/lexer.js",
+  "/usr/share/nodejs/minimatch/dist/cjs/index.bundle.js",
+  "/usr/share/nodejs/undici/undici.js"
+ ];
+ for(const file of allowlist)assert.ok(script.includes(file),file);
+ assert.ok(script.includes('cp -L -- "$builtin" "$root$builtin"'));
+ assert.ok(script.includes('[[ "$staged" -gt 0 ]]'));
+ assert.doesNotMatch(script,/cp\s+(?:-[a-zA-Z]*[rR]|--recursive)\s+[^\n]*\/usr\/share\/nodejs/);
+ assert.doesNotMatch(script,/npm\s+install/);
+ assert.ok(script.includes('chroot --userspec=65534:65534 "$root"'));
+ assert.ok(script.includes('M81_B2_NODE_CHROOT_BOOT_FAILED'));
+ assert.ok(script.includes("stderr_head:"));
+ assert.ok(script.includes('M81_B2_NODE_BOOT_OK'));
+ assert.ok(script.indexOf('M81_B2_NODE_BOOT_OK')<script.indexOf('names+=("$name")'));
+ assert.ok(script.includes('timeout -k 5s 120s node'));
+});
+test("M8.1.B2 fatal Node bootstrap diagnostics preserve the first line and final frame",()=>{
+ const {m81KernelExitDiagnostic}=require("../src/adapters/linux-isolated-process-driver.js");
+ const stderr="Cannot load externalized builtin: /usr/share/nodejs/acorn/dist/acorn.js\\n"+
+  "native-stack-middle.".repeat(140)+"tail-of-native-stack";
+ const diagnostic=m81KernelExitDiagnostic({code:null,signal:"SIGABRT",
+  stderr,cgroup:"/sys/fs/cgroup/pef-m81-777-999",read:()=>{throw Error("no fake kernel files");}});
+ assert.match(diagnostic,/Cannot load externalized builtin:/);
+ assert.match(diagnostic,/tail-of-native-stack/);
+ assert.match(diagnostic,/MIDDLE_TRUNCATED/);
+ assert.ok(diagnostic.length<1300);
+});
