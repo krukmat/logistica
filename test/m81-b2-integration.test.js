@@ -177,7 +177,8 @@ test("M8.1.B2 stages Debian Node externalized builtins without copying arbitrary
   "/usr/share/nodejs/cjs-module-lexer/lexer.js",
   "/usr/share/nodejs/cjs-module-lexer/dist/lexer.js",
   "/usr/share/nodejs/minimatch/dist/cjs/index.bundle.js",
-  "/usr/share/nodejs/undici/undici.js"
+  "/usr/share/nodejs/undici/undici.js",
+  "/usr/share/nodejs/undici/undici-fetch.js"
  ];
  for(const file of allowlist)assert.ok(script.includes(file),file);
  assert.ok(script.includes('cp -L -- "$builtin" "$root$builtin"'));
@@ -201,4 +202,15 @@ test("M8.1.B2 fatal Node bootstrap diagnostics preserve the first line and final
  assert.match(diagnostic,/tail-of-native-stack/);
  assert.match(diagnostic,/MIDDLE_TRUNCATED/);
  assert.ok(diagnostic.length<1300);
+});
+
+test("M8.1.B2 Debian libnode externalized undici-fetch is mandatory before chroot startup",()=>{
+ const script=fs.readFileSync(path.join(root,"scripts/arm64-vm/m81-b2-guest.sh"),"utf8");
+ assert.ok(script.includes("local required_undici=/usr/share/nodejs/undici/undici-fetch.js"));
+ assert.ok(script.includes('[[ -f "$required_undici" && -f "$root$required_undici" ]]'));
+ assert.ok(script.includes('M81_B2_REQUIRED_NODE_BUILTIN_MISSING:$required_undici'));
+ assert.ok(script.indexOf('M81_B2_REQUIRED_NODE_BUILTIN_MISSING')<
+   script.indexOf('M81_B2_NODE_CHROOT_BOOT_FAILED'));
+ assert.ok(script.indexOf('M81_B2_REQUIRED_NODE_BUILTIN_MISSING')<
+   script.indexOf('timeout -k 5s 120s node'));
 });
