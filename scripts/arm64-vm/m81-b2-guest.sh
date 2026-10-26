@@ -166,9 +166,9 @@ NODE
  if ! timeout -k 2s 8s chroot --userspec=65534:65534 "$root" \
    "$nodebin" --v8-pool-size=1 -e 'process.stdout.write("M81_B2_NODE_BOOT_OK")' \
    >"$output" 2>"$failure";then
-  printf 'M81_B2_NODE_CHROOT_BOOT_FAILED profile=%s builtins=%s stderr_head:\\n' "$profile" "$staged" >&2
+  printf 'M81_B2_NODE_CHROOT_BOOT_FAILED profile=%s builtins=%s stderr_head:\n' "$profile" "$staged" >&2
   head -c 1500 "$failure" >&2 || :
-  printf '\\n' >&2
+  printf '\n' >&2
   blocked "guest chroot Node init rejected"
  fi
  [[ "$(cat "$output")" == M81_B2_NODE_BOOT_OK ]] ||
