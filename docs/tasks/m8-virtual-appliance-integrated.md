@@ -186,3 +186,7 @@ The repository inspector's pure `inspectM81B2Evidence` function, evaluated again
 **Functional B2 checkpoint:** accepted **LAB_PASS in operator-reported Lima guest**, no physical/production certification. `systemdManagedValidated=false`, `vmRebootValidated=false`, `physicalValidated=false`, `productionAuthorized=false`. The next dependency is M8.1.C (systemd service lifecycle + persistent journal + explicitly authorized guest reboot/recovery). M8.1.D evidence and hardware/field validation remain pending. No GitHub Actions workflow may be recreated without a separate explicit request.
 
 See [M8.1.C isolated systemd/recovery plan](m81-c-systemd-recovery-plan.md).
+
+### 2026-10-27 — superseding scope decision: VM C/D no longer on the critical path
+
+By product-goal review, **M8.1.B2 operator-reported LAB_PASS** is sufficient for a **conditional GO to physical PoC preparation**. Additional complete integrated systemd/VM-reboot demonstrations would add less decision value than real-device bring-up and failover/powercut/thermal/physical-storage observations. Therefore **M8.1.C/D in Lima = DEFERRED_OPTIONAL_REGRESSION**, not mandated before procurement or M9, and not falsely labeled `LAB_PASS`. Transfer C1/C2/C3 service/recovery and D measurements to actual device acceptance under [M9](m9-physical-device-poc.md), keeping strict operator permissions. The sidecar Core-first physical POC intentionally does not validate the original two-WAN+LAN full appliance requirements.

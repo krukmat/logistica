@@ -2,7 +2,7 @@
 
 **Repository:** `krukmat/logistica`, branch `main`. **Dependency:** M8.1.B2 reported `LAB_PASS` on `pef-r28s-1g` with eight checks, Property/Host in separate cgroup v2 + netns + chroot, fsync/replay TLS1.3 mTLS and cleanup PASS. The imported result has `OPERATOR_REPORTED_UNATTESTED` provenance and is **not authorization** for privilege changes.
 
-**Current state:** `DESIGN_READY_NOT_EXECUTED`. No units installed, no VM reboot performed, no new GitHub Actions, no hardware/production certification.
+**Current state (superseded 2026-10-27):** `DEFERRED_OPTIONAL_REGRESSION` following product-goal review. The design is retained, but an entire VM systemd/reboot milestone is **not a critical-path dependency for M9 physical PoC**. The same service/recovery acceptance should be implemented on real hardware first. No units installed, no VM reboot performed, no GitHub Actions or hardware/production certification.
 
 ## Goal and boundaries
 
@@ -32,3 +32,7 @@ Existing `scripts/arm64-vm/m54-lima-service.sh` and `guest-m54-service.sh` demon
 ## Decision/checkpoint
 
 **Next safe block:** C0.1/C0.2 and local code/test design. No privileged guest action authorized yet. After an auditable C1 implementation plan is reviewed, request explicit approval for guest-owned service mutations; later request separate permission for VM reboot.
+
+## 2026-10-27 decision — superseded by device-first validation
+
+This plan is preserved for troubleshooting; its gates have **not** been executed or waived for production. The systemd/real reboot/durable powerloss acceptance moves into [M9 physical-device plan](m9-physical-device-poc.md). In particular, M8.1.B2's `LAB_PASS` does not satisfy the physical reboot, powercut, storage endurance or real routing gates. Avoid adding new VM-only work unless an actual hardware blocker needs a controlled reproduction.
