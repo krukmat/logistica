@@ -1,5 +1,10 @@
 # M9 — Physical PEF proof-of-concept / device-first validation
 
+**DEVELOPMENT FREEZE (2026-10-27 → 2026-12-05):** `PAUSED_UNTIL_2026-12-05`. By operator decision, do not implement additional features, execute M9 H0–H5, resume Lima C/D, activate GitHub Actions, order hardware or change the existing VM/network during this pause without a new explicit request. A one-time ChatGPT reminder is scheduled for **2026-12-05 morning Europe/Madrid** with the checkpoint below. The reminder requests a decision on resumption; it does **not** auto-execute work, buy devices or authorize privileged changes. The H0 plan remains the first task **after** resumption. Code and previous lab results remain unchanged.
+
+**Frozen checkpoint:** `M8.1.B2=OPERATOR_REPORTED_LAB_PASS` 8/8 checks: ARM64 Lima Property/Host isolated concurrently with real cgroup/netns/chroot, durable fsync, local TLS1.3 mTLS offline replay and reported cleanup PASS. `M8.1.C/D=DEFERRED_OPTIONAL_REGRESSION`. Next `M9.H0`: assess one-unit NanoPi R28S 1GiB, real Debian/Node>=20 compatibility, high-endurance microSD, 5V 2A power, full Spain landed BOM and sidecar-router topology. No procurement has been authorized. `M9.H1–H5` remain pending.
+
+
 **Decision 2026-10-27:** `CONDITIONAL_GO_FOR_ONE_UNIT_DEVICE_POC_PREPARATION`. **No purchase has been authorized and no device is reported acquired.** Do not label an appliance, physical pilot, production deployment or actual WAN failover `PASS` until measured.
 
 ## Purpose, source and product scope
@@ -44,4 +49,4 @@ The business thesis remains [01 — product foundation](../01-product-foundation
 
 ## First safe execution block
 
-H0 is immediately executable as source/vendor verification and purchase BOM without privileged tools or new cost. No hardware order, systemd installation, VM restart or physical power-cut has been performed or authorized. Report the complete BOM and exact blockers before H1.
+H0 is the next read-only source/vendor verification and full purchase-BOM task **once the development freeze ends and resumption is explicitly requested**. No hardware order, systemd installation, VM restart or physical power-cut has been performed or authorized. Report the complete BOM and exact blockers before H1.

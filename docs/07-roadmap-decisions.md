@@ -276,3 +276,11 @@ The portable per-PID RSS/heap descriptive trend analyzer, fault-phase annotation
 **Primary candidate under evaluation:** new NanoPi R28S 1GiB, quoted by FriendlyElec at USD 20 bare board, plus reliable storage, 5V/2A supply, case if required, freight/VAT/duties. Current vendor listing reports ARM Cortex-A53 RK3528A, two GbE, Debian 13 Core. No one-unit Spain delivered price, endurance-grade media or compatibility of the exact PEF Linux service is verified, and procurement is **NOT_APPROVED**. The R3S-LTS 2GiB is a fallback for memory/performance/driver problems, not an automatic SKU upgrade.
 
 **Next task block:** [M9 single-device physical POC plan](tasks/m9-physical-device-poc.md). New root privileges, purchase, altering a live router or intentional physical power removal always require explicit separate operator approval. GitHub Actions remains removed and must not be re-enabled automatically.
+
+## 2026-10-27 — temporary development freeze until 5 December 2026
+
+**Decision:** `PEF_DEVELOPMENT_PAUSED_UNTIL_2026-12-05`. No new code, physical PoC tasks, Lima M8.1.C/D milestones, CI workflows, hardware orders or guest/network service modifications until the operator explicitly reopens the project. This is an intentional pause, **not** an architecture failure or product cancellation. The previously reported M8.1.B2 `LAB_PASS` remains operator-supplied, not independently attested.
+
+A single ChatGPT reminder is scheduled for **5 December 2026 (Europe/Madrid, morning)**. It should summarize: the shared Core + Property/Host passed Lima B2 (8/8 isolation, fsync, local TLS1.3/mTLS replay, cleanup), GitHub Actions was removed to conserve quota, the VM was retained for regression only, and **M9.H0** (R28S 1GiB device feasibility + Debian/Node compatibility + reliable storage, 5V2A supply, sidecar topology and landed Spain BOM) is the next decision gate. Subsequent physical bring-up, systemd/recovery, power-cut and thermal/capacity tests are H1–H5. The reminder alone **does not** authorize automatic purchases, machine operations or development.
+
+See [M9 frozen plan](tasks/m9-physical-device-poc.md). Resume earlier only on a new explicit user request.
