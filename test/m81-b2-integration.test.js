@@ -223,3 +223,76 @@ test("M8.1.B2 read-only gate checks Debian externalized Node builtin before opt-
  assert.match(script,/guestSandboxStarted:false/);
  assert.match(script,/readOnly:true/);
 });
+
+test("M8.1.B2 WAN port toggle does not reconcile without explicit sample; replay succeeds only afterward",async()=>{
+ const {createAutonomousEdgeHost}=require("../src/runtime/autonomous-edge.js");
+ const {commitM81B2SyntheticWan}=require("../src/runtime/m81-b2-guest-stack.js");
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),"pef-m81-b2-wan-"));
+ const token="a".repeat(64),identity={siteId:"m81-test",deviceId:"m81-property",
+  configRevision:"r1"};
+ const config={schemaVersion:1,backend:"virtual-lab",identity,storageDir:dir,
+  http:{host:"127.0.0.1",port:0},sampleIntervalMs:30000,
+  workload:{enabled:false,profile:"property",reconcileMs:300},
+  journal:{capacityBytes:131072,controlReserveBytes:8192},
+  wan:{primary:{link:true,upstream:false},backup:{link:true,upstream:false}}};
+ // Fake transport isolates connectivity ordering; actual TLS certificates and
+ // server identity are independently covered by the existing M7.3 test.
+ const transport={
+  async ingest(event){return {ok:true,durable:true,eventId:event.eventId,
+   sha256:event.sha256,siteId:event.payload.siteId,
+   deviceId:event.payload.deviceId,duplicate:false};},
+  verifyAck(){return true;}
+ };
+ const edge=createAutonomousEdgeHost({config,token,cloudTransport:transport});
+ const call=async(url,route,t,body)=>{
+  const r=await fetch(url+route,{method:body===undefined?"GET":"POST",
+   headers:{"x-pef-token":t,...(body===undefined?{}:{"content-type":"application/json"})},
+   ...(body===undefined?{}:{body:JSON.stringify(body)})});
+  return {http:r.status,...await r.json()};
+ };
+ try{
+  const url=await edge.listen();
+  const before=await call(url,"state",token);
+  assert.equal(before.network.selectedWan,null);
+  const toggled=await call(url,"lab/wan",token,{id:"primary",link:true,upstream:true});
+  assert.equal(toggled.http,200);
+  const stale=await call(url,"state",token);
+  assert.equal(stale.network.selectedWan,null,"WAN toggle must not pretend policy committed");
+  const premature=await call(url,"lab/cloud-lite/sync",token,{});
+  assert.equal(premature.http,409);
+  assert.equal(premature.error,"CLOUD_UNAVAILABLE");
+  const committed=await commitM81B2SyntheticWan(call,url,token);
+  assert.equal(committed.selectedWan,"primary");
+  assert.equal(committed.connectivity,"CONNECTED");
+  assert.ok(committed.pendingBeforeReplay>=2);
+  const replay=await call(url,"lab/cloud-lite/sync",token,{});
+  const done=await call(url,"state",token);
+  assert.equal(replay.http,200,JSON.stringify(replay));
+  assert.equal(replay.result?.status,"SYNC_OK");
+  assert.equal(done.storage.pending,0);
+ }finally{
+  await edge.close();
+  fs.rmSync(dir,{recursive:true,force:true});
+ }
+});
+test("M8.1.B2 never attempts replay if WAN sample or authoritative state did not commit",async()=>{
+ const {commitM81B2SyntheticWan,m81B2ReplayFailure}=
+  require("../src/runtime/m81-b2-guest-stack.js");
+ const calls=[];
+ const denied=async(_url,route)=>{
+  calls.push(route);
+  if(route==="lab/wan")return {http:200};
+  if(route==="lab/sample")return {http:503,ok:false};
+  throw Error("unexpected call after sample failure");
+ };
+ await assert.rejects(()=>commitM81B2SyntheticWan(denied,"http://127.0.0.1/", "token"),
+  /M81_B2_SYNTHETIC_WAN_SAMPLE_FAILED/);
+ assert.deepEqual(calls,["lab/wan","lab/sample"]);
+ const diagnostic=m81B2ReplayFailure("property",
+  {http:409,error:"CLOUD_UNAVAILABLE"},
+  {network:{connectivity:"LOCAL_ONLY"},storage:{pending:3}});
+ assert.match(diagnostic,/http=409/);
+ assert.match(diagnostic,/error=CLOUD_UNAVAILABLE/);
+ assert.match(diagnostic,/localPending=3/);
+ assert.doesNotMatch(diagnostic,/token|secret|certificate/i);
+});
