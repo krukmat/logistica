@@ -35,6 +35,37 @@ async function api(url,route,token,body){
   ...(body===undefined?{}:{body:JSON.stringify(body)})});
  return {http:r.status,...await r.json()};
 }
+// WAN port mutation alone does not commit controller policy. Sampling is the
+// sole source of authoritative CONNECTED state. Keep this transition explicit
+// before any Cloud Lite replay in the constrained Lima guest.
+async function commitM81B2SyntheticWan(apiCall,url,token){
+ if(typeof apiCall!=="function")throw Error("M81_B2_INVALID_API_PORT");
+ const changed=await apiCall(url,"lab/wan",token,{id:"primary",link:true,upstream:true});
+ if(changed.http!==200)throw Error("M81_B2_SYNTHETIC_WAN_FAILED");
+ const sampled=await apiCall(url,"lab/sample",token,{});
+ if(sampled.http!==200||sampled.ok!==true||
+   sampled.observed?.selectedWan!=="primary"||
+   sampled.observed?.connectivity!=="CONNECTED")
+  throw Error("M81_B2_SYNTHETIC_WAN_SAMPLE_FAILED");
+ const state=await apiCall(url,"state",token);
+ if(state.http!==200||state.network?.selectedWan!=="primary"||
+   state.network?.connectivity!=="CONNECTED")
+  throw Error("M81_B2_SYNTHETIC_WAN_NOT_COMMITTED");
+ return {selectedWan:"primary",connectivity:"CONNECTED",
+  pendingBeforeReplay:state.storage?.pending};
+}
+function m81B2ReplayFailure(profile,recovered,done){
+ const safe=x=>typeof x==="string"&&/^[A-Z0-9_]{1,64}$/.test(x)?x:"UNKNOWN";
+ const number=x=>Number.isSafeInteger(x)&&x>=0?x:"unknown";
+ return "M81_B2_MTLS_REPLAY_FAILED:"+profile+
+  ":http="+number(recovered?.http)+
+  ":sync="+safe(recovered?.result?.status)+
+  ":error="+safe(recovered?.result?.error||recovered?.error)+
+  ":attempted="+number(recovered?.result?.attempted)+
+  ":remaining="+number(recovered?.result?.remaining)+
+  ":localPending="+number(done?.storage?.pending)+
+  ":wan="+safe(done?.network?.connectivity);
+}
 function guestPathFacts(scope,name){
  if(!NAME.test(name))throw Error("M81_B2_BAD_NAMESPACE");
  const base="/tmp/"+name,rootfs=base+"/root",cgroup="/sys/fs/cgroup/"+name;
@@ -124,12 +155,15 @@ async function runM81B2GuestStack({base,propertyNamespace,hostNamespace}={}){
    const mid=await api(url,"state",token);
    if(offline.http!==409||mid.storage.pending<2)
     throw Error("M81_B2_OFFLINE_QUEUE_MISSING:"+profile);
-   const changed=await api(url,"lab/wan",token,{id:"primary",link:true,upstream:true});
-   if(changed.http!==200)throw Error("M81_B2_SYNTHETIC_WAN_FAILED:"+profile);
+   const committed=await commitM81B2SyntheticWan(api,url,token);
+   if(!Number.isSafeInteger(committed.pendingBeforeReplay)||
+     committed.pendingBeforeReplay<2)
+    throw Error("M81_B2_OFFLINE_QUEUE_LOST_BEFORE_REPLAY:"+profile);
    const recovered=await api(url,"lab/cloud-lite/sync",token,{});
    const done=await api(url,"state",token);
-   if(recovered.http!==200||recovered.result?.status!=="SYNC_OK"||done.storage.pending!==0)
-    throw Error("M81_B2_MTLS_REPLAY_FAILED:"+profile);
+   if(recovered.http!==200||recovered.result?.status!=="SYNC_OK"||
+     done.storage?.pending!==0)
+    throw Error(m81B2ReplayFailure(profile,recovered,done));
    const memoryPeakBytes=Number(read("memory.peak"));
    if(!Number.isSafeInteger(memoryPeakBytes)||memoryPeakBytes<1||
       memoryPeakBytes>Number(limits.memoryMax))
@@ -155,4 +189,4 @@ async function runM81B2GuestStack({base,propertyNamespace,hostNamespace}={}){
   if(cloud)await cloud.close();
  }
 }
-module.exports={runM81B2GuestStack};
+module.exports={runM81B2GuestStack,commitM81B2SyntheticWan,m81B2ReplayFailure};
