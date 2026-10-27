@@ -117,3 +117,21 @@ The stdout JSON is `LAB_FAIL` with `error=GUEST_RUN_INCOMPLETE` and `cleanup={st
 **B2 narrow patch:** append `/usr/share/nodejs/undici/undici-fetch.js` to the existing fixed-path Linux distro builtin copy allowlist. Require both the source and copied destination as regular files, fail with `M81_B2_REQUIRED_NODE_BUILTIN_MISSING` when absent. Keep uid 65534 in the 8-second chroot Node bootstrap probe before Edge startup. Extend read-only `bin/pef-m81-b2-guest-check.js` with `NODE_EXTERNALIZED_UNDICI_FETCH_PRESENT`, and add unit assertions to prevent future omission. No distro install, recursive package copy, pids.max increase, ACL weakening or VM host modification.
 
 **Validation status at commit:** source inspection / syntax only. User Mac tests, guest read-only preflight and full B2 runtime **PENDING**. Do not claim LAB_PASS or proceed M8.1.C. After `git pull --ff-only`, run relevant tests and read-only `m81-b2-lima.sh --check`; then the operator may execute a single already-authorized bounded B2 attempt if the check is green. If more externalized files are identified, record exact paths and reconsider staging the matching bounded Debian Node runtime manifest, rather than iterating blindly.
+
+## 2026-10-27 — real Property mTLS replay blocked by missing WAN sample
+
+Operator-provided guest attempt:
+
+```text
+M81_B2_BLOCKED:Error: M81_B2_MTLS_REPLAY_FAILED:property
+    at runM81B2GuestStack (src/runtime/m81-b2-guest-stack.js:132)
+M81_B2_GUEST_INCOMPLETE exit=78 cleanup=true
+```
+
+Guest JSON: `status=LAB_FAIL`, `error=GUEST_RUN_INCOMPLETE`, `cleanup={status:PASS,ownedResourcesRemoved:true}`. The prior Node chroot bootstrap and actual worker setup progressed far enough to execute the replay assertion, but the report does **not** certify complete Property/Host, TLS replay or independent cleanup attestation.
+
+**Source-confirmed sequencing defect:** `/lab/wan` invokes `ports.set(...)`, changing only virtual probes; the authoritative controller's `selectedWan` remains `null` until `engine.sample()`. The `/lab/cloud-lite/sync` route refuses sync with `CLOUD_UNAVAILABLE` when that controller remains offline. The B2 guest stack had `/lab/wan` then immediate `/lab/cloud-lite/sync`, missing `/lab/sample`. The existing M7.3 mTLS lab already uses `/lab/wan` + `/lab/sample` + sync. **This is the code-confirmed mismatch and most likely cause of the observed replay failure**; the exact remote response for this guest attempt was not captured.
+
+**Fix:** `commitM81B2SyntheticWan(api,url,token)` explicitly sequences virtual WAN update, `/lab/sample` (must report `primary`/`CONNECTED`), and authoritative `/state` validation before any TLS replay; it fails closed on sample/state failure and verifies offline events remain queued. Replay error now emits bounded, credential-free `http`, `sync`, `error`, `attempted`, `remaining`, `localPending` and `wan` fields.
+
+**Regressions:** dedicated B2 integration test uses real standalone virtual-lab Edge and durable journal with stubbed remote ingest to demonstrate `/lab/wan` alone leaves sync blocked (`CLOUD_UNAVAILABLE`), and `/lab/sample` enables replay. Separate test denies a failed sample and validates sanitized error messages. The existing M7.3 genuine TLS1.3/mTLS test remains the independent cryptographic check. A pure JS check of sequence, failure behavior, diagnostic and syntax passed; the full Node test suite and ARM64 guest replay after this patch remain operator-pending. No GitHub Actions workflow, VM lifecycle, network routing, cgroup quotas or host infrastructure changes.
