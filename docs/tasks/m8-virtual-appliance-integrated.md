@@ -1,6 +1,6 @@
 # M8.1 — ARM64 1 GiB integrated virtual appliance (SOFTWARE PLAN)
 
-**Repo:** krukmat/logistica, main. **Status:** A1–A4 implemented (operator observation NOT_RUN); B1 driver code present; B2.1–B2.5 source/harness implemented for opt-in guest lab, actual VM NOT_RUN; systemd guest integration and C–D NOT_RUN. No hardware purchase, hosted cloud, or guest changes authorized.
+**Repo:** krukmat/logistica, main. **Current checkpoint (2026-10-27):** M8.1.B2 **LAB_PASS — OPERATOR_REPORTED_UNATTESTED** in the existing ARM64 Lima VM, 8/8 checks and cleanup PASS; no independent guest attestation. M8.1.C **DESIGN_UNBLOCKED / SYSTEMD_AND_VM_REBOOT_NOT_RUN**; M8.1.D not run. GitHub Actions workflows removed to conserve quota. Guest service installation/reboot requires separate operator authorization. **Historical sections below are retained as dated snapshots and may describe earlier blockers.**
 
 ## Objective
 
@@ -11,8 +11,8 @@ Prove the **same** PEF Core, Linux driver and Cloud Lite working together on the
 | Task | Dependency | Subtasks and acceptance | State |
 | --- | --- | --- | --- |
 | **M8.1.A — Guest contract** | M5.4, M5.6, M7.5.E | A1 inspect existing source constraints and collect opt-in guest facts; A2 define guest-only authorization/rollback; A3 read-only CLI/dashboard; A4 local negative/HTTP tests | IMPLEMENTED (source + static contract); operator guest inspection NOT_RUN; npm tests NOT_RUN |
-| **M8.1.B — Integrated stack** | A, M6, M7.3/4 | B1 adapt the isolated Linux process driver to separately authorized Lima VM with manifest quotas and no CI spoofing; B2 disposable guest namespace/cgroup setup, shared guest systemd + Property/Host + mTLS Cloud Lite and reproducible teardown | B1 IMPLEMENTED_CODE_GUEST_NOT_RUN; B2 SOURCE_IMPLEMENTED_GUEST_NOT_RUN |
-| **M8.1.C — Recovery journey** | B | C1 offline durable Property/Host operations, Cloud down/up and deduplicated ACK; C2 guest reboot, changed boot_id and session, journal/incident retention | PROPOSED |
+| **M8.1.B — Integrated stack** | A, M6, M7.3/4 | B1 isolated driver; B2 disposable guest cgroup/netns + concurrent Property, Host and local mTLS Cloud Lite, fsync/replay and teardown. **systemd is intentionally C, not validated by B2** | **B2 LAB_PASS OPERATOR_REPORTED_UNATTESTED; 8/8 PASS, cleanup PASS** |
+| **M8.1.C — Recovery journey** | B | C0 read-only inventory and isolation-aware systemd design; C1 guest services with durable state; C2 offline/replay/recovery; C3 explicitly authorized VM reboot + changed boot_id/session; C4 cleanup/rollback evidence | **DESIGN_UNBLOCKED; IMPLEMENTATION/REBOOT NOT_RUN** |
 | **M8.1.D — Evidence** | C, M7.5.D | D1 measure Edge, Cloud and worker process RSS, CPU, disk use, cgroup pressure and replay counts; D2 reproducible JSON/NDJSON + independent checks and read-only dashboard evidence | PROPOSED |
 
 ## Gates
@@ -165,3 +165,24 @@ The rootfs allowlist now contains the exact `undici-fetch.js` path; it is requir
 ### 2026-10-27 — B2.4 replay sequencing corrected (operator revalidation required)
 
 Actual guest attempt reached Property Cloud Lite replay but failed `M81_B2_MTLS_REPLAY_FAILED:property`, with JSON `LAB_FAIL` and operator-reported `cleanup=PASS`. Source analysis isolated missing policy reconciliation: after `/lab/wan`, the Edge controller still reports `LOCAL_ONLY` until `/lab/sample`; the B2 harness called sync prematurely, unlike the validated M7.3 test. Fix now requires `WAN → sample → controller CONNECTED → sync`, fails closed if the transition is not committed, and adds sanitized replay diagnostics. Unit/integration regressions use local fake remote transport; M7.3 cryptographic tests remain unchanged. B2 stays blocked until the operator reruns local tests and one authorized ARM64 guest test. No GitHub Actions workflows should be reinstated.
+
+## 2026-10-27 — M8.1.B2 operator-run functional closure
+
+**Operator-supplied live guest JSON** (pasted in this thread, independently unattested): `kind=PEF_M81_B2_GUEST_STACK_V1`, `status=LAB_PASS`, `ok=true`, `elapsedMs=739`, guest profile `pef-r28s-1g`. All eight required booleans are `true`:
+
+- `GUEST_SCOPE_AUTHORIZED`
+- `BOTH_WORKERS_ISOLATED`
+- `MANIFEST_CGROUP_LIMITS`
+- `WORKER_UID_AND_NETNS`
+- `LOCAL_INCIDENT_FSYNC`
+- `CLOUD_TLS13_MTLS`
+- `OFFLINE_QUEUE_REPLAY`
+- `LOCAL_CLOUD_AND_BOTH_EDGES_CONCURRENT`
+
+Actual operator-reported worker fields: Property PID `3154`, `memoryPeakBytes=13725696` (13.09 MiB), Host PID `3160`, `memoryPeakBytes=13635584` (13.00 MiB); both `LINUX_CGROUP_NETNS_CHROOT_M81_LIMA_VM`, `actualLimitsEnforced=true`, `offlineDurable=true`, `replayed=true`. Transport `TLS1.3_MTLS_LOOPBACK`. Teardown `cleanup.status=PASS`, `ownedResourcesRemoved=true`.
+
+The repository inspector's pure `inspectM81B2Evidence` function, evaluated against exactly these submitted fields, returns `accepted=true`, `status=OPERATOR_REPORTED_UNATTESTED`, `schemaChecksValidated=true`, `workerCount=2`. The inspector intentionally returns `readyForM81C=false` as a **non-attestation guard**: it does not remotely verify kernel provenance or grant service/reboot privileges. This **does not prevent read-only design** of M8.1.C; it prevents interpreting copied JSON alone as authorization/certification of a new privileged action.
+
+**Functional B2 checkpoint:** accepted **LAB_PASS in operator-reported Lima guest**, no physical/production certification. `systemdManagedValidated=false`, `vmRebootValidated=false`, `physicalValidated=false`, `productionAuthorized=false`. The next dependency is M8.1.C (systemd service lifecycle + persistent journal + explicitly authorized guest reboot/recovery). M8.1.D evidence and hardware/field validation remain pending. No GitHub Actions workflow may be recreated without a separate explicit request.
+
+See [M8.1.C isolated systemd/recovery plan](m81-c-systemd-recovery-plan.md).

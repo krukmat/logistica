@@ -135,3 +135,40 @@ Guest JSON: `status=LAB_FAIL`, `error=GUEST_RUN_INCOMPLETE`, `cleanup={status:PA
 **Fix:** `commitM81B2SyntheticWan(api,url,token)` explicitly sequences virtual WAN update, `/lab/sample` (must report `primary`/`CONNECTED`), and authoritative `/state` validation before any TLS replay; it fails closed on sample/state failure and verifies offline events remain queued. Replay error now emits bounded, credential-free `http`, `sync`, `error`, `attempted`, `remaining`, `localPending` and `wan` fields.
 
 **Regressions:** dedicated B2 integration test uses real standalone virtual-lab Edge and durable journal with stubbed remote ingest to demonstrate `/lab/wan` alone leaves sync blocked (`CLOUD_UNAVAILABLE`), and `/lab/sample` enables replay. Separate test denies a failed sample and validates sanitized error messages. The existing M7.3 genuine TLS1.3/mTLS test remains the independent cryptographic check. A pure JS check of sequence, failure behavior, diagnostic and syntax passed; the full Node test suite and ARM64 guest replay after this patch remain operator-pending. No GitHub Actions workflow, VM lifecycle, network routing, cgroup quotas or host infrastructure changes.
+
+## 2026-10-27 — successful operator B2 guest stack / closure
+
+```json
+{
+  "kind":"PEF_M81_B2_GUEST_STACK_V1",
+  "task":"M8.1.B2",
+  "profile":"pef-r28s-1g",
+  "status":"LAB_PASS",
+  "ok":true,
+  "checks":{
+    "GUEST_SCOPE_AUTHORIZED":true,
+    "BOTH_WORKERS_ISOLATED":true,
+    "MANIFEST_CGROUP_LIMITS":true,
+    "WORKER_UID_AND_NETNS":true,
+    "LOCAL_INCIDENT_FSYNC":true,
+    "CLOUD_TLS13_MTLS":true,
+    "OFFLINE_QUEUE_REPLAY":true,
+    "LOCAL_CLOUD_AND_BOTH_EDGES_CONCURRENT":true
+  },
+  "workloads":{
+    "property":{"workloadId":"pef-property","isolation":"LINUX_CGROUP_NETNS_CHROOT_M81_LIMA_VM","actualLimitsEnforced":true,"pid":3154,"memoryPeakBytes":13725696,"offlineDurable":true,"replayed":true},
+    "host":{"workloadId":"pef-host","isolation":"LINUX_CGROUP_NETNS_CHROOT_M81_LIMA_VM","actualLimitsEnforced":true,"pid":3160,"memoryPeakBytes":13635584,"offlineDurable":true,"replayed":true}
+  },
+  "elapsedMs":739,
+  "transport":"TLS1.3_MTLS_LOOPBACK",
+  "systemdManagedValidated":false,
+  "vmRebootValidated":false,
+  "physicalValidated":false,
+  "productionAuthorized":false,
+  "cleanup":{"status":"PASS","ownedResourcesRemoved":true}
+}
+```
+
+**Source of evidence:** operator-pasted guest run JSON; no independent signed provenance or authenticated source retrieval. Local in-code inspector output for these supplied values: `accepted=true`, `status=OPERATOR_REPORTED_UNATTESTED`, `integrityVerified=false`, `guestKernelEvidenceIndependentlyVerified=false`, `readyForM81C=false`. The eight checks and reported teardown allow a B2 operator-lab functional checkpoint; they do not authorize systemd writes or a reboot.
+
+**Next gate:** M8.1.C design can proceed; privileged guest service installation and VM stop/start require new explicit operator opt-in. Persistent service data must not be placed in B2's disposable temp directory. Ensure cleanup never touches M5.4 existing units or unrelated Lima resources.
